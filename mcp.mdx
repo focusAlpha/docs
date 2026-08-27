@@ -1,0 +1,113 @@
+---
+title: "Connect via MCP"
+description: "Use FocusAlpha from Claude, Cursor, or any MCP client — every dataset exposed as a tool, authenticated with your API key."
+---
+
+FocusAlpha ships a hosted [Model Context Protocol](https://modelcontextprotocol.io) server. Point an MCP-capable client at it and the model can search transcripts, pull financials, screen companies, and watch events — every dataset in the API, as tools.
+
+```text
+https://mcp.focusalpha.ai/mcp
+```
+
+The server speaks the HTTP transport and is stateless. Authentication is your normal API key, sent as a header on every request:
+
+```text
+Authorization: Bearer fa_live_...
+```
+
+<Note>
+  MCP tool calls are ordinary API calls underneath. They spend the same credits, respect the same plan entitlements, and count against the same rate limits as REST requests — see [Plans & credits](/concepts/plans-credits). A missing or invalid key is rejected with `401` before any data is read.
+</Note>
+
+## Claude Code
+
+```bash
+claude mcp add --transport http focusalpha https://mcp.focusalpha.ai/mcp \
+  --header "Authorization: Bearer fa_live_your_key_here"
+```
+
+## Claude Desktop
+
+Add to `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "focusalpha": {
+      "type": "http",
+      "url": "https://mcp.focusalpha.ai/mcp",
+      "headers": { "Authorization": "Bearer fa_live_your_key_here" }
+    }
+  }
+}
+```
+
+## Cursor
+
+Add to `.cursor/mcp.json` (project) or `~/.cursor/mcp.json` (global):
+
+```json
+{
+  "mcpServers": {
+    "focusalpha": {
+      "url": "https://mcp.focusalpha.ai/mcp",
+      "headers": { "Authorization": "Bearer fa_live_your_key_here" }
+    }
+  }
+}
+```
+
+## Other clients
+
+Any MCP client that supports the HTTP transport and can attach an `Authorization` header works the same way — configure the URL and the header, nothing else is required.
+
+<Warning>
+  Your API key travels in the client configuration. Keep the config file out of source control, and revoke the key in the [dashboard](https://app.focusalpha.ai) if it leaks.
+</Warning>
+
+## Available tools
+
+Tools map one-to-one onto the REST API. The model can also call `list_datasets` and `list_coverage` at any time to discover what is available and how fresh it is.
+
+| Dataset | Tools | Plan | REST docs |
+| --- | --- | --- | --- |
+| Earnings call transcripts | `retrieve`, `list_documents`, `get_document`, `get_document_segments` | Free | [Search & documents](/api-reference/retrieval) |
+| Agent-ready indexed filings | `get_filings`, `get_filing_items` | Free | [Filings](/api-reference/filings), [Filing items](/api-reference/filing-items) |
+| Financial statements | `get_income_statements`, `get_balance_sheets`, `get_cash_flow_statements`, `get_all_financials` | Free | [Financials](/api-reference/financials) |
+| Financial metrics | `get_financial_metrics` | Free | [Financials](/api-reference/financials) |
+| Segmented financials | `get_segmented_financials` | Free | [Financials](/api-reference/financials) |
+| Company facts | `get_company_facts` | Free | [Financials](/api-reference/financials) |
+| Company search & profile | `search_companies`, `get_company` | Free | [Company registry](/api-reference/companies) |
+| Company screener | `screen_companies` | Fund | [Screener](/api-reference/screener) |
+| Real-time company events | `get_company_events` | Fund | [News & themes](/api-reference/news) |
+| Real-time company news | `get_company_news` | Fund | [News & themes](/api-reference/news) |
+| Real-time macro news | `get_macro_news` | Fund | [News & themes](/api-reference/news) |
+| Real-time US events and filings | `get_8k_events`, `get_8k_raw_filings` | Fund | [Corporate events](/api-reference/events) |
+| Real-time guidance and changes | `get_guidance`, `get_guidance_changes` | Fund | [Corporate events](/api-reference/events) |
+| Real-time earnings result analysis | `get_8k_earnings_results` | Fund | [Corporate events](/api-reference/events) |
+| Prediction-market consensus | `get_prediction_markets_quote`, `get_prediction_markets_consensus` | Fund | [Corporate events](/api-reference/events) |
+| Real-time international disclosures | `get_international_disclosure` | Fund | [International](/api-reference/international) |
+| VC investor search | `search_vc_investors` | Fund | [Ownership & people](/api-reference/ownership) |
+| Institutional holdings (13F) | `get_institutional_holdings` | Professional | [Ownership & people](/api-reference/ownership) |
+| Insider trades | `get_insider_trades` | Professional | [Ownership & people](/api-reference/ownership) |
+| Executive compensation & proxy ownership | `get_executive_compensation`, `get_proxy_ownership` | Professional | [Ownership & people](/api-reference/ownership) |
+| Institution directory | `search_institutions`, `get_institution_profile` | Professional | [Ownership & people](/api-reference/ownership) |
+| Market data & benchmarks | `get_market_data`, `get_benchmark_prices` | Professional | [Market data](/api-reference/market-data) |
+| Short interest | `get_short_interest` | Professional | [Market data](/api-reference/market-data) |
+| Taiwan datasets | `get_taiwan_financials`, `get_taiwan_monthly_revenue`, `get_taiwan_foreign_ownership` | Professional | [International](/api-reference/international) |
+| Korea datasets | `get_korea_financials`, `get_korea_report_sections` | Professional | [International](/api-reference/international) |
+| Form 20-F | `get_adr_20f_notes`, `get_adr_20f_data` | Professional | [International](/api-reference/international) |
+| Discovery | `list_datasets`, `list_coverage` | Free | [Coverage & freshness](/concepts/coverage) |
+
+Datasets your plan does not include return a clear upgrade message rather than data — the model will tell you which tier a tool needs.
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Authentication" icon="key" href="/authentication">
+    Creating and managing the API key your MCP client uses.
+  </Card>
+  <Card title="Plans & credits" icon="coins" href="/concepts/plans-credits">
+    What each plan unlocks and how tool calls are metered.
+  </Card>
+</CardGroup>

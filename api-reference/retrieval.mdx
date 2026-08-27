@@ -3,7 +3,7 @@ title: "Search & documents"
 description: "Semantic search across SEC filings and earnings-call transcripts, plus document browsing and usage reporting."
 ---
 
-These endpoints cover the retrieval corpus: semantic search that returns source-attributed passages, metadata browsing over the underlying documents, and your own usage summary.
+These endpoints cover the retrieval corpus: semantic search that returns source-attributed passages, metadata browsing over the underlying documents, and your own usage summary. In the [dashboard](https://app.focusalpha.ai)'s dataset list this is **Earnings call transcripts** (`retrieve` [via MCP](/mcp)).
 
 Responses use the standard `{ ...payload, meta }` envelope, and errors use the standard error envelope described in [Errors](/concepts/errors). `POST /v1/retrieve` is rate-limited per plan and returns `429` when the per-minute limit is exceeded.
 
