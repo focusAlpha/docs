@@ -1,20 +1,60 @@
 ---
-title: "Welcome to FocusAlpha"
-description: "The AI-native research OS for investors — ingest, analyze, and act on information across your entire research library."
+title: "FocusAlpha Data API"
+description: "Institutional-grade fundamental, ownership, and event data for global equities — one REST API."
 ---
 
-FocusAlpha is a research operating system built for investment teams. It brings together every source of information you work with, lets you interrogate it through AI-powered chat, and surfaces the connections between companies and entities across your research.
+The FocusAlpha Data API gives you programmatic access to the data layer behind FocusAlpha: SEC filings and financial statements, a global company registry spanning roughly 25,000 companies across 82 countries, institutional and insider ownership, corporate events and news signals, and native coverage of Taiwan, Korea, Japan, and foreign private issuers.
 
-## What you can do
+Everything is served as JSON over HTTPS from a single base URL:
 
-**Ingest any document format.** Upload PDFs, Word documents, Excel files, emails, web clips, and meeting transcripts. FocusAlpha processes them all into a unified, searchable research library.
+```text
+https://api.focusalpha.ai
+```
 
-**Chat with your research library.** Ask questions across all your ingested documents. Responses include inline citations so you can trace every answer back to its source.
+Requests are authenticated with an API key and metered in credits — one credit per data call, with discovery and vocabulary endpoints free. See [Plans & credits](/concepts/plans-credits) for how metering works.
 
-**Run the agent assistant.** The agent has tools to pull SEC filings and run stock screens, so you can go from a question to structured data without leaving FocusAlpha.
+## Get started
 
-**Explore the knowledge graph.** FocusAlpha builds and maintains a graph of companies and entities extracted from your research, making it easy to trace relationships and spot connections across coverage.
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Create a key and make your first request in under five minutes.
+  </Card>
+  <Card title="Authentication" icon="key" href="/authentication">
+    How API keys work, how to send them, and how to manage them.
+  </Card>
+  <Card title="API reference" icon="code" href="/api-reference">
+    Every endpoint, parameter, and response shape.
+  </Card>
+  <Card title="Plans & credits" icon="coins" href="/concepts/plans-credits">
+    What each plan includes and how usage is metered.
+  </Card>
+</CardGroup>
 
-<Card title="Quickstart" icon="rocket" href="/quickstart">
-  Get up and running with FocusAlpha in a few minutes.
-</Card>
+## What's in the API
+
+| Domain | What you get | Minimum plan |
+| --- | --- | --- |
+| [Search & documents](/api-reference/retrieval) | Semantic retrieval over SEC filings and earnings-call transcripts, with source attribution | Free |
+| [SEC filings](/api-reference/filings) | The filing index for 10-K, 10-Q, 8-K, 20-F, proxies, and more | Free |
+| [Filing items](/api-reference/filing-items) | Filings split into their individual items, as text | Free |
+| [Financial statements](/api-reference/financials) | Income statements, balance sheets, cash flow statements, computed metrics, and as-reported segments | Free |
+| [Company registry](/api-reference/companies) | Canonical company records, identifiers, listings, and corporate events | Free |
+| [Market data & benchmarks](/api-reference/market-data) | Daily prices, market cap, index and commodity benchmarks, short interest | Professional |
+| [Ownership & people](/api-reference/ownership) | 13F institutional holdings, insider trades, executive compensation, adviser and investor directories | Professional |
+| [International datasets](/api-reference/international) | Taiwan financials and monthly revenue, Korea DART reports, exchange disclosures, Form 20-F | Professional |
+| [Screener](/api-reference/screener) | Cross-company screening over 70+ fundamental, momentum, event, and ownership filters | Fund |
+| [Corporate events & guidance](/api-reference/events) | Structured 8-K events, management guidance, reported earnings, prediction markets | Fund |
+| [News & themes](/api-reference/news) | Company-linked news events with impact scoring, and cross-market theme tracking | Fund |
+
+Coverage windows and refresh cadence vary by dataset — the [Coverage & freshness](/concepts/coverage) page has the full picture, and `GET /v1/_status` reports it live.
+
+## How the API behaves
+
+- **Server-to-server.** The API is designed to be called from your backend. Keep keys out of client-side code.
+- **Predictable pagination.** Most dataset routes return `{ data, next_cursor, coverage }`; pass `next_cursor` back verbatim to page. Details in [Pagination](/concepts/pagination).
+- **Honest errors.** Validation fails loudly, out-of-credit and plan-gate refusals are explicit `402`s, and every response carries a request ID you can quote to support. Details in [Errors](/concepts/errors).
+- **One identifier to rule them all.** Company-scoped routes accept a ticker, CIK, ISIN, or a canonical `cmp_…` id interchangeably. Details in [Company identifiers](/concepts/company-identifiers).
+
+<Tip>
+  Questions or coverage requests? Reach us at [support@focusalpha.ai](mailto:support@focusalpha.ai).
+</Tip>

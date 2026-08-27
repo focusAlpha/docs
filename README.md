@@ -1,55 +1,30 @@
-# Mintlify Starter Kit
+# FocusAlpha docs
 
-Use the starter kit to get your docs deployed and ready to customize.
+Source for [docs.focusalpha.ai](https://docs.focusalpha.ai) — public documentation for the FocusAlpha Data API (`api.focusalpha.ai`), built on [Mintlify](https://mintlify.com).
 
-Click the green **Use this template** button at the top of this repo to copy the Mintlify starter kit. The starter kit contains examples with
+## Structure
 
-- Guide pages
-- Navigation
-- Customizations
-- API reference pages
-- Use of popular components
+```
+docs.json            # Site config: navigation, branding, navbar/footer
+index.mdx            # Introduction
+quickstart.mdx       # Key creation + first request
+authentication.mdx   # API keys, headers, security
+concepts/            # Plans & credits, rate limits, errors, pagination,
+                     # company identifiers, coverage & freshness
+api-reference/       # One page per endpoint group
+```
 
-**[Follow the full quickstart guide](https://starter.mintlify.com/quickstart)**
-
-## AI-assisted writing
-
-Set up your AI coding tool to work with Mintlify:
+## Local preview
 
 ```bash
-npx skills add https://mintlify.com/docs
-```
-
-This command installs Mintlify's documentation skill for your configured AI tools like Claude Code, Cursor, Windsurf, and others. The skill includes component reference, writing standards, and workflow guidance.
-
-See the [AI tools guides](/ai-tools) for tool-specific setup.
-
-## Development
-
-Install the [Mintlify CLI](https://www.npmjs.com/package/mint) to preview your documentation changes locally. To install, use the following command:
-
-```
 npm i -g mint
+mint dev            # http://localhost:3000
 ```
 
-Run the following command at the root of your documentation, where your `docs.json` is located:
+## Publishing
 
-```
-mint dev
-```
+Pushes to `main` deploy to production automatically via the Mintlify GitHub app. Open a PR to get a preview deployment first.
 
-View your local preview at `http://localhost:3000`.
+## Keeping docs accurate
 
-## Publishing changes
-
-Install our GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app) to propagate changes from your repo to your deployment. Changes are deployed to production automatically after pushing to the default branch.
-
-## Need help?
-
-### Troubleshooting
-
-- If your dev environment isn't running: Run `mint update` to ensure you have the most recent version of the CLI.
-- If a page loads as a 404: Make sure you are running in a folder with a valid `docs.json`.
-
-### Resources
-- [Mintlify documentation](https://mintlify.com/docs)
+The API surface is defined by the `focusalpha-backend` repo (NestJS controllers + DTOs). When endpoints change there, update the matching page here. Per-dataset coverage windows and caveats live in `mcp-server/src/catalog.ts` in that repo — treat it as the source of truth for coverage prose.

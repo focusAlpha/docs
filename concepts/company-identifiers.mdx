@@ -1,0 +1,111 @@
+---
+title: "Company identifiers"
+description: "How company IDs, tickers, CIKs, and ISINs resolve across the API."
+---
+
+Every company in the FocusAlpha registry has one canonical ID of the form `cmp_…`.
+Everything else — tickers, CIKs, ISINs, local market codes — is an identifier *attached*
+to that company. Most routes accept any of them; one route insists on the canonical ID.
+This page gives you the exact rules.
+
+## The canonical `cmp_` ID
+
+The registry spans roughly 25,000 listed companies across 82 countries. A company's
+`cmp_` ID is stable: tickers change, companies re-list, ISINs get reassigned, but the
+`cmp_` ID keeps pointing at the same company. You get it from any registry search:
+
+```bash
+curl "https://api.focusalpha.ai/v1/companies?ticker=AAPL" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+Each row in `data` carries the company's `cmp_` ID alongside its identifiers.
+
+## What each route accepts
+
+**The company detail route is strict.** `GET /v1/companies/:company_id` requires a
+literal `cmp_` ID in the path — a ticker there returns `404`:
+
+```bash
+# Works
+curl "https://api.focusalpha.ai/v1/companies/cmp_01hxyzabc" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+
+# 404 — the detail route does not resolve tickers
+curl "https://api.focusalpha.ai/v1/companies/AAPL" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+**Every other `/v1/companies/:company_id/...` dataset route is flexible.** Market data,
+short interest, news, events, guidance, executive compensation, the Taiwan and Korea
+datasets, disclosures, 20-F — all of them resolve the path segment as a **ticker, CIK,
+ISIN, or `cmp_` ID**, whichever you pass:
+
+```bash
+# All four hit the same company's market data
+curl "https://api.focusalpha.ai/v1/companies/AAPL/market-data?series=prices" ...
+curl "https://api.focusalpha.ai/v1/companies/320193/market-data?series=prices" ...
+curl "https://api.focusalpha.ai/v1/companies/US0378331005/market-data?series=prices" ...
+curl "https://api.focusalpha.ai/v1/companies/cmp_01hxyzabc/market-data?series=prices" ...
+```
+
+An identifier that cannot be resolved returns a `404` whose message names the accepted
+forms — so a failed lookup tells you what to try next rather than leaving you guessing.
+
+<Tip>
+For scripts and integrations, resolve once and use the `cmp_` ID everywhere. Ticker
+resolution is convenient interactively, but tickers are reused and reassigned over
+time; the canonical ID is the only spelling that cannot drift under you.
+</Tip>
+
+## Non-US symbols carry a market suffix
+
+Outside the US, a bare local code is ambiguous — Taiwan's 6976 and Japan's 6976 are
+different companies. Pass the suffixed symbol:
+
+| Market | Example |
+|---|---|
+| Taiwan (TWSE) | `2330.TW` |
+| Taiwan (TPEx) | `6976.TWO` |
+| Korea | `005930.KS` |
+
+## Listing every identifier
+
+`GET /v1/companies/:company_id/identifiers` returns every identifier the registry holds
+for a company — useful when you arrive with one identifier system and need another:
+
+```json
+{
+  "data": [
+    { "type": "CIK", "value": "0000320193" },
+    { "type": "TICKER", "value": "AAPL" },
+    { "type": "ISIN", "value": "US0378331005" }
+  ],
+  "next_cursor": null,
+  "coverage": { ... }
+}
+```
+
+Identifier types include `CIK`, `TICKER`, `ISIN`, and market-specific systems such as
+`TW_UBN` (Taiwan unified business number) and `DART_CORP` (Korea DART corporation
+code), among others. Sibling routes complete the picture:
+
+- `GET /v1/companies/:company_id/listings` — every exchange listing
+- `GET /v1/companies/:company_id/events` — splits and name changes (partial history)
+
+## One company, many tickers
+
+A company can trade under several symbols — dual listings, share classes, ADRs. The
+guidance and earnings routes (`/guidance*`, `/earnings-results`) deliberately resolve
+your identifier to **every ticker the company is known by**, not just its primary
+listing, so data filed under a secondary symbol still shows up. You do not need to
+enumerate a company's tickers yourself before querying those datasets.
+
+## Related pages
+
+<Card title="Coverage and freshness" href="/concepts/coverage" icon="clock">
+  What the registry covers, and how to read the coverage object on responses.
+</Card>
+<Card title="Errors" href="/concepts/errors" icon="triangle-exclamation">
+  What a 404 from an unresolvable identifier looks like.
+</Card>

@@ -1,0 +1,123 @@
+---
+title: "Pagination"
+description: "The three pagination conventions across the API, and the exact rules for cursors and limits."
+---
+
+The API uses three pagination conventions, depending on the route family. Most dataset
+routes are cursor-based; the SEC data routes are limit-only and newest-first; one
+document route uses limit + offset. This page tells you which is which.
+
+## Cursor-based (most dataset routes)
+
+The company registry, screening, news, events, guidance, market data, benchmarks,
+regional datasets, directories, and Form 20-F routes all share one response shape:
+
+```json
+{
+  "data": [ ... ],
+  "next_cursor": "eyJvZmZzZXQiOiAxMDB9",
+  "coverage": { ... }
+}
+```
+
+The rules:
+
+1. Request the first page with your filters and an optional `limit`.
+2. If `next_cursor` is a string, there are more rows: request the same URL again with
+   `?cursor=<next_cursor>`, **passing the value back verbatim** — it is opaque, and its
+   format varies by route.
+3. `next_cursor: null` means you are on the last page.
+
+```bash
+# First page
+curl "https://api.focusalpha.ai/v1/companies?country=TW&limit=500" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+
+# Next page — cursor copied verbatim from the previous response
+curl "https://api.focusalpha.ai/v1/companies?country=TW&limit=500&cursor=eyJvZmZzZXQiOiAxMDB9" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+<Warning>
+Do not build, edit, or store-and-truncate cursor values. A cursor that does not match
+what the API handed you is rejected with a hard
+`400 — "Malformed cursor. Pass back next_cursor unchanged."` The API never silently
+restarts a paging sequence from the beginning.
+</Warning>
+
+Cursors encode a position, not a snapshot — if rows are inserted while you page, a
+long-running sweep sees the dataset as it changes.
+
+### Limit caps by route
+
+`limit` defaults vary, and each route caps it:
+
+| Routes | Max `limit` |
+|---|---|
+| Most cursor-based dataset routes | 1000 |
+| News (`/v1/companies/:id/news*`, `/v1/news/themes/:theme`) and international disclosures | 200 |
+| Benchmarks registry (`/v1/benchmarks`) | 500 |
+| `/v1/documents/*` and `/v1/screen/terms` | 100 |
+
+A `limit` above the cap is a validation error, not a silent clamp.
+
+## Limit-only, newest-first (SEC data routes)
+
+The SEC data routes — `/v1/filings`, `/v1/financials*`, `/v1/financial-metrics`,
+`/v1/company/facts`, `/v1/institutional-holdings`, `/v1/insider-trades` — have **no
+cursor at all**. They return the newest rows first, up to `limit`:
+
+| Route | Default `limit` | Max |
+|---|---|---|
+| `/v1/filings` | 10 | — |
+| `/v1/financials` and segment variants | 4 | — |
+| `/v1/insider-trades` | 10 | 1000 |
+| `/v1/institutional-holdings` | 1000 | uncapped |
+
+To reach further back than one page, narrow the window with the date filters instead of
+paging: `filed_at_lte` on filings, `report_period_lte` on financials and holdings. Each
+narrowed request is a fresh query, so walking backwards through time is
+filter-by-date, not cursor-following:
+
+```bash
+# Latest 10 filings
+curl "https://api.focusalpha.ai/v1/filings?ticker=AAPL" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+
+# The 10 before a date you have already seen
+curl "https://api.focusalpha.ai/v1/filings?ticker=AAPL&filed_at_lt=2024-01-15" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+<Note>
+This convention matches the financialdatasets.ai API, so SDKs and scripts written
+against it work unchanged. See [Errors](/concepts/errors) for the other compatibility
+behaviors these routes share.
+</Note>
+
+## Limit + offset (one route)
+
+Exactly one route pages by offset: `GET /v1/documents/by-ticker/:ticker` takes `limit`
+(1–100, default 20) and `offset` (default 0), and its `meta` object reports `total` so
+you know when to stop:
+
+```bash
+curl "https://api.focusalpha.ai/v1/documents/by-ticker/AAPL?limit=50&offset=50" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+## Choosing a page size
+
+Every request costs one credit regardless of how many rows it returns, so **larger
+pages are cheaper**: sweeping 10,000 companies at `limit=1000` costs 10 credits; the
+same sweep at the default limit costs far more. Use the largest `limit` the route
+allows unless response size is a constraint on your side.
+
+## Related pages
+
+<Card title="Errors" href="/concepts/errors" icon="triangle-exclamation">
+  The malformed-cursor 400 and the rest of the status-code table.
+</Card>
+<Card title="Plans and credits" href="/concepts/plans-credits" icon="credit-card">
+  Why page size matters: one call is one credit, whatever the page holds.
+</Card>

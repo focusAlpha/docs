@@ -1,37 +1,115 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mintlify Starter Kit",
+  "name": "FocusAlpha",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#18181b",
+    "light": "#fafafa",
+    "dark": "#18181b"
   },
   "favicon": "/favicon.svg",
+  "appearance": {
+    "default": "light"
+  },
+  "background": {
+    "color": {
+      "light": "#fdfdfc",
+      "dark": "#0f0f10"
+    }
+  },
+  "fonts": {
+    "heading": {
+      "family": "Quicksand"
+    },
+    "body": {
+      "family": "DM Sans"
+    }
+  },
   "navigation": {
-    "pages": [
+    "tabs": [
       {
-        "group": "Getting Started",
-        "pages": [
-          "index",
-          "quickstart"
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Getting started",
+            "pages": [
+              "index",
+              "quickstart",
+              "authentication"
+            ]
+          },
+          {
+            "group": "Concepts",
+            "pages": [
+              "concepts/plans-credits",
+              "concepts/rate-limits",
+              "concepts/errors",
+              "concepts/pagination",
+              "concepts/company-identifiers",
+              "concepts/coverage"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api-reference/index"
+            ]
+          },
+          {
+            "group": "Search & documents",
+            "pages": [
+              "api-reference/retrieval"
+            ]
+          },
+          {
+            "group": "SEC filings & financials",
+            "pages": [
+              "api-reference/filings",
+              "api-reference/filing-items",
+              "api-reference/financials"
+            ]
+          },
+          {
+            "group": "Companies & screening",
+            "pages": [
+              "api-reference/companies",
+              "api-reference/screener"
+            ]
+          },
+          {
+            "group": "Markets & ownership",
+            "pages": [
+              "api-reference/market-data",
+              "api-reference/ownership"
+            ]
+          },
+          {
+            "group": "Events & news",
+            "pages": [
+              "api-reference/events",
+              "api-reference/news"
+            ]
+          },
+          {
+            "group": "International",
+            "pages": [
+              "api-reference/international"
+            ]
+          },
+          {
+            "group": "Service",
+            "pages": [
+              "api-reference/status"
+            ]
+          }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
+    ]
   },
   "logo": {
     "light": "/logo/light.svg",
@@ -41,13 +119,13 @@
     "links": [
       {
         "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "href": "mailto:support@focusalpha.ai"
       }
     ],
     "primary": {
       "type": "button",
       "label": "Dashboard",
-      "href": "https://app.mintlify.com"
+      "href": "https://app.focusalpha.ai"
     }
   },
   "contextual": {
@@ -64,9 +142,7 @@
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "website": "https://focusalpha.ai"
     }
   }
 }

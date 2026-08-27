@@ -1,0 +1,76 @@
+---
+title: "API reference overview"
+description: "Every FocusAlpha Data API endpoint group, what it serves, and the plan it requires."
+---
+
+The FocusAlpha Data API is a REST API served from a single base URL:
+
+```text
+https://api.focusalpha.ai
+```
+
+Every route lives under `/v1`. All endpoints are `GET` except `POST /v1/retrieve`.
+
+## Conventions
+
+**Authentication.** Pass your API key on every request, either as a bearer token (preferred) or in `X-API-Key`:
+
+```bash
+curl https://api.focusalpha.ai/v1/companies?ticker=AAPL \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+Keys start with `fa_live_`. See [Authentication](/authentication).
+
+**Pagination.** Most dataset routes return `{ data, next_cursor, coverage }`. Pass `next_cursor` back verbatim as `?cursor=` until it is `null`. A handful of SEC statement routes use `limit`-only paging instead. See [Pagination](/concepts/pagination).
+
+**Coverage.** Responses that use the `data` envelope carry a `coverage` object describing where the dataset starts and ends, how often it refreshes, and whether history is complete — read it before interpreting an empty result as "no such data exists".
+
+**Errors.** Standard routes return a structured error envelope with a request id; the SEC statement family (`/v1/filings*`, `/v1/financials*`, `/v1/financial-metrics`, `/v1/company/facts*`, `/v1/institutional-holdings`, `/v1/insider-trades`) returns a flat `{ "error", "message" }` body. See [Errors](/concepts/errors).
+
+**Credits.** Every data call costs **1 credit**, regardless of endpoint. Vocabulary and discovery routes (facets, term search, coverage lists, news themes, 8-K families) are **free**. Failed requests are refunded. See [Plans and credits](/concepts/plans-credits).
+
+**Plans.** Endpoint groups are gated by plan tier: **Free** (and every tier above) covers company identity and the SEC filing/financials baseline; **Professional** adds ownership, market data, and regional datasets; **Fund** adds screening, news, events, and guidance.
+
+## Endpoint groups
+
+| Group | Endpoints | Reference | Minimum plan |
+|---|---|---|---|
+| Semantic retrieval | `POST /v1/retrieve` | [Retrieval](/api-reference/retrieval) | Free |
+| Document corpus | `/v1/documents/*` | [Retrieval](/api-reference/retrieval) | Free |
+| Usage | `/v1/usage` | [Retrieval](/api-reference/retrieval) | Free |
+| SEC filing index | `/v1/filings`, discovery lists | [Filings](/api-reference/filings) | Free |
+| SEC filing items (full text) | `/v1/filings/items` | [Filings](/api-reference/filings) | Free |
+| Financial statements | `/v1/financials`, per-statement routes | [Financials](/api-reference/financials) | Free |
+| Financial metrics | `/v1/financial-metrics` | [Financials](/api-reference/financials) | Free |
+| Segment breakdowns | `/v1/financials/segments*` | [Financials](/api-reference/financials) | Free |
+| Company facts | `/v1/company/facts` | [Financials](/api-reference/financials) | Free |
+| Company registry | `/v1/companies*` | [Companies](/api-reference/companies) | Free |
+| Screener | `/v1/screen`, facets, terms | [Screener](/api-reference/screener) | Fund |
+| Prices & market cap | `/v1/companies/:id/market-data` | [Market data](/api-reference/market-data) | Professional |
+| Benchmarks | `/v1/benchmarks*` | [Market data](/api-reference/market-data) | Professional |
+| Short interest | `/v1/companies/:id/short-interest` | [Market data](/api-reference/market-data) | Professional |
+| 13F institutional holdings | `/v1/institutional-holdings` | [Ownership](/api-reference/ownership) | Professional |
+| Insider trades (Form 4) | `/v1/insider-trades` | [Ownership](/api-reference/ownership) | Professional |
+| Executive pay & proxy ownership | `/v1/companies/:id/executive-compensation`, `/proxy-ownership` | [Ownership](/api-reference/ownership) | Professional |
+| Investment-adviser directory | `/v1/institutions*` | [Ownership](/api-reference/ownership) | Professional |
+| Venture-investor directory | `/v1/investors` | [Ownership](/api-reference/ownership) | Fund |
+| 8-K events & exhibits | `/v1/8k-events*`, `/v1/companies/:id/8k-*` | [Events & guidance](/api-reference/events) | Fund |
+| Guidance & earnings results | `/v1/companies/:id/guidance*`, `/earnings-results` | [Events & guidance](/api-reference/events) | Fund |
+| Prediction markets | `/v1/companies/:id/prediction-markets`, `/earnings-markets` | [Events & guidance](/api-reference/events) | Fund |
+| News & themes | `/v1/companies/:id/news*`, `/v1/news/themes*` | [News](/api-reference/news) | Fund |
+| Taiwan & Korea datasets | `/v1/companies/:id/tw/*`, `/kr/*` | [International](/api-reference/international) | Professional |
+| International disclosures | `/v1/companies/:id/disclosures` | [International](/api-reference/international) | Fund |
+| Form 20-F | `/v1/companies/:id/20f/*` | [International](/api-reference/international) | Professional |
+| Coverage & status | `/v1/_status`, discovery lists | [Filings](/api-reference/filings) | Free |
+| Health | `/v1/health`, `/v1/ready` | — | No auth |
+
+## Company identifiers
+
+Company-scoped routes (`/v1/companies/:company_id/...`) accept a canonical id (`cmp_006294`), a **ticker**, a **CIK**, or an **ISIN** in the path — the API resolves any of them. The one exception is `GET /v1/companies/:company_id` itself, which requires the literal `cmp_` id.
+
+Non-US symbols carry their market suffix: `2330.TW` (Taiwan), `005930.KS` (Korea). A bare local code is ambiguous across markets — resolve it through [`GET /v1/companies`](/api-reference/companies) first.
+
+## Rate limits
+
+Requests are rate-limited per API key, per minute, by plan: Free 20/min, Professional 120/min, Fund 600/min. Exceeding the limit returns `429` on `POST /v1/retrieve` and `402` on the SEC statement family. Dataset routes are bounded by credits rather than a per-minute cap. See [Plans and credits](/concepts/plans-credits).

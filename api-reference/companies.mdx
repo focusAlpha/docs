@@ -1,0 +1,184 @@
+---
+title: "Company registry"
+description: "Resolve tickers, CIKs, ISINs and local security codes to canonical companies, and look up identifiers, listings and corporate events."
+---
+
+The company registry is the identity layer of the API: ~25,000 listed companies across 82 countries, each with a canonical `company_id` (`cmp_…`). Every other company-scoped dataset is keyed on it, and responses always carry `company_id` back so you never have to resolve twice.
+
+The registry is a **current-state snapshot**, rewritten as identifiers change — not a time series. It refreshes weekly (`coverage.update_frequency: "weekly"`, `history_status: "current_snapshot"`).
+
+All registry routes are available on **every plan** and cost **1 credit** per call. Responses use the standard envelope with `{ data, next_cursor, coverage }` — see [Pagination](/concepts/pagination) and [Errors](/concepts/errors).
+
+## GET /v1/companies
+
+Search the registry. At least one filter is required — an unfiltered listing returns `400`.
+
+**Plan:** Free and above · **Credits:** 1 per call
+
+<ParamField query="ticker" type="string">
+  Trading symbol. Non-US symbols carry their market suffix, e.g. `2330.TW`. Also matches tickers a company no longer trades under.
+</ParamField>
+
+<ParamField query="cik" type="string">
+  SEC Central Index Key, with or without zero-padding.
+</ParamField>
+
+<ParamField query="isin" type="string">
+  International Securities Identification Number.
+</ParamField>
+
+<ParamField query="local_security_code" type="string">
+  Taiwan security code, e.g. `2330`. Resolved through both the `.TW` and `.TWO` suffixes.
+</ParamField>
+
+<ParamField query="corp_code" type="string">
+  Korean DART corp code, 8 digits.
+</ParamField>
+
+<ParamField query="country" type="string">
+  ISO country code of incorporation/domicile, e.g. `US`, `JP`, `TW`. Case-insensitive.
+</ParamField>
+
+<ParamField query="q" type="string">
+  Company-name substring, case-insensitive, minimum 2 characters. Exact substring match — not fuzzy — so a miss means no name contains the string, not that the nearest name was hidden.
+</ParamField>
+
+<ParamField query="cursor" type="string">
+  `next_cursor` from the previous page, passed back verbatim.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Rows per page, 1–1000.
+</ParamField>
+
+```bash
+curl "https://api.focusalpha.ai/v1/companies?ticker=2330.TW" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```json
+{
+  "data": [
+    {
+      "company_id": "cmp_006294",
+      "company_name": "Taiwan Semiconductor Manufacturing Company Limited",
+      "country": "TW",
+      "cik": "0001046179",
+      "primary_ticker": "2330.TW",
+      "primary_exchange": "TAI",
+      "sector": "Technology",
+      "industry": "Semiconductors",
+      "website": "https://www.tsmc.com",
+      "market_cap": "23456789000000",
+      "market_cap_currency": "TWD",
+      "currency": "TWD",
+      "n_listings": 2,
+      "as_of_date": "2026-08-24"
+    }
+  ],
+  "next_cursor": null,
+  "coverage": {
+    "available_from": null,
+    "available_to": null,
+    "update_frequency": "weekly",
+    "history_status": "current_snapshot"
+  }
+}
+```
+
+<Warning>
+  `market_cap_currency` and `currency` are different fields: `currency` is what the listing's **price** quotes in, `market_cap_currency` is what the **market cap** is stated in. For over a thousand companies they differ — an LSE listing prices in GBp (pence) while its market cap is in GBP — and reading one as the other is a 100× error.
+</Warning>
+
+<Note>
+  A company found here may still have no SEC filings. The record's `cik` is the honest test: a company with no CIK files nothing with the SEC, however well known it is.
+</Note>
+
+## GET /v1/companies/\{company_id\}
+
+The canonical record for one company. Unlike every other company-scoped route, this one requires the **literal `cmp_` id** — a ticker or CIK in the path returns `404`. Resolve identifiers through the search route above.
+
+**Plan:** Free and above · **Credits:** 1 per call
+
+<ParamField path="company_id" type="string" required>
+  Canonical company id, e.g. `cmp_006294`.
+</ParamField>
+
+```bash
+curl "https://api.focusalpha.ai/v1/companies/cmp_006294" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+Returns `{ data, coverage }` with the same record shape as search. `404` when the id does not exist.
+
+## GET /v1/companies/\{company_id\}/identifiers
+
+Every identifier the company is known by, typed. `id_type` is returned verbatim — `CIK`, `TICKER`, `ISIN`, `TW_UBN`, `DART_CORP`, and others — because the type is the difference between a Taiwan business number and a Korean corp code.
+
+**Plan:** Free and above · **Credits:** 1 per call
+
+<ParamField path="company_id" type="string" required>
+  Canonical `cmp_` id.
+</ParamField>
+
+```bash
+curl "https://api.focusalpha.ai/v1/companies/cmp_006294/identifiers" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```json
+{
+  "data": [
+    { "id_type": "CIK", "id_value": "0001046179", "source": "sec", "confidence": "high" },
+    { "id_type": "TICKER", "id_value": "2330.TW", "source": "registry", "confidence": "high" },
+    { "id_type": "TICKER", "id_value": "TSM", "source": "registry", "confidence": "high" }
+  ],
+  "next_cursor": null,
+  "coverage": {
+    "available_from": null,
+    "available_to": null,
+    "update_frequency": "weekly",
+    "history_status": "current_snapshot"
+  }
+}
+```
+
+## GET /v1/companies/\{company_id\}/listings
+
+All listings for the company, with the window each symbol was valid for. Active listings sort first, then retired ones.
+
+**Plan:** Free and above · **Credits:** 1 per call
+
+<ParamField path="company_id" type="string" required>
+  Canonical `cmp_` id.
+</ParamField>
+
+```bash
+curl "https://api.focusalpha.ai/v1/companies/cmp_006294/listings" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+Each row carries `symbol`, `exchange`, `market`, `status`, `valid_from`, and `valid_to` (`null` while the listing is still active).
+
+## GET /v1/companies/\{company_id\}/events
+
+Corporate events: splits, mergers, ticker and name changes. Rows carry `event_type`, `event_date`, `symbol`, `ratio`, `counterpart_company_id`, `counterpart_name`, `detail`, and `source`, newest first.
+
+**Plan:** Free and above · **Credits:** 1 per call
+
+<ParamField path="company_id" type="string" required>
+  Canonical `cmp_` id.
+</ParamField>
+
+```bash
+curl "https://api.focusalpha.ai/v1/companies/cmp_006294/events" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+<Note>
+  Event history is **partial** — the response's `coverage.history_status` says so. An empty result means no events are recorded, not that none ever happened.
+</Note>
+
+## Resolving identifiers on other routes
+
+Every other `/v1/companies/{company_id}/...` dataset route accepts a ticker, CIK, ISIN, **or** `cmp_` id in the path segment and resolves it for you. An identifier that resolves to nothing returns `404` with a message naming the accepted forms. Only the canonical-record route above is strict.

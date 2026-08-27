@@ -1,0 +1,236 @@
+---
+title: "Search & documents"
+description: "Semantic search across SEC filings and earnings-call transcripts, plus document browsing and usage reporting."
+---
+
+These endpoints cover the retrieval corpus: semantic search that returns source-attributed passages, metadata browsing over the underlying documents, and your own usage summary.
+
+Responses use the standard `{ ...payload, meta }` envelope, and errors use the standard error envelope described in [Errors](/concepts/errors). `POST /v1/retrieve` is rate-limited per plan and returns `429` when the per-minute limit is exceeded.
+
+## POST /v1/retrieve
+
+Semantic retrieval over the document corpus — SEC filings and earnings-call transcripts. Send a natural-language query and receive ranked, source-attributed passages ("chunks"). The response is the product: cited chunks you can feed directly to an LLM or display with citations — never a generated answer.
+
+**Plan:** Free and above · **Credits:** 1 per call · **Rate limited:** yes (429 on breach)
+
+<ParamField body="query" type="string" required>
+  The natural-language search query. 1–2,000 characters.
+</ParamField>
+
+<ParamField body="filters" type="object">
+  Optional filters narrowing the search.
+
+  - `tickers` (string[]) — up to 25 trading symbols, each ≤10 characters.
+  - `year` (integer) — calendar year, 2000–2100.
+  - `quarter` (string) — one of `Q1`, `Q2`, `Q3`, `Q4`.
+  - `source_types` (string[]) — up to 10 document-type filters.
+</ParamField>
+
+<ParamField body="top_k" type="integer">
+  Number of chunks to return, 1–50. Clamped to your plan's ceiling: Free 10, Professional 25, Fund 50.
+</ParamField>
+
+<ParamField body="rerank" type="boolean">
+  When `true`, rerank results for higher precision.
+</ParamField>
+
+<ParamField body="include_segments" type="boolean" default="false">
+  When `true`, each chunk's `source.segments` is populated with the source document's ordered segments (with character offsets) for citation highlighting. Off by default.
+</ParamField>
+
+```bash
+curl -X POST https://api.focusalpha.ai/v1/retrieve \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "What did management say about AI infrastructure demand?",
+    "filters": { "tickers": ["NVDA"], "year": 2026, "quarter": "Q2" },
+    "top_k": 5,
+    "rerank": true
+  }'
+```
+
+```json
+{
+  "chunks": [
+    {
+      "id": "chunk_01",
+      "text": "Demand for our data center platform continued to outpace supply...",
+      "score": 0.31,
+      "evidenceText": "Demand for our data center platform continued to outpace supply.",
+      "source": {
+        "documentId": "6f0c2a1e-...",
+        "documentTitle": "NVDA Q2 2026 Earnings Call",
+        "documentType": "transcript",
+        "ticker": "NVDA",
+        "year": 2026,
+        "quarter": "Q2",
+        "filingType": null,
+        "sourceUrl": "https://...",
+        "pageNumbers": []
+      }
+    }
+  ],
+  "meta": {
+    "total": 5,
+    "periodMismatch": null,
+    "requestId": "req_a1b2c3d4e5f60718"
+  }
+}
+```
+
+<Note>
+  Leave `filters.year` and `filters.quarter` unset unless you genuinely need a specific period. A guessed period silently returns stale passages rather than an error. Use [`GET /v1/documents/by-ticker`](#get-v1documentsby-tickerticker) first to see which periods exist.
+</Note>
+
+<Note>
+  `score` is a cosine distance — **lower means more similar**. When the exact requested period was unavailable, `meta.periodMismatch` carries a `{ requested, served, message }` notice instead of failing.
+</Note>
+
+<Warning>
+  This endpoint returns source passages, not a generated answer. Unknown body properties are rejected with a `400` — check spelling of `top_k`, `source_types`, and other snake_case fields.
+</Warning>
+
+## GET /v1/documents/by-ticker/\{ticker\}
+
+Lists corpus documents for a ticker in reverse-recency order, paginated with `limit` + `offset`. The ticker is expanded to every symbol the company is known by, so a renamed listing still returns its history.
+
+**Plan:** Free and above · **Credits:** 1 per call
+
+<ParamField query="year" type="integer">
+  Filter to one calendar year (2000–2100).
+</ParamField>
+
+<ParamField query="quarter" type="string">
+  Filter to one quarter: `Q1`, `Q2`, `Q3`, or `Q4`.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="20">
+  Page size, 1–100.
+</ParamField>
+
+<ParamField query="offset" type="integer" default="0">
+  Number of rows to skip. Increment by `limit` to paginate.
+</ParamField>
+
+```bash
+curl "https://api.focusalpha.ai/v1/documents/by-ticker/AAPL?year=2026&limit=5" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```json
+{
+  "documents": [
+    {
+      "id": "6f0c2a1e-...",
+      "documentTitle": "AAPL Q2 2026 Earnings Call",
+      "documentType": "transcript",
+      "ticker": "AAPL",
+      "year": 2026,
+      "quarter": "Q2",
+      "filingType": null,
+      "sourceUrl": "https://...",
+      "status": "indexed"
+    }
+  ],
+  "meta": { "total": 12, "limit": 5, "offset": 0, "latencyMs": 42 }
+}
+```
+
+<Note>
+  This is the reliable way to discover which periods exist for a company. Call it before pinning a `year`/`quarter` in `/v1/retrieve`, instead of assuming a period from today's date.
+</Note>
+
+## GET /v1/documents/\{id\}
+
+Fetches metadata for a single document by its id.
+
+**Plan:** Free and above · **Credits:** 1 per call — refunded automatically if the document is not found (404)
+
+```bash
+curl https://api.focusalpha.ai/v1/documents/6f0c2a1e-... \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```json
+{
+  "document": {
+    "id": "6f0c2a1e-...",
+    "documentTitle": "AAPL Q2 2026 Earnings Call",
+    "documentType": "transcript",
+    "ticker": "AAPL",
+    "year": 2026,
+    "quarter": "Q2",
+    "filingType": null,
+    "sourceUrl": "https://...",
+    "status": "indexed"
+  },
+  "meta": { "latencyMs": 18 }
+}
+```
+
+## GET /v1/documents/\{id\}/segments
+
+Returns the ordered segments of one document — for transcripts, one segment per speaker turn, with speaker attribution and character offsets suitable for highlighting.
+
+**Plan:** Free and above · **Credits:** 1 per call
+
+<ParamField query="limit" type="integer" default="20">
+  Number of segments to return, 1–100.
+</ParamField>
+
+```bash
+curl "https://api.focusalpha.ai/v1/documents/6f0c2a1e-.../segments?limit=3" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```json
+{
+  "segments": [
+    {
+      "id": "seg_...",
+      "documentId": "6f0c2a1e-...",
+      "content": "Good afternoon, everyone, and thanks for joining us...",
+      "sequence": 0,
+      "speakerName": "Tim Cook",
+      "speakerTitle": "CEO",
+      "charStart": 0,
+      "charEnd": 54
+    }
+  ],
+  "meta": { "total": 87, "latencyMs": 33 }
+}
+```
+
+<Note>
+  `charStart`/`charEnd` are computed from segment content and order at read time, so they always match the text exactly.
+</Note>
+
+## GET /v1/usage
+
+Returns your own usage summary over a time window — total requests, chunks returned, and a per-key breakdown. Scoped to the account behind the API key you call with.
+
+**Plan:** Free and above · **Credits:** free (not metered)
+
+<ParamField query="from" type="string">
+  ISO-8601 start of the window. Defaults to the start of the current month (UTC).
+</ParamField>
+
+<ParamField query="to" type="string">
+  ISO-8601 end of the window. Defaults to now.
+</ParamField>
+
+```bash
+curl "https://api.focusalpha.ai/v1/usage" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```json
+{
+  "period": { "from": "2026-08-01T00:00:00.000Z", "to": "2026-08-27T14:00:00.000Z" },
+  "totals": { "requests": 412, "chunksReturned": 1968 },
+  "byKey": [
+    { "prefix": "fa_live_7Fb3", "requests": 412 }
+  ]
+}
+```

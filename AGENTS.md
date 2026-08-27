@@ -1,33 +1,30 @@
-> **First-time setup**: Customize this file for your project. Prompt the user to customize this file for their project.
-> For Mintlify product knowledge (components, configuration, writing standards),
-> install the Mintlify skill: `npx skills add https://mintlify.com/docs`
-
 # Documentation project instructions
 
 ## About this project
 
-- This is a documentation site built on [Mintlify](https://mintlify.com)
-- Pages are MDX files with YAML frontmatter
-- Configuration lives in `docs.json`
-- Use the Mintlify MCP server, `https://mcp.mintlify.com`, to edit content and settings via MCP
-- Use the Mintlify docs MCP server, `https://www.mintlify.com/docs/mcp`, to query information about using Mintlify via MCP
+- Public docs for the **FocusAlpha Data API** (`https://api.focusalpha.ai`), served at docs.focusalpha.ai
+- Built on [Mintlify](https://mintlify.com): MDX pages with YAML frontmatter, configuration in `docs.json`
+- The API surface is defined by the `focusalpha-backend` repo (NestJS controllers and DTOs); coverage windows and caveats come from `mcp-server/src/catalog.ts` there — never invent parameters, response fields, coverage dates, or credit costs
 
 ## Terminology
 
-{/* Add product-specific terms and preferred usage */}
-{/* Example: Use "workspace" not "project", "member" not "user" */}
+- Plans are **Free**, **Professional**, and **Fund** — never "enterprise", "explore", or "internal" in public copy
+- Usage is metered in **credits** (1 credit per data call; discovery/vocabulary endpoints are free)
+- The canonical company identifier is the **`cmp_…` id**; company-scoped routes also accept ticker, CIK, or ISIN
+- API keys have the prefix `fa_live_`; use `$FOCUSALPHA_API_KEY` as the placeholder in examples
 
 ## Style preferences
 
-{/* Add any project-specific style rules below */}
-
 - Use active voice and second person ("you")
-- Keep sentences concise — one idea per sentence
-- Use sentence case for headings
+- Sentence case for headings
 - Bold for UI elements: Click **Settings**
-- Code formatting for file names, commands, paths, and code references
+- Code formatting for file names, commands, paths, endpoints, and parameters
+- Base URL in examples is always `https://api.focusalpha.ai`; auth header is `Authorization: Bearer $FOCUSALPHA_API_KEY`
+- Endpoint sections are H2 headings in the form `## GET /v1/...`
 
 ## Content boundaries
 
-{/* Define what should and shouldn't be documented */}
-{/* Example: Don't document internal admin features */}
+- Document only customer-facing, API-key-authenticated endpoints
+- Never document or mention: internal or admin endpoints (`/v1/internal/*`, `/v1/admin/*`), the `X-Admin-Key`, `X-Internal-Key`, or `X-On-Behalf-Of` headers, dashboard JWT endpoints, environment variables, feature flags, deployment infrastructure, or backend source file paths
+- No dollar pricing in docs — link to https://app.focusalpha.ai/settings instead
+- Never include real API keys, customer IDs, or emails other than support@focusalpha.ai

@@ -1,0 +1,206 @@
+---
+title: "Screener"
+description: "Find companies by condition — identity, size, momentum, valuation, guidance, events, short interest, insider activity, products and relationships — across ~25,000 companies."
+---
+
+The screener answers every question that starts from a **condition** rather than a company: "profitable semiconductor companies under $10B that raised guidance", "who makes DRAM", "who names Micron as a competitor". One row per company, recomputed through the day; filters combine freely and any sortable column can order the page.
+
+The universe is ~25,000 listed companies in 82 countries — but every dimension has its own footprint: short interest is US-only, foreign ownership and monthly revenue are Taiwan-only, insider activity is US Form 4. Filtering on a dimension also excludes every company it does not reach; the response's `coverage` block spells each footprint out.
+
+Responses use the standard envelope with `{ data, next_cursor, coverage }` — see [Pagination](/concepts/pagination) and [Errors](/concepts/errors).
+
+## GET /v1/screen
+
+Run a screen. Uniquely among dataset routes, **no filter is required** — an unfiltered screen is "biggest companies in the world", bounded by the default sort and the page limit.
+
+**Plan:** Fund · **Credits:** 1 per call
+
+<Warning>
+  **Two unit systems on one row.** Momentum filters (`ret_1m_gte` …) are **percents** — `ret_3m_gte=-20` means down 20%. Valuation and fundamentals filters (`net_margin_gte`, `revenue_growth_yoy_gte` …) are **fractions** — `net_margin_gte=0.2` means a 20% margin. The fractions are the same numbers `/v1/financial-metrics` serves; the percents come from the price series. Mixing them up returns a list that looks right and is not.
+</Warning>
+
+### Identity filters
+
+| Parameter | Type | Meaning |
+|---|---|---|
+| `country` | string | ISO domicile code, e.g. `US`, `JP`, `TW`. Case-insensitive. |
+| `sector` | string | Sector label, exactly as the registry spells it (see facets). |
+| `industry` | string | Industry label, exactly as the registry spells it. |
+| `exchange` | string | Primary exchange, e.g. `NASDAQ`, `JPX`, `TAI`. |
+| `has_cik` | boolean | `true` = only companies that file with the SEC. |
+
+### Size
+
+| Parameter | Type | Meaning |
+|---|---|---|
+| `market_cap_usd_gte` / `_lte` | number | Market cap in **US dollars**, converted through a weekly FX snapshot. There is deliberately no local-currency filter. |
+
+### Momentum (percents)
+
+| Parameter | Type | Meaning |
+|---|---|---|
+| `ret_1m_gte` / `_lte` | number | 1-month price return, in percent. |
+| `ret_3m_gte` / `_lte` | number | 3-month price return. |
+| `ret_6m_gte` / `_lte` | number | 6-month price return. |
+| `ret_12m_gte` / `_lte` | number | 12-month price return. |
+| `include_suspect_returns` | boolean | Include rows whose price return disagrees with their market-cap change over the same window — the fingerprint of an unadjusted split. Default `false`; such rows are excluded from return filters and sorts only, and always appear in unfiltered screens flagged `return_suspect: true`. |
+
+<Note>
+  Price history starts 2025-07-14, so twelve months is the longest return window that exists.
+</Note>
+
+### Short interest (US only, FINRA)
+
+| Parameter | Type | Meaning |
+|---|---|---|
+| `short_percent_float_gte` / `_lte` | number ≥ 0 | Short interest as a percent of float. |
+| `days_to_cover_gte` | number ≥ 0 | Short position over average daily volume. |
+
+### Guidance (last 90 days)
+
+| Parameter | Type | Meaning |
+|---|---|---|
+| `guidance_better_90d_gte` | integer ≥ 1 | Count of guidance moves that were **good news**. |
+| `guidance_worse_90d_gte` | integer ≥ 1 | Count of guidance moves that were **bad news**. |
+| `guidance_raises_90d_gte` | integer ≥ 1 | Count of guidance whose number went **up**. |
+| `guidance_cuts_90d_gte` | integer ≥ 1 | Count of guidance whose number went **down**. |
+| `guidance_better_since` / `guidance_worse_since` | date | Newest good-news / bad-news move on or after this date, `YYYY-MM-DD`. |
+
+<Warning>
+  "Raised" and "good news" are different screens: a company raising its **cost** guidance filed a raise and told you something bad. Prefer the `better`/`worse` pair unless you specifically mean the direction of the number.
+</Warning>
+
+### Events (last 90 days)
+
+| Parameter | Type | Meaning |
+|---|---|---|
+| `event_family` | string | Comma-separated filing families; matches any. Each source keeps its own regulator's vocabulary — get names from facets. |
+| `event_source` | string | Comma-separated sources; matches any: `sec_8k`, `japan_tdnet`, `korea_dart`, `hkex`, `news`. |
+| `news_event_type` | string | Comma-separated news event types — what our model read in an article, a separate vocabulary from filings. |
+| `rollup_family` | string | Comma-separated cross-market families (34). The **only** event filter that spans markets: an SEC `earnings_release` and a TDnet `earnings_flash` meet at `earnings`. |
+| `event_since` | date | Newest event of **any** source on or after this date. One date across all five sources. |
+| `event_family_since` | date | Newest event matching the requested **families** filed on or after this date. |
+| `news_event_type_since` | date | Newest **news** event of the requested types on or after this date. |
+| `rollup_family_since` | date | Newest event rolling up to the requested families on or after this date. |
+
+### Products and relationships
+
+| Parameter | Type | Meaning |
+|---|---|---|
+| `makes_term` | string | Comma-separated product terms; companies that **make** any of them. Exact terms — search them with `/v1/screen/terms` first. |
+| `related_to_term` | string | Comma-separated terms; companies **related to** any of them — in the value chain without making it. Direction is usually unknown. |
+| `peer_of` | string | Companies in this company's disclosed compensation peer group, either direction. Ticker or `cmp_` id; an unresolvable identifier is a `400`, not an empty page. |
+| `competitor_of` | string | Companies named as a competitor by (or naming) this company in a 10-K Item 1. Same identifier rules. |
+
+<Warning>
+  The product vocabulary expands **spellings, not concepts**: `memory`, `dram`, `nand`, `memory chips` and `flash memory` are five separate terms with five separate maker lists, and `makes_term=memory` alone misses Winbond, Nanya and Kioxia. Search the vocabulary and pass every spelling you mean.
+</Warning>
+
+### Taiwan
+
+| Parameter | Type | Meaning |
+|---|---|---|
+| `tw_foreign_held_pct_gte` / `_lte` | number 0–100 | Foreign ownership of the Taiwan listing, percent. |
+| `tw_revenue_yoy_pct_gte` / `_lte` | number | Monthly revenue year-over-year change, percent. |
+
+### Management (US proxy statements)
+
+| Parameter | Type | Meaning |
+|---|---|---|
+| `ceo_total_comp_gte` / `_lte` | number ≥ 0 | Latest-proxy CEO total compensation, USD. |
+| `insider_ownership_pct_gte` / `_lte` | number 0–100 | "All directors and executive officers as a group" stake from the proxy. Null for dual-class filers that state the stake per share class. |
+
+### Valuation and fundamentals (fractions; SEC filers)
+
+| Parameter | Type | Meaning |
+|---|---|---|
+| `pe_ttm_gte` / `_lte` | number | Trailing-twelve-month P/E. Null for non-positive earnings — a P/E on a loss is not a small P/E. |
+| `pb_gte` / `_lte` | number | Price to book. Null on non-positive book equity. |
+| `ps_ttm_gte` / `_lte` | number | Price to TTM sales. |
+| `fcf_yield_gte` / `_lte` | number | Free cash flow ÷ market cap. Negative is a real answer here. |
+| `dividend_yield_gte` / `_lte` | number | Dividends paid ÷ market cap, from the cash-flow statement. |
+| `gross_margin_gte` / `_lte` | number | Gross margin, **fraction**. Null for banks, insurers and REITs. |
+| `operating_margin_gte` / `_lte` | number | Operating margin, fraction. Null for banks, insurers and REITs. |
+| `net_margin_gte` / `_lte` | number | Net margin, fraction. |
+| `return_on_equity_gte` / `_lte` | number | Return on average equity, fraction. |
+| `debt_to_equity_gte` / `_lte` | number | Total debt ÷ shareholders' equity. |
+| `revenue_growth_yoy_gte` / `_lte` | number | TTM revenue vs the TTM one year earlier, fraction. |
+| `eps_growth_yoy_gte` / `_lte` | number | TTM diluted EPS vs one year earlier, fraction. |
+| `is_lossmaking` | boolean | `true` = TTM earnings zero or negative — the screen a null `pe_ttm` cannot express. |
+| `fundamentals_stale` | boolean | `true` = newest period held is over two years old. Stale rows keep stated figures but carry no price ratios. |
+| `has_fundamentals` | boolean | `true` = fundamentals are held for the company. Coverage is SEC US-GAAP filers — well short of the 25,000-company universe. |
+
+### Insider activity (US Form 4)
+
+| Parameter | Type | Meaning |
+|---|---|---|
+| `insider_net_90d` | `buying` \| `selling` | Net **open-market** Form 4 activity over 90 days. Only transaction codes P and S count — grants, exercises and tax withholding do not. |
+
+### Sorting and paging
+
+<ParamField query="sort" type="string" default="market_cap_usd">
+  One of the 28 sortable columns: `market_cap_usd`, `ret_1m`, `ret_3m`, `ret_6m`, `ret_12m`, `short_percent_float`, `days_to_cover`, `guidance_better_90d`, `guidance_worse_90d`, `event_filings_90d`, `news_events_90d`, `tw_foreign_held_pct`, `tw_revenue_yoy_pct`, `ceo_total_comp`, `insider_ownership_pct`, `pe_ttm`, `pb`, `ps_ttm`, `fcf_yield`, `dividend_yield`, `gross_margin`, `operating_margin`, `net_margin`, `return_on_equity`, `debt_to_equity`, `revenue_growth_yoy`, `eps_growth_yoy`, `company_id`.
+</ParamField>
+
+<ParamField query="order" type="string">
+  `asc` or `desc`.
+</ParamField>
+
+<ParamField query="cursor" type="string">
+  `next_cursor` from the previous page, passed back verbatim. A malformed cursor is a `400`, never a silent restart.
+</ParamField>
+
+<ParamField query="limit" type="integer">
+  Rows per page, 1–1000.
+</ParamField>
+
+<Warning>
+  Sorting by a column **drops** companies where that column is null — a ranking by 12-month return cannot place a company whose return is unknown, and silently sorting them to one end would read as data.
+</Warning>
+
+### Example
+
+```bash
+curl "https://api.focusalpha.ai/v1/screen?country=US&net_margin_gte=0.2&market_cap_usd_gte=10000000000&sort=ret_3m&order=desc&limit=25" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+Each row carries identity (`company_id`, `company_name`, `country`, `sector`, `industry`, `primary_ticker`, `primary_exchange`, `cik`), size (`market_cap_usd`, `market_cap_local`, `market_cap_currency`), momentum (`ret_1m` … `ret_12m`, `return_suspect`), short interest, guidance counts and timestamps, event activity (`event_sources_90d`, `event_families_90d`, `rollup_families_90d`, `event_filings_90d`, `news_events_90d`), products and relationships (`product_terms`, `related_terms`, `peer_companies`, `competitor_companies`), management (`ceo_name`, `ceo_total_comp`, `insider_ownership_pct`), Taiwan fields, and the fundamentals block with its `fundamentals_period`, `fundamentals_source` and currency provenance. Rows matched through a product or relationship filter also carry `matched_terms` / `matched_relation` — the evidence of **why** the company matched.
+
+<Note>
+  Coverage of the product and relationship layer is partial (roughly 3,100 companies with a product term; 4,400 with peer or competitor edges). An empty result there means nothing is held for that company — not that it makes nothing and has no peers.
+</Note>
+
+## GET /v1/screen/facets
+
+The filterable values and how many companies carry each — sectors, industries, exchanges, event families per source, and coverage totals. Call this before screening: sector, industry and event-family values must match the registry's own spelling, and a guessed value returns an empty page rather than an error.
+
+**Plan:** Fund · **Credits:** free
+
+```bash
+curl "https://api.focusalpha.ai/v1/screen/facets" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+Returns `{ data: { facets, totals }, coverage }`.
+
+## GET /v1/screen/terms
+
+Search the 60,620-term product vocabulary. Matched as a case-insensitive substring.
+
+**Plan:** Fund · **Credits:** free
+
+<ParamField query="q" type="string" required>
+  The spelling to look for, e.g. `memory`.
+</ParamField>
+
+<ParamField query="limit" type="integer">
+  Max terms returned, 1–100.
+</ParamField>
+
+```bash
+curl "https://api.focusalpha.ai/v1/screen/terms?q=memory" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+Returns `{ data: { query, terms }, coverage }` — use the exact terms it returns in `makes_term` / `related_to_term`.
