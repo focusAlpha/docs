@@ -25,6 +25,6 @@
 ## Content boundaries
 
 - Document only customer-facing, API-key-authenticated endpoints
-- Never document or mention: internal or admin endpoints (`/v1/internal/*`, `/v1/admin/*`), the `X-Admin-Key`, `X-Internal-Key`, or `X-On-Behalf-Of` headers, dashboard JWT endpoints, environment variables, feature flags, deployment infrastructure, or backend source file paths
+- Never document or mention: internal or administrative endpoints or headers of any kind, dashboard-session endpoints, environment variables, feature flags, deployment infrastructure, or backend source file paths
 - No dollar pricing in docs — link to https://app.focusalpha.ai/settings instead
 - Never include real API keys, customer IDs, or emails other than support@focusalpha.ai

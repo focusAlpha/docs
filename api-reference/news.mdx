@@ -3,7 +3,7 @@ title: "News & themes"
 description: "Scored, source-attributed news for a company — per event or per article — and macro theme streams that name no company at all."
 ---
 
-The news layer answers two different questions against two different keys: *what has been happening to a company* (the per-company routes) and *what has happened on a macro theme* — rates, trade, geopolitics — most of which names no company and is therefore unreachable by ticker. In the [dashboard](https://app.focusalpha.ai)'s dataset list these appear as **Real-time company events**, **Real-time company news**, and **Real-time macro news** (`get_company_events` / `get_company_news` / `get_macro_news` [via MCP](/mcp)). Sources span press and wire coverage (roughly 160 feeds across two dozen regions), earnings-call transcripts, SEC 8-K filings, Asian exchange filings, company IR pages, and a semiconductor supply-chain lane; `channel` on every row says which.
+The news layer answers two different questions against two different keys: *what has been happening to a company* (the per-company routes) and *what has happened on a macro theme* — rates, trade, geopolitics — most of which names no company and is therefore unreachable by ticker. In the [dashboard](https://app.focusalpha.ai)'s dataset list these appear as **Real-time company events**, **Real-time company news**, and **Real-time macro news** (`get_company_events` / `get_company_news` / `get_macro_news` [via MCP](/mcp-setup)). Sources span press and wire coverage (roughly 160 feeds across two dozen regions), earnings-call transcripts, SEC 8-K filings, Asian exchange filings, company IR pages, and a semiconductor supply-chain lane; `channel` on every row says which.
 
 All endpoints on this page require the **Fund** plan, except the vocabulary endpoint `GET /v1/news/themes`, which is free on every plan. Every metered call costs 1 credit.
 
@@ -211,7 +211,7 @@ curl "https://api.focusalpha.ai/v1/companies/MU/news?event_type=guidance&since=2
 
 The macro theme vocabulary. Call this before querying a theme stream — a guessed theme name returns an empty page, not an error.
 
-**Plan:** all plans · **Credits:** free
+**Plan:** Free and above · **Credits:** free
 
 ```bash
 curl "https://api.focusalpha.ai/v1/news/themes" \

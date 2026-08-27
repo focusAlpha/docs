@@ -27,9 +27,11 @@ Not every route is rate-limited. The ceiling applies to:
 
 - **`POST /v1/retrieve`** — over the limit returns **`429 Too Many Requests`** with the
   standard error envelope.
-- **The SEC data routes** — `/v1/filings*`, `/v1/financials*`, `/v1/financial-metrics`,
-  `/v1/company/facts*`, `/v1/institutional-holdings`, and `/v1/insider-trades`. Over the
-  limit these return **`402 Payment Required`** rather than 429.
+- **The SEC data routes** — `/v1/filings`, `/v1/filings/items`, `/v1/financials*`,
+  `/v1/financial-metrics`, `/v1/company/facts`, `/v1/institutional-holdings`, and
+  `/v1/insider-trades`. Over the limit these return **`402 Payment Required`** rather
+  than 429. The free discovery lists (`/v1/filings/tickers|ciks|types`,
+  `/v1/filings/items/types`, `/v1/company/facts/tickers|ciks`) are not throttled.
 
 <Note>
 The `402`-on-rate-limit behavior of the SEC data routes is deliberate: those endpoints

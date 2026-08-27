@@ -32,8 +32,10 @@ A missing, malformed, unknown, or revoked key returns:
 Keys look like `fa_live_` followed by 40 hex characters — 48 characters in total:
 
 ```text
-fa_live_7fb3d0c1a94e28f6b5d7091c3e8a24f6b0d19c3e
+fa_live_0123456789abcdef0123456789abcdef01234567
 ```
+
+The value above is illustrative — real keys are random.
 
 - The full key is **displayed exactly once**, at creation. Only a SHA-256 hash is stored server-side, so a lost key cannot be recovered — revoke it and create a new one.
 - In the dashboard and in usage reports, keys are identified by their first 12 characters (for example `fa_live_7fb3`).
