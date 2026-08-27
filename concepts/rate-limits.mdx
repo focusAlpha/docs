@@ -1,0 +1,93 @@
+---
+title: "Rate limits"
+description: "Per-key request ceilings by plan, which endpoints enforce them, and how to retry."
+---
+
+Rate limits protect the API from bursts; they are not a consumption meter. Consumption
+is priced in [credits](/concepts/plans-credits) — the per-minute ceiling here only caps
+how fast you can spend them.
+
+## Limits by plan
+
+Limits are applied **per API key, per minute**:
+
+| Plan | Requests per minute |
+|---|---|
+| Free | 20 |
+| Professional | 120 |
+| Fund | 600 |
+
+The counter is shared across all our infrastructure, so switching connection or region
+does not reset it. Each of your keys has its own counter — two keys on the same account
+do not share a window.
+
+## Which endpoints enforce a per-minute limit
+
+Not every route is rate-limited. The ceiling applies to:
+
+- **`POST /v1/retrieve`** — over the limit returns **`429 Too Many Requests`** with the
+  standard error envelope.
+- **The SEC data routes** — `/v1/filings*`, `/v1/financials*`, `/v1/financial-metrics`,
+  `/v1/company/facts*`, `/v1/institutional-holdings`, and `/v1/insider-trades`. Over the
+  limit these return **`402 Payment Required`** rather than 429.
+
+<Note>
+The `402`-on-rate-limit behavior of the SEC data routes is deliberate: those endpoints
+mirror the financialdatasets.ai API surface, and existing SDKs built against that API
+expect a `402` when they are throttled. If you use one of those SDKs against
+FocusAlpha, its built-in handling keeps working unchanged.
+</Note>
+
+Every **other** dataset route — the company registry, screening, news, events, guidance,
+market data, regional datasets, directories — has **no per-minute limit**. Credits are
+the only consumption gate on those routes, so a well-behaved batch job can page through
+them as fast as it likes.
+
+## Distinguishing a throttle from a billing problem
+
+Because the SEC data routes reuse `402` for throttling, a `402` there can mean three
+different things. Read the `message`:
+
+| Message says | It means | What to do |
+|---|---|---|
+| Rate limit exceeded | You are over your per-minute ceiling | Wait for the next minute window and retry |
+| Out of credits / free credits used up | Your balance is empty | Upgrade or wait for the billing period to renew |
+| A dataset name and a plan tier | Your plan is not entitled to this dataset | Upgrade to the named tier |
+
+Only the first case is retryable. Retrying an empty balance or a plan gate in a loop
+will never succeed — surface those to a human instead.
+
+## Retry guidance
+
+When you hit a limit:
+
+1. **Pause until the next minute window.** Counters are per-minute, so a request that
+   failed at `12:00:59` can succeed at `12:01:00`. Sleeping for one second past the top
+   of the minute is usually enough; a simple exponential backoff starting at one second
+   also works well.
+2. **Do not tight-loop.** Repeated over-limit requests still count as traffic. Back off
+   and let the window reset.
+3. **Spread sustained workloads.** If your steady-state need exceeds your plan's
+   ceiling, pace requests to just under the limit — or move up a plan tier rather than
+   engineering around it. Fund keys get 600 requests/minute.
+4. **Retries are safe.** All rate-limited endpoints are reads (`POST /v1/retrieve` is a
+   search, not a mutation), so retrying a throttled request never duplicates anything.
+
+A throttled request is rejected before it reaches a dataset handler, so it does not
+consume a credit — the refund machinery described in
+[Plans and credits](/concepts/plans-credits) makes throttled calls free.
+
+<Tip>
+If you operate several independent workloads, give each its own API key. Keys are
+rate-limited individually, and `GET /v1/usage` breaks request totals down by key prefix
+so you can see which workload is consuming what.
+</Tip>
+
+## Related pages
+
+<Card title="Plans and credits" href="/concepts/plans-credits" icon="credit-card">
+  Credit grants and per-plan ceilings, including `top_k` caps.
+</Card>
+<Card title="Errors" href="/concepts/errors" icon="triangle-exclamation">
+  The two error envelopes and the full status-code table.
+</Card>

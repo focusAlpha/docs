@@ -1,0 +1,389 @@
+---
+title: "International datasets"
+description: "Taiwan and Korea local-market financials and ownership, cross-market disclosure feeds, and Form 20-F content for foreign private issuers."
+---
+
+These endpoints serve what companies file with their **own** markets — TWSE/TPEx in Taiwan, DART in Korea, TDnet in Japan — plus the SEC Form 20-F content of foreign private issuers. Local feeds and SEC filings are different datasets: a Taiwanese issuer that also files with the SEC appears in both, under different rules.
+
+Taiwan, Korea, and Form 20-F routes require the **Professional** plan; the cross-market disclosures route requires **Fund**. Every call costs 1 credit.
+
+Responses use the `{ data, next_cursor, coverage }` envelope with cursor pagination — pass `next_cursor` back unchanged as `cursor`; see [Pagination](/concepts/pagination). Errors use the standard error envelope; see [Errors](/concepts/errors).
+
+## Taiwan
+
+Coverage: ~2,330 Taiwan-listed companies (TWSE and TPEx). The `company_id` path segment accepts a Taiwan security code (`2330`), a suffixed symbol (`2330.TW`, `6976.TWO`), an ISIN, or a `cmp_…` id.
+
+### GET /v1/companies/\{company_id\}/tw/financials
+
+Quarterly income statements and balance sheets as filed to TWSE/TPEx, from 2024 Q1 (period end 2024-03-31). Taiwan files no cash-flow statement in this feed.
+
+**Plan:** Professional · **Credits:** 1 per call
+
+<ParamField query="statement" type="string">`income` or `balance`.</ParamField>
+
+<ParamField query="year" type="integer">Fiscal year, e.g. `2025`.</ParamField>
+
+<ParamField query="season" type="integer">TWSE season 1–4. Season 2 is the first half as filed, season 4 the full year.</ParamField>
+
+<ParamField query="cursor" type="string">`next_cursor` from the previous page, passed back unchanged.</ParamField>
+
+<ParamField query="limit" type="integer">1–1000, default 40.</ParamField>
+
+```bash
+curl "https://api.focusalpha.ai/v1/companies/2330/tw/financials?statement=income&year=2025" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```json
+{
+  "data": [
+    {
+      "company_id": "cmp_01hzy3v8x2",
+      "local_security_code": "2330",
+      "company_name": "台積電",
+      "market": "TWSE",
+      "industry_class": "半導體業",
+      "year": 2025,
+      "season": 2,
+      "period_key": "2025S2",
+      "period_end": "2025-06-30",
+      "statement": "income",
+      "revenue_ytd": 1733500000,
+      "operating_income_ytd": 774210000,
+      "net_income_ytd": 662480000,
+      "eps_basic_ytd": 25.56,
+      "revenue_q": 933790000,
+      "operating_income_q": 421650000,
+      "net_income_q": 360120000,
+      "eps_basic_q": 13.94,
+      "quarter_basis": "derived",
+      "report_date": "2025-08-12"
+    }
+  ],
+  "next_cursor": null,
+  "coverage": { "available_from": "2024-03-31", "available_to": null, "update_frequency": "quarterly", "history_status": "starts_2024_03_31" }
+}
+```
+
+<Warning>
+  TWSE files income statements **cumulative** from the start of the fiscal year: season 2 is the first half, season 4 the full year. Every income line comes back as both `*_ytd` (as filed) and `*_q` (single quarter), with `quarter_basis` saying which reading `*_q` is. A `null` `*_q` means the quarter could not be established — it is not a zero.
+</Warning>
+
+<Note>
+  Amounts are **TWD thousands**. Monthly revenue is the parent-company filing while the quarterly statements are consolidated, so the two do not reconcile exactly.
+</Note>
+
+### GET /v1/companies/\{company_id\}/tw/monthly-revenue
+
+Monthly revenue as filed, complete from 2013-01. Newest month first.
+
+**Plan:** Professional · **Credits:** 1 per call
+
+<ParamField query="month_gte" type="string">Inclusive lower bound, `YYYY-MM`.</ParamField>
+
+<ParamField query="month_lte" type="string">Inclusive upper bound, `YYYY-MM`.</ParamField>
+
+<ParamField query="cursor" type="string">`next_cursor` from the previous page, passed back unchanged.</ParamField>
+
+<ParamField query="limit" type="integer">1–1000, default 100.</ParamField>
+
+```bash
+curl "https://api.focusalpha.ai/v1/companies/2330/tw/monthly-revenue?month_gte=2026-01" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```json
+{
+  "data": [
+    {
+      "company_id": "cmp_01hzy3v8x2",
+      "local_security_code": "2330",
+      "data_ym": "2026-07",
+      "market": "TWSE",
+      "company_name": "台積電",
+      "industry": "半導體業",
+      "revenue": 323170000,
+      "revenue_previous_month": 297880000,
+      "revenue_year_ago": 256950000,
+      "mom_pct": 8.49,
+      "yoy_pct": 25.77,
+      "revenue_ytd": 2056670000,
+      "revenue_ytd_year_ago": 1652300000,
+      "revenue_ytd_yoy_pct": 24.47,
+      "note": null
+    }
+  ],
+  "next_cursor": null,
+  "coverage": { "available_from": "2013-01", "available_to": null, "update_frequency": "monthly", "history_status": "complete" }
+}
+```
+
+### GET /v1/companies/\{company_id\}/tw/foreign-ownership
+
+Daily foreign-investor shareholding, one row per trading day, from 2024-01-02. Newest first.
+
+**Plan:** Professional · **Credits:** 1 per call
+
+<ParamField query="date_gte" type="string">Inclusive lower bound, `YYYY-MM-DD`.</ParamField>
+
+<ParamField query="date_lte" type="string">Inclusive upper bound, `YYYY-MM-DD`.</ParamField>
+
+<ParamField query="cursor" type="string">`next_cursor` from the previous page, passed back unchanged.</ParamField>
+
+<ParamField query="limit" type="integer">1–1000, default 100.</ParamField>
+
+```bash
+curl "https://api.focusalpha.ai/v1/companies/2330/tw/foreign-ownership?date_gte=2026-08-01" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```json
+{
+  "data": [
+    {
+      "company_id": "cmp_01hzy3v8x2",
+      "local_security_code": "2330",
+      "snapshot_date": "2026-08-26",
+      "market": "TWSE",
+      "company_name": "台積電",
+      "issued_shares": 25932070990,
+      "foreign_held_shares": 19296410543,
+      "foreign_held_pct": 74.41,
+      "foreign_limit_pct": 100.0
+    }
+  ],
+  "next_cursor": null,
+  "coverage": { "available_from": "2024-01-02", "available_to": null, "update_frequency": "daily", "history_status": "starts_2024_01_02" }
+}
+```
+
+<Note>
+  Percentages are on a 0–100 scale. `foreign_limit_pct` is the regulatory ceiling for the security — usually 100, occasionally not — which is a different fact from how much is actually held. These are share counts, not money.
+</Note>
+
+## Korea (DART)
+
+Coverage: Korean-listed companies from 2022 onward, still backfilling newest-year and largest-cap first — a missing older year for a small company means not-yet-loaded. The `company_id` path segment accepts a DART corp code, a symbol (`005930.KS`), an ISIN, or a `cmp_…` id.
+
+### GET /v1/companies/\{company_id\}/kr/financials
+
+Account-level financial facts as filed to DART.
+
+**Plan:** Professional · **Credits:** 1 per call
+
+<ParamField query="year" type="integer" required>Business year, 2000–2100. Required — omitting it is a 400, not a default.</ParamField>
+
+<ParamField query="report_period" type="string">`annual`, `half`, `q1`, or `q3`. There is no Q2 report — `half` is the first-half filing.</ParamField>
+
+<ParamField query="basis" type="string">`consolidated` or `separate`.</ParamField>
+
+<ParamField query="statement" type="string">One of `balance_sheet`, `income`, `comprehensive_income`, `cash_flow`, `changes_in_equity`.</ParamField>
+
+<ParamField query="cursor" type="string">`next_cursor` from the previous page, passed back unchanged.</ParamField>
+
+<ParamField query="limit" type="integer">1–1000, default 200.</ParamField>
+
+```bash
+curl "https://api.focusalpha.ai/v1/companies/005930.KS/kr/financials?year=2025&report_period=annual&basis=consolidated&statement=income" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```json
+{
+  "data": [
+    {
+      "corp_code": "00126380",
+      "company_id": "cmp_01hzy3v8x2",
+      "bsns_year": 2025,
+      "reprt_code": "11011",
+      "fs_div": "CFS",
+      "sj_div": "IS",
+      "ord": 1,
+      "account_id": "ifrs-full_Revenue",
+      "account_nm": "수익(매출액)",
+      "account_detail": null,
+      "sj_nm": "손익계산서",
+      "amount": "302231360000000",
+      "amount_prior_period": "279651251000000",
+      "amount_two_periods_prior": "258935494000000",
+      "currency": "KRW",
+      "rcept_no": "20260311000123"
+    }
+  ],
+  "next_cursor": null,
+  "coverage": { "available_from": "2022", "available_to": null, "update_frequency": "daily", "history_status": "backfill_in_progress" }
+}
+```
+
+<Warning>
+  These are the filer's **own accounts**, not a normalised statement: there is no `revenue` field, because which Korean account is revenue differs by filer and industry. Match on `account_id` (e.g. `ifrs-full_CostOfSales`), not on the Korean `account_nm` text. `basis` matters: consolidated and separate are both filed, and mixing them in one comparison double-counts.
+</Warning>
+
+### Report sections
+
+Five sibling routes serve the periodic report's sections. Each shares the same query shape: an optional section-specific `kind`, `year`, `cursor`, and `limit` (1–1000); the ownership route additionally accepts `date_gte` / `date_lte` (`YYYY-MM-DD`), because ownership is event-based rather than annual.
+
+**Plan:** Professional · **Credits:** 1 per call each
+
+| Route | What it serves | `kind` values |
+|---|---|---|
+| `GET …/kr/ownership` | Insider and 5%+ holdings reports | `insider`, `major_5pct` |
+| `GET …/kr/shareholders` | Shareholder composition | `major`, `minority`, `major_change` |
+| `GET …/kr/share-structure` | Shares issued, treasury, capital changes | `total`, `treasury`, `capital_change` |
+| `GET …/kr/investments` | Investments in other companies | section-specific |
+| `GET …/kr/debt` | Bonds, commercial paper, and other debt | `corp_bond_issue`, `cp`, … |
+
+```bash
+curl "https://api.focusalpha.ai/v1/companies/005930.KS/kr/ownership?kind=major_5pct&date_gte=2026-01-01" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+<Note>
+  Some rows in the report sections are the filer's own subtotal lines (계 / 합계) rather than individual entries — filter before summing.
+</Note>
+
+## GET /v1/companies/\{company_id\}/disclosures
+
+What a Taiwanese, Korean, or Japanese company told its own market — earnings releases, M&A, buybacks, board decisions, officer changes, large-holding reports — one row per announcement, newest first, across all three markets in one call. The response's `markets_searched` lists which markets were actually consulted: an empty list means the company lists in none of the three, which is a different fact from finding nothing in them.
+
+**Plan:** Fund · **Credits:** 1 per call
+
+<ParamField query="market" type="string">Narrow to one of `taiwan`, `korea`, `japan`. Omitted means every market the company files in.</ParamField>
+
+<ParamField query="category" type="string">Japan's own classification (`earnings_flash`, `ma`, `buyback_progress`, …). Only Japan classifies its rows — filtering on a category excludes Taiwan and Korea entirely rather than mixing unfiltered rows into a filtered result.</ParamField>
+
+<ParamField query="date_gte" type="string">Inclusive lower bound, `YYYY-MM-DD`.</ParamField>
+
+<ParamField query="date_lte" type="string">Inclusive upper bound, `YYYY-MM-DD`.</ParamField>
+
+<ParamField query="include_text" type="boolean" default="false">Taiwan only: include the full announcement text (the TWSE 說明 field). Off by default; `description_chars` is always returned so you can see there is text to ask for.</ParamField>
+
+<ParamField query="cursor" type="string">`next_cursor` from the previous page, passed back unchanged.</ParamField>
+
+<ParamField query="limit" type="integer">1–200, default 50.</ParamField>
+
+```bash
+curl "https://api.focusalpha.ai/v1/companies/6758.T/disclosures?market=japan&date_gte=2026-08-01" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```json
+{
+  "data": [
+    {
+      "market": "japan",
+      "source_id": "tdnet_20260808_00123",
+      "date": "2026-08-08",
+      "company_name": "ソニーグループ株式会社",
+      "local_code": "6758",
+      "title": "2027年3月期 第1四半期決算短信〔IFRS〕（連結）",
+      "category": "earnings_flash",
+      "filing_url": "https://…/140120260808501234.pdf",
+      "xbrl_url": "https://…/081220260808501234.zip"
+    }
+  ],
+  "next_cursor": null,
+  "markets_searched": ["japan"],
+  "coverage": { "japan": { "available_from": "2026-06-15", "available_to": null, "update_frequency": "daily", "history_status": "starts_2026_06_15" }
+  }
+}
+```
+
+<Warning>
+  **Very short history**, per market: Japan from 2026-06-15, Taiwan from 2026-07-22, Korea from 2026-07-28. This is a recent-only feed, not an archive — an empty result for an older date is the feed's start date, not a quiet company.
+</Warning>
+
+<Note>
+  Row fields vary by market, and `null` fields are omitted. Only Japan links the document as a PDF and XBRL; Korea links the original DART filing (`filing_url`); Taiwan carries the announcement text itself, returned with `include_text=true`. Korea's `filer` is whoever filed — often **not** the company the announcement is about (a large-holdings report about Samsung Electronics is filed by Samsung C&T). Titles and text are in Traditional Chinese, Korean, and Japanese as published; nothing is translated.
+</Note>
+
+## Form 20-F
+
+The notes, as-reported segments, disclosed ownership, and raw XBRL facts from a foreign private issuer's annual SEC filing. Coverage: 321 filers, annual from 2014-12 — a 20-F has no quarterly equivalent. The `company_id` path segment accepts a ticker, CIK, ISIN, or `cmp_…` id.
+
+**Plan:** Professional · **Credits:** 1 per call each
+
+<Note>
+  The three financial statements are **not** on these routes: [`/v1/financials`](/api-reference/financials) serves covered 20-F filers through an annual-only fallback — `quarterly` and `ttm` return nothing for them.
+</Note>
+
+### GET /v1/companies/\{company_id\}/20f/profile
+
+The filing profile — issuer identity and latest 20-F. No query parameters. Response fields include `company_id`, `cik`, `ticker`, `name`, `country`, `market_cap`, and `form`.
+
+```bash
+curl "https://api.focusalpha.ai/v1/companies/TSM/20f/profile" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+### GET /v1/companies/\{company_id\}/20f/notes
+
+The notes index — titles, tags, lengths — with the text opt-in. Find a note by **title**, not by concept name: nobody should have to guess `DisclosureOfLeasesExplanatory`.
+
+<ParamField query="accession" type="string">One filing, e.g. `0001234567-26-000123`.</ParamField>
+
+<ParamField query="note_tag" type="string">IFRS or company concept, with or without its taxonomy prefix.</ParamField>
+
+<ParamField query="title_contains" type="string">Substring of the human-readable note title, at least 2 characters.</ParamField>
+
+<ParamField query="include_text" type="boolean" default="false">Include the note text. Off by default — the index is how a caller finds the note worth reading.</ParamField>
+
+<ParamField query="cursor" type="string">`next_cursor` from the previous page, passed back unchanged.</ParamField>
+
+<ParamField query="limit" type="integer">1–1000.</ParamField>
+
+```bash
+curl "https://api.focusalpha.ai/v1/companies/TSM/20f/notes?title_contains=segment" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+Rows carry `company_id`, `id`, `cik`, `accession`, `note_tag`, `note_title`, and — with `include_text=true` — the note text.
+
+### GET /v1/companies/\{company_id\}/20f/segments
+
+As-reported segment disclosures.
+
+<ParamField query="dimension" type="string">e.g. `geographic` or `business`.</ParamField>
+
+<ParamField query="metric" type="string">e.g. `revenue`, `assets`.</ParamField>
+
+<ParamField query="fiscal_year" type="integer">1990–2100.</ParamField>
+
+<ParamField query="cursor" type="string">`next_cursor` from the previous page, passed back unchanged.</ParamField>
+
+<ParamField query="limit" type="integer">1–1000.</ParamField>
+
+Rows carry `company_id`, `id`, `cik`, `accession`, `dimension`, `segment_path`, `segment_name`, and `depth`, plus the reported values.
+
+### GET /v1/companies/\{company_id\}/20f/ownership
+
+Ownership as disclosed in the filing.
+
+<ParamField query="accession" type="string">One filing.</ParamField>
+
+<ParamField query="cursor" type="string">`next_cursor` from the previous page, passed back unchanged.</ParamField>
+
+<ParamField query="limit" type="integer">1–1000.</ParamField>
+
+Rows carry `company_id`, `id`, `cik`, `accession`, `holder_name`, `shares`, `ownership_pct`, and `voting_pct`.
+
+### GET /v1/companies/\{company_id\}/20f/xbrl-facts
+
+The raw XBRL facts. At least one of `tag`, `accession`, or `period_end` is required — an unfiltered dump of every fact is a 400.
+
+<ParamField query="tag" type="string">An XBRL concept tag.</ParamField>
+
+<ParamField query="accession" type="string">One filing.</ParamField>
+
+<ParamField query="period_end" type="string">`YYYY-MM-DD`.</ParamField>
+
+<ParamField query="cursor" type="string">`next_cursor` from the previous page, passed back unchanged.</ParamField>
+
+<ParamField query="limit" type="integer">1–1000.</ParamField>
+
+```bash
+curl "https://api.focusalpha.ai/v1/companies/TSM/20f/xbrl-facts?tag=Revenue&period_end=2025-12-31" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+Rows carry `company_id`, `id`, `cik`, `accession`, `taxonomy`, `tag`, `value`, `unit`, and `decimals`, plus period fields.

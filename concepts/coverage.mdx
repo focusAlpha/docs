@@ -1,0 +1,131 @@
+---
+title: "Coverage and freshness"
+description: "How to read the coverage object on responses, check dataset freshness, and know what history exists."
+---
+
+Every dataset has its own footprint: where its history starts, how often it updates,
+and whether its backfill is still in flight. Rather than asking you to memorize those
+facts, the API **reports them on the way out** — on each response, and on a dedicated
+status endpoint.
+
+## The coverage object
+
+Cursor-based dataset responses carry a `coverage` block beside `data`:
+
+```json
+{
+  "data": [ ... ],
+  "next_cursor": null,
+  "coverage": {
+    "available_from": "2015-01-01",
+    "available_to": "2026-08-26",
+    "update_frequency": "daily",
+    "history_status": "complete"
+  }
+}
+```
+
+| Field | Meaning |
+|---|---|
+| `available_from` | The earliest date this dataset holds — measured from the data, not a promise |
+| `available_to` | The most recent date it holds |
+| `update_frequency` | How often new rows arrive (`daily`, `weekly`, `quarterly`, `minutes`, …) |
+| `history_status` | `complete`, `partial`, or a note that a backfill is in progress |
+
+Some datasets add fields — `notes[]` for caveats, `staleness` for how old the current
+snapshot is.
+
+<Note>
+Several datasets are backfilled **backwards** — newest first, reaching further into the
+past over time — so their start date moves. Always read `coverage.available_from` from
+the response rather than hard-coding a date from this page: an empty result for an
+older date range usually means "before this feed's start", not "the company did
+nothing".
+</Note>
+
+## The status endpoint
+
+`GET /v1/_status` is free to call and returns per-dataset coverage and freshness in one
+place:
+
+```bash
+curl "https://api.focusalpha.ai/v1/_status" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```json
+{
+  "coverage": "subset",
+  "coverage_pct": 87.4,
+  "last_sweep_at": "2026-08-27T13:10:00.000Z",
+  "families": [
+    {
+      "family": "financials",
+      "available": 5120,
+      "pending": 214,
+      "last_refreshed_at": "2026-08-27T12:58:00.000Z",
+      "note": null
+    }
+  ],
+  "generated_at": "2026-08-27T14:00:00.000Z"
+}
+```
+
+Use it to answer "is this dataset ready for the company set I care about?" before
+running a large job, and to monitor freshness from your own systems — it costs nothing.
+
+## Freshness by dataset
+
+A summary of where each dataset's history starts and how often it moves. Entries
+marked *moving* are backfilled backwards — check `coverage.available_from` for the
+current floor.
+
+| Dataset | Updates | History |
+|---|---|---|
+| Company registry | Weekly snapshot | Current snapshot (~25,000 companies, 82 countries), not a time series |
+| SEC filings index and items | Continuous with EDGAR | EDGAR-deep |
+| Financial statements and metrics | With filings | XBRL company-facts history |
+| Daily prices and market caps | Daily | From 2025-07-14 — about one year |
+| Benchmarks (425 indices, 40 commodities) | Daily | From 2015-01-01 — the longest price history here |
+| Short interest (FINRA) | Semi-monthly, published ~8 days after settlement | From 2017-12-29 |
+| 13F institutional holdings | Quarterly | Filing history |
+| Insider trades (Form 4) | Continuous | Roughly the past two years per company |
+| Structured 8-K events | Minutes behind SEC acceptance (median ~12) | *Moving* — backfilled backwards |
+| 8-K exhibits | Daily | *Moving* — backfilled backwards |
+| Guidance and earnings results | Daily | *Moving* — calls and filed releases start at different points |
+| Live news and events | Continuous (polled every ~2 minutes) | **From 2026-07-26 only — no history before** |
+| International disclosures | Daily | Recent-only: Japan from 2026-06-15, Taiwan from 2026-07-22, Korea from 2026-07-28 |
+| Taiwan financials | Quarterly | From 2024 Q1 |
+| Taiwan monthly revenue | Monthly | From 2013-01 — complete |
+| Taiwan foreign ownership | Daily | From 2024-01-02 |
+| Korea (DART) | Daily | From 2022 — backfill in progress, newest-year and largest-cap first |
+| Form 20-F | Annual | From 2014-12, 321 foreign private issuers |
+| Investment-adviser directory | Monthly snapshot | ~23,600 advisers, current snapshot |
+| Venture-investor directory | Static snapshot | ~10,000 firms |
+
+<Warning>
+The news and international-disclosure feeds are **recency products, not archives** —
+they carry weeks of history, and what you buy is being current. Do not build historical
+studies on them; use the filings, financials, and events datasets for history.
+</Warning>
+
+## Coverage is per-dimension, not per-company
+
+A company appearing in the registry does not mean every dataset covers it. Short
+interest is US-only; foreign ownership and monthly revenue are Taiwan-only; insider
+trades are US Form 4 filers; a company found in the registry may have no SEC filings at
+all. When you filter a cross-company query on a dimension, you also restrict results to
+the companies that dimension covers.
+
+The free vocabulary endpoints (listed in
+[Plans and credits](/concepts/plans-credits#free-endpoints)) let you enumerate each
+dataset's universe — tickers, CIKs, facets, families — before spending credits on it.
+
+## Related pages
+
+<Card title="Company identifiers" href="/concepts/company-identifiers" icon="fingerprint">
+  How companies are identified across datasets with different footprints.
+</Card>
+<Card title="Plans and credits" href="/concepts/plans-credits" icon="credit-card">
+  The free discovery endpoints for probing coverage before you spend.
+</Card>

@@ -1,0 +1,124 @@
+---
+title: "Errors"
+description: "Error envelopes, status codes, request IDs, and validation behavior across the API."
+---
+
+The API uses conventional HTTP status codes. What varies is the **shape of the error
+body**: most routes use the standard FocusAlpha envelope, while the SEC data routes use
+a flat shape for compatibility with financialdatasets.ai SDKs. Handle both and you have
+covered the whole API.
+
+## The standard envelope
+
+Most routes — `/v1/retrieve`, `/v1/documents/*`, `/v1/companies/*`, `/v1/screen`,
+news, events, market data, regional datasets, directories — return errors as:
+
+```json
+{
+  "success": false,
+  "error": {
+    "statusCode": 402,
+    "message": "Cross-company screening is available on the Fund plan. Contact sales to enable it.",
+    "error": "Payment Required",
+    "path": "/v1/screen",
+    "timestamp": "2026-08-27T14:00:00.000Z",
+    "requestId": "req_9f2c1a"
+  }
+}
+```
+
+`error` is the HTTP reason phrase, `message` is the human-readable explanation, and
+`requestId` echoes your `X-Request-ID` header (see below).
+
+## The SEC data envelope
+
+The SEC data routes — `/v1/filings*`, `/v1/financials*`, `/v1/financial-metrics`,
+`/v1/company/facts*`, `/v1/institutional-holdings`, `/v1/insider-trades`, and
+`/v1/_status` — return a flat two-field body instead:
+
+```json
+{
+  "error": "Bad Request",
+  "message": "Invalid request parameters"
+}
+```
+
+The canonical messages per status on these routes:
+
+| Status | `error` | Default `message` |
+|---|---|---|
+| 400 | Bad Request | Invalid request parameters |
+| 401 | Unauthorized | Invalid API key provided |
+| 402 | Payment Required | This endpoint requires a paid subscription. Please upgrade your plan. |
+| 404 | Not Found | The requested resource was not found |
+| 500 | Internal Server Error | An unexpected error occurred |
+| 503 | Service Unavailable | The service is temporarily unavailable. Please retry shortly. |
+
+When the API has something more specific to say — a validation detail, a dataset-named
+plan refusal — the `message` carries it; otherwise you get the canonical string.
+
+## Status codes
+
+| Code | Meaning | Where it comes from |
+|---|---|---|
+| `400` | Invalid parameters — a failed validation rule, a missing required combination, or a malformed cursor | Any route |
+| `401` | Missing, malformed, unknown, or revoked API key | Any authenticated route |
+| `402` | Out of credits, a dataset your plan is not entitled to, or (SEC data routes only) a rate limit | See [Plans and credits](/concepts/plans-credits) |
+| `404` | A company identifier that could not be resolved, a missing document, or an unavailable resource | Dataset routes |
+| `429` | Rate limit exceeded on `POST /v1/retrieve` | See [Rate limits](/concepts/rate-limits) |
+| `500` | An unexpected server fault | Any route |
+| `503` | The service, or the upstream data source behind this request, is temporarily unavailable | Dataset routes |
+
+<Note>
+A `503` may carry a **`Retry-After` header** with a whole number of seconds. When it is
+present, wait at least that long before retrying — it is the server telling you exactly
+when capacity returns. Retrying sooner does not fail, but it will keep getting 503s.
+</Note>
+
+Failed requests are not billed: a credit charged for a request that then errors is
+automatically refunded.
+
+## Request IDs
+
+Every response echoes a request ID. Send your own via the `X-Request-ID` header and it
+is used as-is; omit it and one is generated for you. On standard-envelope routes the ID
+also appears in the error body as `error.requestId`.
+
+```bash
+curl "https://api.focusalpha.ai/v1/companies?ticker=AAPL" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY" \
+  -H "X-Request-ID: my-batch-42-item-7"
+```
+
+<Tip>
+Log the request ID with every failure, and include it when you write to
+[support@focusalpha.ai](mailto:support@focusalpha.ai) — it lets us find the exact
+request in our logs immediately.
+</Tip>
+
+## Validation behavior
+
+The API validates every query parameter and body field, with type coercion (query
+strings become numbers and booleans where the parameter expects them). One behavior
+differs between the two route groups, and it is worth knowing before you debug:
+
+- **Most routes are strict**: a query parameter the endpoint does not recognize is
+  rejected with `400`. A typo like `?tikcer=AAPL` fails loudly.
+- **The SEC data routes are relaxed**: unknown parameters are silently ignored, again
+  for compatibility with existing financialdatasets.ai SDKs. A typo there does not
+  error — it is dropped, and you get results as if you had never sent it.
+
+<Warning>
+On the SEC data routes, a misspelled filter silently widens your query instead of
+failing. If a filtered request returns more than you expected, check your parameter
+names first.
+</Warning>
+
+## Related pages
+
+<Card title="Rate limits" href="/concepts/rate-limits" icon="gauge-high">
+  Which endpoints throttle, and why the SEC data routes signal it with 402.
+</Card>
+<Card title="Pagination" href="/concepts/pagination" icon="list">
+  Cursor rules — including the exact 400 a malformed cursor produces.
+</Card>

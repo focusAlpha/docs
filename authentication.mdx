@@ -1,0 +1,74 @@
+---
+title: "Authentication"
+description: "How FocusAlpha API keys work, how to send them, and how to manage them safely."
+---
+
+Every request to the FocusAlpha Data API (except `GET /v1/health` and `GET /v1/ready`) must carry an API key.
+
+## Sending your key
+
+Two header forms are accepted. `Authorization: Bearer` is preferred:
+
+<CodeGroup>
+```bash Authorization header
+curl "https://api.focusalpha.ai/v1/companies?ticker=NVDA" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```bash X-API-Key header
+curl "https://api.focusalpha.ai/v1/companies?ticker=NVDA" \
+  -H "X-API-Key: $FOCUSALPHA_API_KEY"
+```
+</CodeGroup>
+
+A missing, malformed, unknown, or revoked key returns:
+
+```json
+{ "statusCode": 401, "message": "Invalid or missing API key" }
+```
+
+## Key format
+
+Keys look like `fa_live_` followed by 40 hex characters — 48 characters in total:
+
+```text
+fa_live_7fb3d0c1a94e28f6b5d7091c3e8a24f6b0d19c3e
+```
+
+- The full key is **displayed exactly once**, at creation. Only a SHA-256 hash is stored server-side, so a lost key cannot be recovered — revoke it and create a new one.
+- In the dashboard and in usage reports, keys are identified by their first 12 characters (for example `fa_live_7fb3`).
+
+## Managing keys
+
+Keys are managed in the [dashboard](https://app.focusalpha.ai) under **Settings → API keys**:
+
+- **Create** — optionally give the key a name (up to 80 characters) describing where it's used. You can hold up to **5 active keys**.
+- **Revoke** — takes effect immediately. Revoked keys return `401` on their next request.
+
+Your plan and credit balance belong to your **account**; rate limits apply per **key**. Using separate keys per service or environment gives each its own rate-limit budget and lets you revoke one integration without breaking the others.
+
+## Security best practices
+
+<Warning>
+  API keys are secrets. Anyone holding a key can spend your credits and read every dataset your plan unlocks.
+</Warning>
+
+- **Server-side only.** The API enforces a server-to-server CORS policy — browsers cannot call it from arbitrary web origins, and keys must never ship in client-side code, mobile apps, or public repositories.
+- **Use environment variables** or a secret manager; never hardcode keys in source.
+- **Rotate on exposure.** If a key leaks, revoke it in the dashboard immediately and create a replacement — revocation is instant.
+- **One key per integration.** Scoped keys make rotation and usage attribution painless.
+
+## Request IDs
+
+Every response includes a request identifier. Send your own `X-Request-ID` header to correlate requests with your logs, or let the API generate one. Include it when contacting [support@focusalpha.ai](mailto:support@focusalpha.ai) — it lets us trace the exact request.
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Plans & credits" icon="coins" href="/concepts/plans-credits">
+    What each plan unlocks and how calls are metered.
+  </Card>
+  <Card title="Rate limits" icon="gauge-high" href="/concepts/rate-limits">
+    Per-key request budgets by plan.
+  </Card>
+</CardGroup>

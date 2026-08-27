@@ -1,0 +1,126 @@
+---
+title: "Plans and credits"
+description: "How FocusAlpha plans, credit metering, and dataset entitlements work."
+---
+
+Every FocusAlpha API key belongs to a plan. Your plan determines three things: how many
+credits you have to spend, how fast you can call the API, and which datasets you are
+entitled to at all. This page explains all three.
+
+## Plans
+
+| | Free | Professional | Fund |
+|---|---|---|---|
+| Credits | 100, one-time | 500 per month | Effectively unlimited |
+| Credit renewal | Never — a trial grant | Monthly | Monthly |
+| Rate limit | 20 requests/min | 120 requests/min | 600 requests/min |
+| Max `top_k` on `/v1/retrieve` | 10 | 25 | 50 |
+| How to get it | Sign up at [app.focusalpha.ai](https://app.focusalpha.ai) | Self-serve upgrade in [settings](https://app.focusalpha.ai/settings) | Sales-led — contact [support@focusalpha.ai](mailto:support@focusalpha.ai) |
+
+The Free plan's 100 credits never expire, but they also never renew — they are a trial
+allowance for evaluating the API. Professional and Fund balances reset to their full
+grant at the start of each billing period; unused credits do not roll over.
+
+For current pricing, see your [account settings](https://app.focusalpha.ai/settings).
+
+## How credits are metered
+
+The billing rule is deliberately simple:
+
+<Note>
+**1 call = 1 credit.** Every metered request costs exactly one credit, flat, regardless
+of which dataset it hits or how much data it returns.
+</Note>
+
+The credit is charged when your request is accepted, before the handler runs. If the
+request then fails — a validation error, a missing resource, a server fault — the charge
+is **automatically refunded**. You only pay for calls that return answers.
+
+One endpoint goes further: `GET /v1/filings/items` also refunds a successful response
+that carries no items (for example, a filing that could not be parsed into items). An
+answer-less 200 there costs nothing.
+
+## Free endpoints
+
+Discovery and vocabulary endpoints cost **0 credits**, so you can always enumerate what
+is available before spending anything:
+
+| Endpoint | What it lists |
+|---|---|
+| `GET /v1/filings/tickers` | Tickers with filings coverage |
+| `GET /v1/filings/ciks` | CIKs with filings coverage |
+| `GET /v1/filings/types` | Supported filing types |
+| `GET /v1/filings/items/types` | Item types per filing type |
+| `GET /v1/company/facts/tickers` | Tickers with company-facts coverage |
+| `GET /v1/company/facts/ciks` | CIKs with company-facts coverage |
+| `GET /v1/screen/facets` | Screener filter values and counts |
+| `GET /v1/screen/terms` | The product/relation term vocabulary |
+| `GET /v1/news/themes` | News theme vocabulary |
+| `GET /v1/8k-events/families` | 8-K event families, fields, and observed values |
+
+Two account endpoints are also free to call:
+
+- `GET /v1/usage` — your request totals for a period, broken down by key
+- `GET /v1/_status` — per-dataset coverage and freshness (see [Coverage and freshness](/concepts/coverage))
+
+## Dataset entitlements
+
+Credit cost is one axis; **which datasets your plan may call at all** is a separate one.
+Core SEC data is open to every plan, including Free. Differentiated datasets require
+Professional or Fund:
+
+| Tier required | Datasets |
+|---|---|
+| Any plan | Semantic retrieval, document corpus, SEC filings index and items, financial statements, financial metrics, segments, company facts, the company registry |
+| Professional and up | 13F institutional holdings, insider trades (Form 4), Taiwan financials and ownership, Korea (DART) financials, executive compensation and proxy ownership, short interest, daily prices and market caps, benchmarks, the investment-adviser directory, Form 20-F datasets |
+| Fund only | Cross-company screening, live news and events, structured 8-K events, 8-K exhibits, earnings-call guidance, reported earnings figures, prediction-market prices, international disclosures (TW/KR/JP), the venture-investor directory |
+
+Calling a dataset above your tier returns `402 Payment Required` with a message naming
+the dataset and the plan it requires — Professional refusals include the upgrade URL,
+Fund refusals ask you to contact sales.
+
+## When you run out of credits
+
+A metered call with an empty balance also returns `402 Payment Required`:
+
+- On the Free plan the message is `Free credits used up. Upgrade to keep making requests.`
+- On a paid plan it tells you that you are out of credits for the current billing period.
+
+The two `402` cases — out of credits versus not entitled — carry different messages, so
+your error handling can distinguish "top up or wait for renewal" from "this dataset
+needs a higher tier". See [Errors](/concepts/errors) for the envelope shapes.
+
+<Tip>
+You will get a heads-up before hitting zero: when a paid balance drops to 10% or less of
+its grant, we send one email per billing period to the account owner.
+</Tip>
+
+## Checking your consumption
+
+`GET /v1/usage` is free and returns request totals for a date range (defaulting to the
+current month), broken down by API key prefix:
+
+```bash
+curl "https://api.focusalpha.ai/v1/usage" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```json
+{
+  "period": { "from": "2026-08-01T00:00:00.000Z", "to": "2026-08-27T14:00:00.000Z" },
+  "totals": { "requests": 412, "chunksReturned": 3180 },
+  "byKey": [{ "prefix": "fa_live_7Fb3", "requests": 412 }]
+}
+```
+
+Your dashboard at [app.focusalpha.ai](https://app.focusalpha.ai) shows the same numbers
+alongside your remaining credit balance.
+
+## Related pages
+
+<Card title="Rate limits" href="/concepts/rate-limits" icon="gauge-high">
+  Per-minute request ceilings by plan, and which endpoints enforce them.
+</Card>
+<Card title="Errors" href="/concepts/errors" icon="triangle-exclamation">
+  Error envelopes and every status code the API returns.
+</Card>

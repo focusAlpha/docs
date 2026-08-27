@@ -1,0 +1,145 @@
+---
+title: "SEC filings index"
+description: "Which filings a company made, of which type, on which date — newest first, straight from SEC EDGAR."
+---
+
+The filings index answers "which filings did this company make?" — one row per filing, newest first, with a direct link to the filing folder on SEC EDGAR. Free discovery endpoints enumerate the covered tickers, CIKs, and supported form types.
+
+These routes return bare wrapper-key responses (no `meta` envelope) and use the flat `{ error, message }` error body — see [Errors](/concepts/errors). Pagination is `limit`-only, newest first — see [Pagination](/concepts/pagination). Unknown query parameters are silently ignored on these routes, so double-check parameter spelling.
+
+## GET /v1/filings
+
+Lists a company's SEC filings, newest first. At least one of `ticker` or `cik` is required.
+
+**Plan:** Free and above · **Credits:** 1 per call
+
+<ParamField query="ticker" type="string">
+  Trading symbol. Resolved to a CIK internally. At least one of `ticker` | `cik` is required.
+</ParamField>
+
+<ParamField query="cik" type="string">
+  SEC Central Index Key, accepted with any zero-padding. At least one of `ticker` | `cik` is required.
+</ParamField>
+
+<ParamField query="filing_type" type="string[]">
+  One or more SEC form types, repeatable (`?filing_type=10-K&filing_type=10-Q`). Supported values:
+  `10-K`, `10-Q`, `8-K`, `20-F`, `6-K`, `DEF 14A`, `S-1`, `424B4`, `13F-HR`, `13F-HR/A`, `10-K/A`, `10-Q/A`, `8-K/A`.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="10">
+  Number of filings to return, newest first. Minimum 1.
+</ParamField>
+
+<ParamField query="filed_at_gte" type="string">
+  Only filings filed on or after this `YYYY-MM-DD` date (inclusive).
+</ParamField>
+
+<ParamField query="filed_at_lte" type="string">
+  Only filings filed on or before this `YYYY-MM-DD` date (inclusive).
+</ParamField>
+
+<ParamField query="filed_at_gt" type="string">
+  Only filings filed strictly after this `YYYY-MM-DD` date (exclusive).
+</ParamField>
+
+<ParamField query="filed_at_lt" type="string">
+  Only filings filed strictly before this `YYYY-MM-DD` date (exclusive).
+</ParamField>
+
+```bash
+curl "https://api.focusalpha.ai/v1/filings?ticker=AAPL&filing_type=10-K&limit=2" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```json
+{
+  "filings": [
+    {
+      "cik": 320193,
+      "accession_number": "0000320193-25-000123",
+      "filing_type": "10-K",
+      "report_date": "2025-09-27",
+      "filing_date": "2025-10-31",
+      "ticker": "AAPL",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000123"
+    },
+    {
+      "cik": 320193,
+      "accession_number": "0000320193-24-000123",
+      "filing_type": "10-K",
+      "report_date": "2024-09-28",
+      "filing_date": "2024-11-01",
+      "ticker": "AAPL",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123"
+    }
+  ]
+}
+```
+
+<Note>
+  For the most recent filing, omit the date filters and read the first row. Guessing a date range can return an empty list that looks like "they filed nothing".
+</Note>
+
+<Note>
+  `cik` is an **integer** in this response — the one place in this API family where CIK is numeric. Everywhere else (including the discovery endpoints below) CIKs are zero-padded 10-character strings.
+</Note>
+
+<Note>
+  13F-HR filings are indexed here too, but only investment managers file them and most managers have no ticker — reach those by `cik`.
+</Note>
+
+## GET /v1/filings/tickers
+
+Enumerates every ticker covered by the filings index. Use it to check coverage before querying.
+
+**Plan:** Free and above · **Credits:** free (not metered)
+
+```bash
+curl https://api.focusalpha.ai/v1/filings/tickers \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```json
+{
+  "resource": "filings",
+  "tickers": ["A", "AA", "AAPL", "..."]
+}
+```
+
+## GET /v1/filings/ciks
+
+Enumerates every covered CIK, zero-padded to 10 characters.
+
+**Plan:** Free and above · **Credits:** free (not metered)
+
+```bash
+curl https://api.focusalpha.ai/v1/filings/ciks \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```json
+{
+  "resource": "filings",
+  "ciks": ["0000320193", "0000789019", "..."]
+}
+```
+
+## GET /v1/filings/types
+
+Lists the SEC form types the filings index supports.
+
+**Plan:** Free and above · **Credits:** free (not metered)
+
+```bash
+curl https://api.focusalpha.ai/v1/filings/types \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```json
+{
+  "filing_types": [
+    "10-K", "10-Q", "8-K", "20-F", "6-K", "DEF 14A", "S-1",
+    "424B4", "13F-HR", "13F-HR/A", "10-K/A", "10-Q/A", "8-K/A"
+  ]
+}
+```

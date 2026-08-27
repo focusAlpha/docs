@@ -1,47 +1,100 @@
 ---
 title: "Quickstart"
-description: "Begin with a guide on the fastest path to a successful outcome"
+description: "Create an API key and make your first FocusAlpha Data API request in under five minutes."
 ---
 
-Describe how someone begins using your product. What is the first thing they need to do? Are there any prerequisites?
-
-A quickstart should take someone from zero to using your product. They'll get a quick win and a sense of what they can accomplish.
+This guide takes you from zero to your first successful API call. You'll create a key, look up a company, and check your credit usage.
 
 ## Prerequisites
 
-Before you begin, you must have:
+- A FocusAlpha account — sign in at [app.focusalpha.ai](https://app.focusalpha.ai)
+- A terminal with `curl`, or any HTTP client
 
-- Requirement one (for example, Node.js 18+, a free account, an API key)
-- Requirement two (for example, a compatible device, a compatible browser, a compatible operating system)
+Every new account starts on the **Free plan with 100 credits** — enough to explore the entire Free-tier surface. Credits don't expire.
 
 ## Get started
 
 <Steps>
-  <Step title="Install">
-    Describe how to install your product or sign up.
+  <Step title="Create an API key">
+    In the [dashboard](https://app.focusalpha.ai), open **Settings → API keys** and create a key. Give it a name that identifies where it will be used.
+
+    The full key — `fa_live_` followed by 40 hex characters — is **shown exactly once** at creation. Store it somewhere safe; only a hash is kept on our side, so it can never be displayed again. You can hold up to 5 active keys and revoke any of them at any time.
 
     ```bash
-    npm install your-package
+    export FOCUSALPHA_API_KEY="fa_live_..."
     ```
   </Step>
-  <Step title="Configure">
-    Describe any setup or configuration needed before first use.
+  <Step title="Look up a company">
+    Search the company registry by ticker:
 
     ```bash
-    your-cli init
+    curl "https://api.focusalpha.ai/v1/companies?ticker=NVDA" \
+      -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
     ```
+
+    ```json
+    {
+      "data": [
+        {
+          "company_id": "cmp_...",
+          "company_name": "NVIDIA Corporation",
+          "country": "US",
+          "cik": "0001045810",
+          "primary_ticker": "NVDA",
+          "primary_exchange": "NASDAQ",
+          "sector": "Technology",
+          "...": "..."
+        }
+      ],
+      "next_cursor": null,
+      "coverage": {
+        "update_frequency": "weekly",
+        "history_status": "current_snapshot"
+      }
+    }
+    ```
+
+    The `company_id` is the canonical identifier — but on company-scoped routes you can keep using the ticker, CIK, or ISIN directly. See [Company identifiers](/concepts/company-identifiers).
+
+    This call cost **1 credit**.
   </Step>
-  <Step title="Run it">
-    Show the first thing a user does to see it working.
+  <Step title="Check your usage">
+    The usage endpoint is free to call and defaults to the current month:
 
     ```bash
-    your-cli start
+    curl "https://api.focusalpha.ai/v1/usage" \
+      -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
     ```
+
+    ```json
+    {
+      "period": { "from": "2026-08-01T00:00:00.000Z", "to": "2026-08-27T14:30:00.000Z" },
+      "totals": { "requests": 1, "chunksReturned": 0 },
+      "byKey": [{ "prefix": "fa_live_7Fb3", "requests": 1 }]
+    }
+    ```
+
+    Your remaining credit balance is always visible in the [dashboard](https://app.focusalpha.ai).
   </Step>
 </Steps>
 
-<Tip>
-  Give people a way to get help. This could be a link to a support page, a chat with a customer support agent, or a forum for your product.
+## Next steps
 
-  Example: Need help? Reach out to us at [support@yourcompany.com](mailto:support@yourcompany.com).
+<CardGroup cols={2}>
+  <Card title="Browse the API reference" icon="code" href="/api-reference">
+    Filings, financials, ownership, events, news, and international datasets.
+  </Card>
+  <Card title="Understand plans & credits" icon="coins" href="/concepts/plans-credits">
+    What's metered, what's free, and what each plan unlocks.
+  </Card>
+  <Card title="Pagination" icon="arrow-right" href="/concepts/pagination">
+    How cursors work and how the SEC-data routes differ.
+  </Card>
+  <Card title="Errors" icon="triangle-exclamation" href="/concepts/errors">
+    Status codes, error envelopes, and request IDs.
+  </Card>
+</CardGroup>
+
+<Tip>
+  Stuck? Email [support@focusalpha.ai](mailto:support@focusalpha.ai) and include the `requestId` from the error response — it lets us trace your exact request.
 </Tip>
