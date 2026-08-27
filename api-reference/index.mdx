@@ -12,7 +12,7 @@ https://api.focusalpha.ai
 Every route lives under `/v1`. All endpoints are `GET` except `POST /v1/retrieve`.
 
 <Note>
-  Prefer working from an AI client? Every dataset here is also exposed as a tool on the hosted MCP server — see [Connect via MCP](/mcp).
+  Prefer working from an AI client? Every dataset here is also exposed as a tool on the hosted MCP server — see [Connect via MCP](/mcp-setup).
 </Note>
 
 ## Conventions
@@ -50,7 +50,7 @@ Keys start with `fa_live_`. See [Authentication](/authentication).
 | Segment breakdowns | `/v1/financials/segments*` | [Financials](/api-reference/financials) | Free |
 | Company facts | `/v1/company/facts` | [Financials](/api-reference/financials) | Free |
 | Company registry | `/v1/companies*` | [Companies](/api-reference/companies) | Free |
-| Screener | `/v1/screen`, facets, terms | [Screener](/api-reference/screener) | Fund |
+| Screener | `/v1/screen` (facets and terms are free on every plan) | [Screener](/api-reference/screener) | Fund |
 | Prices & market cap | `/v1/companies/:id/market-data` | [Market data](/api-reference/market-data) | Professional |
 | Benchmarks | `/v1/benchmarks*` | [Market data](/api-reference/market-data) | Professional |
 | Short interest | `/v1/companies/:id/short-interest` | [Market data](/api-reference/market-data) | Professional |
@@ -66,12 +66,12 @@ Keys start with `fa_live_`. See [Authentication](/authentication).
 | Taiwan & Korea datasets | `/v1/companies/:id/tw/*`, `/kr/*` | [International](/api-reference/international) | Professional |
 | International disclosures | `/v1/companies/:id/disclosures` | [International](/api-reference/international) | Fund |
 | Form 20-F | `/v1/companies/:id/20f/*` | [International](/api-reference/international) | Professional |
-| Coverage & status | `/v1/_status`, discovery lists | [Filings](/api-reference/filings) | Free |
+| Coverage & status | `/v1/_status`, discovery lists | [Service status](/api-reference/status) | Free |
 | Health | `/v1/health`, `/v1/ready` | — | No auth |
 
 ## Company identifiers
 
-Company-scoped routes (`/v1/companies/:company_id/...`) accept a canonical id (`cmp_006294`), a **ticker**, a **CIK**, or an **ISIN** in the path — the API resolves any of them. The one exception is `GET /v1/companies/:company_id` itself, which requires the literal `cmp_` id.
+Company-scoped dataset routes (`/v1/companies/:company_id/...`) accept a canonical id (`cmp_006294`), a **ticker**, a **CIK**, or an **ISIN** in the path — the API resolves any of them. The exception is the four registry routes — `GET /v1/companies/:company_id` and its `/identifiers`, `/listings`, and `/events` siblings — which require the literal `cmp_` id.
 
 Non-US symbols carry their market suffix: `2330.TW` (Taiwan), `005930.KS` (Korea). A bare local code is ambiguous across markets — resolve it through [`GET /v1/companies`](/api-reference/companies) first.
 

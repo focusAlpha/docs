@@ -27,4 +27,4 @@ Pushes to `main` deploy to production automatically via the Mintlify GitHub app.
 
 ## Keeping docs accurate
 
-The API surface is defined by the `focusalpha-backend` repo (NestJS controllers + DTOs). When endpoints change there, update the matching page here. Per-dataset coverage windows and caveats live in `mcp-server/src/catalog.ts` in that repo — treat it as the source of truth for coverage prose.
+The API surface is defined by the backend service (controllers and DTOs). When endpoints change there, update the matching page here. Per-dataset coverage windows and caveats live in the backend's MCP dataset catalog — treat it as the source of truth for coverage prose.

@@ -23,16 +23,17 @@ Each row in `data` carries the company's `cmp_` ID alongside its identifiers.
 
 ## What each route accepts
 
-**The company detail route is strict.** `GET /v1/companies/:company_id` requires a
-literal `cmp_` ID in the path — a ticker there returns `404`:
+**The four registry routes are strict.** `GET /v1/companies/:company_id` and its
+siblings `/identifiers`, `/listings`, and `/events` require a literal `cmp_` ID in the
+path — a ticker there returns `404`:
 
 ```bash
 # Works
 curl "https://api.focusalpha.ai/v1/companies/cmp_01hxyzabc" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 
-# 404 — the detail route does not resolve tickers
-curl "https://api.focusalpha.ai/v1/companies/AAPL" \
+# 404 — the registry routes do not resolve tickers
+curl "https://api.focusalpha.ai/v1/companies/AAPL/identifiers" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 ```
 
@@ -77,9 +78,9 @@ for a company — useful when you arrive with one identifier system and need ano
 ```json
 {
   "data": [
-    { "type": "CIK", "value": "0000320193" },
-    { "type": "TICKER", "value": "AAPL" },
-    { "type": "ISIN", "value": "US0378331005" }
+    { "id_type": "CIK", "id_value": "0000320193", "source": "sec", "confidence": "high" },
+    { "id_type": "TICKER", "id_value": "AAPL", "source": "registry", "confidence": "high" },
+    { "id_type": "ISIN", "id_value": "US0378331005", "source": "registry", "confidence": "high" }
   ],
   "next_cursor": null,
   "coverage": { ... }

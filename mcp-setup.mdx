@@ -19,6 +19,10 @@ Authorization: Bearer fa_live_...
   MCP tool calls are ordinary API calls underneath. They spend the same credits, respect the same plan entitlements, and count against the same rate limits as REST requests — see [Plans & credits](/concepts/plans-credits). A missing or invalid key is rejected with `401` before any data is read.
 </Note>
 
+<Info>
+  This is the **data** server. Separately, `https://docs.focusalpha.ai/mcp` serves this documentation site itself over MCP (search and read the docs) — no API key required. Connect both if you want an agent that can look up the docs *and* pull the data.
+</Info>
+
 ## Claude Code
 
 ```bash

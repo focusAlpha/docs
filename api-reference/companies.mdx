@@ -181,4 +181,4 @@ curl "https://api.focusalpha.ai/v1/companies/cmp_006294/events" \
 
 ## Resolving identifiers on other routes
 
-Every other `/v1/companies/{company_id}/...` dataset route accepts a ticker, CIK, ISIN, **or** `cmp_` id in the path segment and resolves it for you. An identifier that resolves to nothing returns `404` with a message naming the accepted forms. Only the canonical-record route above is strict.
+Every `/v1/companies/{company_id}/...` **dataset** route — market data, news, guidance, the Taiwan and Korea datasets, and the rest — accepts a ticker, CIK, ISIN, **or** `cmp_` id in the path segment and resolves it for you. An identifier that resolves to nothing returns `404` with a message naming the accepted forms. The four registry routes on this page (`GET /v1/companies/:company_id`, `/identifiers`, `/listings`, `/events`) are strict: they require the literal `cmp_` id.

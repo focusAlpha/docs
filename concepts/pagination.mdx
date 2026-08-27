@@ -50,6 +50,9 @@ long-running sweep sees the dataset as it changes.
 
 ### Limit caps by route
 
+The caps below apply whichever pagination style the route uses — including the
+`limit`+`offset` route `GET /v1/documents/by-ticker/:ticker`.
+
 `limit` defaults vary, and each route caps it:
 
 | Routes | Max `limit` |
