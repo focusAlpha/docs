@@ -3,17 +3,26 @@
   "theme": "mint",
   "name": "FocusAlpha",
   "colors": {
-    "primary": "#B08A47",
-    "light": "#D4AF6A",
-    "dark": "#8A6B33"
+    "primary": "#18181b",
+    "light": "#fafafa",
+    "dark": "#18181b"
   },
   "favicon": "/favicon.svg",
+  "appearance": {
+    "default": "light"
+  },
+  "background": {
+    "color": {
+      "light": "#fdfdfc",
+      "dark": "#0f0f10"
+    }
+  },
   "fonts": {
     "heading": {
-      "family": "IBM Plex Sans"
+      "family": "Quicksand"
     },
     "body": {
-      "family": "Inter"
+      "family": "DM Sans"
     }
   },
   "navigation": {
