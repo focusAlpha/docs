@@ -1,0 +1,106 @@
+---
+title: "Cash Flow Statements"
+sidebarTitle: "Cash flow statements"
+description: "As-reported cash flow statements for SEC filers by fiscal year, quarter or trailing twelve months, in the currency and accounting standard the company filed."
+---
+
+Cash Flow Statements provides as-reported cash flow statements for SEC filers. Each observation is one fiscal period for one company, carrying operating, investing and financing cash flows as the company filed them, in its own reporting currency and under its own accounting standard. Rows are returned newest first.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Cash Flow Statements For
+
+Measure free cash flow and how it diverges from reported earnings. Track capital expenditure and buyback activity over time. Check whether growth is being funded by operations or by financing. Reconcile the cash movement against the [balance sheet](/financials/balance-sheets) for the same period.
+
+## Cash Flow Statements Coverage
+
+Coverage is SEC filers. Figures are read from each company's own XBRL data as filed, so the history runs as far back as the company's XBRL filings do. For a company that is not an SEC filer, resolve it through [the company registry](/companies/registry) first to see what it is — non-US issuers are served by [Taiwan Financials](/international/taiwan-financials), [Korea DART Financials](/international/korea-dart-financials) and [Form 20-F](/international/form-20f) instead.
+
+## Key Cash Flow Statements Fields
+
+The statement carries the reported operating, investing and financing line items, together with `report_period`, `period`, `currency` and `accounting_standard`.
+
+## Currency and Accounting Standard
+
+Every row carries `currency` and `accounting_standard`.
+
+`currency` is the currency the company reported in. Values are never converted to US dollars, so a row for a European filer is in euros and adding it to a US filer's row without conversion produces a meaningless number.
+
+`accounting_standard` is `us_gaap` or `ifrs`. The two standards define several line items differently, so check the field before comparing or summing across companies.
+
+
+
+## Cash Flow Statements Date Convention
+
+`report_period` is the end of the fiscal period the figures cover, and it is what the `report_period`, `report_period_gte`, `report_period_lte`, `report_period_gt` and `report_period_lt` filters apply to. Rows are returned newest first.
+
+`period` says what kind of period a row is. `annual` rows cover a fiscal year, `quarterly` rows cover a fiscal quarter, and `ttm` rows cover the trailing twelve months ending at `report_period`. A trailing-twelve-month row is a computed rolling window, not a period the company reported as such.
+
+## Cash Flow Statements Sources
+
+Figures are read from the company's own XBRL exhibits in its SEC filings. They are as reported: no restatement, no normalisation, and no currency conversion.
+
+## Query Cash Flow Statements
+
+Use the cash flow statements endpoint. One of `ticker` or `cik` is required, and `period` is required.
+
+<ParamField query="ticker" type="string">
+  Trading symbol. One of `ticker` or `cik` is required.
+</ParamField>
+
+<ParamField query="cik" type="string">
+  SEC Central Index Key. One of `ticker` or `cik` is required.
+</ParamField>
+
+<ParamField query="period" type="string" required>
+  `annual`, `quarterly` or `ttm`.
+</ParamField>
+
+<ParamField query="report_period" type="string">
+  Exact period end, `YYYY-MM-DD`. `report_period_gte`, `report_period_lte`, `report_period_gt` and `report_period_lt` bound a range.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="4">
+  Number of period rows to return, newest first.
+</ParamField>
+
+The response wrapper key is `cash_flow_statements`. These routes return a bare wrapper key rather than the standard envelope, page by `limit` only, and use the flat `{ error, message }` error body.
+
+## Related Datasets
+
+See also [Combined Financial Statements](/financials/combined) to get all three statements in one call, [Financial Metrics](/financials/metrics) for computed ratios over the same periods, [Segmented Financials](/financials/segments) for as-reported segment breakdowns, and [SEC Filings Index](/filings/index) for the filings these figures come from.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/financials/cash-flow-statements?ticker=AAPL&period=annual&limit=4" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "cash_flow_statements": [
+    {
+      "ticker": "AAPL",
+      "cik": "0000320193",
+      "report_period": "2025-09-27",
+      "period": "annual",
+      "currency": "USD",
+      "accounting_standard": "us_gaap",
+      "net_cash_flow_from_operations": 124800000000,
+      "capital_expenditure": -11200000000,
+      "net_cash_flow_from_investing": -8900000000,
+      "net_cash_flow_from_financing": -110300000000,
+      "issuance_or_purchase_of_equity_shares": -95600000000
+    }
+  ]
+}
+```
+
+</ResponseExample>

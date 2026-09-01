@@ -1,0 +1,100 @@
+---
+title: "Financial Metrics"
+sidebarTitle: "Financial metrics"
+description: "Computed financial ratios and per-share figures per reporting period: margins, returns, leverage and valuation inputs."
+---
+
+Financial Metrics provides computed ratios and per-share figures for a company, one row per reporting period. Each observation is derived from that period's as-reported statements — margins, returns, leverage measures and per-share figures. Rows are returned newest first.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Financial Metrics For
+
+Compare profitability and returns across periods without recomputing them. Screen a company's margin trend. Assemble valuation inputs alongside [daily market cap](/market-data/market-cap). Avoid re-deriving ratios that would otherwise have to be recomputed consistently across companies with different reporting shapes.
+
+## Financial Metrics Coverage
+
+Coverage follows the underlying statements: SEC filers, for the periods their XBRL filings cover. A metric is null where the inputs it needs were not reported for that period.
+
+## Key Financial Metrics Fields
+
+Rows carry margin measures, return measures, per-share figures and leverage measures, alongside `report_period`, `period`, `currency` and `accounting_standard`.
+
+## Currency and Accounting Standard
+
+Every row carries `currency` and `accounting_standard`. Currency values are as reported and are never converted to US dollars, so per-share and absolute figures are in the company's own currency. Ratios are dimensionless and are comparable across currencies, but they are still affected by the accounting standard: `us_gaap` and `ifrs` define several inputs differently. Check both fields before comparing across companies.
+
+## Financial Metrics Date Convention
+
+`report_period` is the end of the fiscal period the metrics are computed for, and it is what the report-period filters apply to. `period` is `annual`, `quarterly`, or `ttm` for a trailing-twelve-month window ending at `report_period`.
+
+Trailing-twelve-month metrics are computed from a rolling window rather than from a period the company reported as such.
+
+## Financial Metrics Sources
+
+Metrics are **calculated by FocusAlpha** from the company's own as-reported XBRL figures. They are not read from the filing, and companies do not publish them in this form. The inputs are as filed, so a metric inherits any peculiarity of the company's own reporting.
+
+## Query Financial Metrics
+
+Use the financial metrics endpoint. One of `ticker` or `cik` is required, and `period` is required.
+
+<ParamField query="ticker" type="string">
+  Trading symbol. One of `ticker` or `cik` is required.
+</ParamField>
+
+<ParamField query="cik" type="string">
+  SEC Central Index Key. One of `ticker` or `cik` is required.
+</ParamField>
+
+<ParamField query="period" type="string" required>
+  `annual`, `quarterly` or `ttm`.
+</ParamField>
+
+<ParamField query="report_period" type="string">
+  Exact period end, `YYYY-MM-DD`. The `_gte`, `_lte`, `_gt` and `_lt` variants bound a range.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="4">
+  Number of period rows to return, newest first.
+</ParamField>
+
+## Related Datasets
+
+See also [Income Statements](/financials/income-statements), [Balance Sheets](/financials/balance-sheets) and [Cash Flow Statements](/financials/cash-flow-statements) for the inputs, and [Company Screening](/companies/screening) to filter the whole universe on fundamental measures rather than reading one company.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/financial-metrics?ticker=AAPL&period=annual&limit=2" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "financial_metrics": [
+    {
+      "ticker": "AAPL",
+      "report_period": "2025-09-27",
+      "period": "annual",
+      "currency": "USD",
+      "accounting_standard": "us_gaap",
+      "gross_margin": 0.4694,
+      "operating_margin": 0.3136,
+      "net_margin": 0.2691,
+      "return_on_equity": 1.678,
+      "return_on_assets": 0.3069,
+      "debt_to_equity": 1.4753,
+      "earnings_per_share": 7.52,
+      "book_value_per_share": 4.48
+    }
+  ]
+}
+```
+
+</ResponseExample>

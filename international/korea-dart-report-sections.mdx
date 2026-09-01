@@ -1,0 +1,113 @@
+---
+title: "Korea DART Report Sections"
+sidebarTitle: "Korea report sections"
+description: "Sections of a Korean company's DART periodic report: ownership filings, the shareholder register, share structure, investments in other companies, and debt."
+---
+
+Korea DART Report Sections serves the individual sections of a Korean company's DART periodic report. Each observation is one row of one section, filed to DART in Korean. Five sections are available, each addressed by name, and every row links back to the original DART document.
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Korea Report Sections For
+
+Read a Korean company's shareholder register and insider filings. Track treasury shares and capital changes. See the stakes a company holds in other companies, with book value and the investee's own assets and net income. Build a debt maturity profile from bonds and commercial paper.
+
+## The Five Korea Report Sections
+
+`ownership` carries insider and 5%-holder filings. It is **event-based** rather than annual, so it is filtered with `date_gte` and `date_lte`, and its `kind` values are `insider` and `major_5pct`.
+
+`shareholders` is the annual register. `kind` values are `major`, `minority` and `major_change`.
+
+`share-structure` carries issued, treasury and outstanding shares. `kind` values are `total`, `treasury` and `capital_change`.
+
+`investments` carries stakes held in other companies, with book value and the investee's own assets and net income.
+
+`debt` carries bonds and commercial paper with maturity buckets. `kind` values are `corp_bond_issue`, `cp`, `corp_bond`, `short_bond`, `hybrid` and `contingent`.
+
+## Kind Is Not Decoration
+
+<Warning>
+The forms behind one section have **different reporting rules**, so rows of different kinds are not comparable and must not be summed together.
+
+Filter to one `kind` before aggregating anything.
+</Warning>
+
+## Some Rows Are the Filer's Own Subtotals
+
+<Warning>
+Some rows are the filer's **subtotal lines** — named 계 or 합계 — rather than individual entries.
+
+Check for them before summing a section, or the total will be counted twice.
+</Warning>
+
+## Korea Report Sections Date Convention
+
+`year` applies to every section **except** `ownership`, which is dated rather than annual and takes `date_gte` and `date_lte` instead.
+
+## Korea Report Sections Language and Sourcing
+
+Text fields are the filing's own Korean and are not translated.
+
+Every row carries `filing_url`, the original DART document the figure came from. Cite that when quoting a number.
+
+## Query Korea Report Sections
+
+Use the Korea section endpoints. Each section is its own route under the company's `kr` path. The endpoints accept a Korean corp code, a suffixed ticker, an ISIN or a `company_id` directly.
+
+<ParamField path="company_id" type="string" required>
+  A Korean DART corp code, a suffixed ticker such as `005930.KS`, an ISIN or a `company_id`.
+</ParamField>
+
+<ParamField query="kind" type="string">
+  The section's own row kind, as listed above. Not accepted on `investments`.
+</ParamField>
+
+<ParamField query="year" type="integer">
+  Report year. Accepted on every section except `ownership`.
+</ParamField>
+
+<ParamField query="date_gte" type="string">
+  Earliest report date, `YYYY-MM-DD`. `date_lte` sets the ceiling. **`ownership` only** — it is the one dated section.
+</ParamField>
+
+<ParamField query="limit" type="integer">
+  Rows per page, between 1 and 1000. Page through with `cursor`.
+</ParamField>
+
+## Related Datasets
+
+See also [Korea DART Financials](/international/korea-dart-financials) for the accounts, [Exchange Disclosures](/international/exchange-disclosures) for the Korean filing index, and [Proxy Ownership](/ownership/proxy-ownership) for the US equivalent of the shareholder register.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/005930.KS/kr/ownership?kind=major_5pct&date_gte=2026-01-01" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "company_id": "cmp_003104",
+      "section": "ownership",
+      "kind": "major_5pct",
+      "report_date": "2026-03-14",
+      "holder_name": "국민연금공단",
+      "shares": 468120000,
+      "percent": 7.84,
+      "filing_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=..."
+    }
+  ],
+  "next_cursor": null,
+  "coverage": { "available_from": "2022-01-01" }
+}
+```
+
+</ResponseExample>

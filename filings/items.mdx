@@ -1,0 +1,122 @@
+---
+title: "SEC Filing Items"
+sidebarTitle: "SEC filing items"
+description: "A single SEC filing split into its constituent items with full text — Item 1A risk factors, Item 7 MD&A, 8-K event items and more."
+---
+
+SEC Filing Items splits a single SEC filing into the numbered items the form defines, each with its text. Each observation is one item of one filing — Item 1A risk factors, Item 7 management's discussion and analysis, an 8-K event item. This is the endpoint for reading a named section of a named filing, as opposed to searching across filings by meaning.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use SEC Filing Items For
+
+Read a company's risk factors or MD&A in full. Diff one year's Item 1A against the previous year's. Pull the exact 8-K item text behind a structured event. Feed a specific section into a model rather than the whole filing.
+
+## SEC Filing Items Coverage
+
+The form types supported are `10-K`, `10-Q` and `8-K`. The [item types endpoint](/filings/coverage) lists which item codes exist for each form type.
+
+## How to Address One Filing
+
+A filing is addressed by ticker, form type and year, plus one more field depending on the form.
+
+For a **10-K**, ticker, `filing_type=10-K` and `year` are enough.
+
+For a **10-Q**, also pass `quarter` as 1 to 4.
+
+For an **8-K**, also pass the `accession_number`, because a company files many 8-Ks in a year. Get it from the [SEC Filings Index](/filings/index).
+
+`year` is the calendar year of the filing's **period of report**, not the year it was filed.
+
+## Items Incorporated by Reference
+
+Public companies routinely satisfy an item by pointing at another document rather than repeating it — a proxy statement, an exhibit. By default such an item returns the cross-reference as filed.
+
+Pass `resolve=true` to expand items incorporated by reference to their full text. Without it, an item can come back short and technically correct, which reads like missing data.
+
+## Key SEC Filing Item Fields
+
+Each item carries its item code — `Item-1A`, `Item-7`, and so on — and its text. `include_exhibits=true` attaches exhibit metadata to the response.
+
+An answer-less response is possible: a filing that could not be parsed into items returns a successful response with no items. That case is not charged a credit.
+
+## SEC Filing Items Date Convention
+
+`year` and `quarter` refer to the filing's **period of report** — the fiscal period the document covers — not to the date it was filed. A 10-K covering fiscal 2025 filed in October 2025 is `year=2025`.
+
+## SEC Filing Items Sources
+
+Item text is taken from the filing itself on SEC EDGAR and split along the form's own item structure. Text is not summarised or rewritten.
+
+## Query SEC Filing Items
+
+Use the filing items endpoint to split one filing.
+
+<ParamField query="ticker" type="string" required>
+  The issuer's ticker.
+</ParamField>
+
+<ParamField query="filing_type" type="string" required>
+  `10-K`, `10-Q` or `8-K`.
+</ParamField>
+
+<ParamField query="year" type="integer" required>
+  Calendar year of the filing's period of report.
+</ParamField>
+
+<ParamField query="quarter" type="integer">
+  Quarter 1 to 4. Required for a 10-Q.
+</ParamField>
+
+<ParamField query="accession_number" type="string">
+  The filing's accession number. Required for an 8-K.
+</ParamField>
+
+<ParamField query="item" type="string[]">
+  Specific item codes to return, repeatable — for example `Item-1A` and `Item-7`. Omit to return all items.
+</ParamField>
+
+<ParamField query="include_exhibits" type="boolean" default="false">
+  Attach exhibit metadata to the response.
+</ParamField>
+
+<ParamField query="resolve" type="boolean" default="false">
+  Expand items incorporated by reference to their full text.
+</ParamField>
+
+This route returns a bare wrapper key rather than the standard envelope, and uses the flat `{ error, message }` error body.
+
+## Related Datasets
+
+See also [SEC Filings Index](/filings/index) to find the filing and its accession number, [Semantic Retrieval](/transcripts/semantic-retrieval) when you want to search across filings by meaning rather than read one section, and [8-K Events](/events/8k-events) for structured events extracted from 8-K filings.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/filings/items?ticker=AAPL&filing_type=10-K&year=2025&item=Item-1A" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "ticker": "AAPL",
+  "filing_type": "10-K",
+  "year": 2025,
+  "accession_number": "0000320193-25-000123",
+  "items": [
+    {
+      "item": "Item-1A",
+      "title": "Risk Factors",
+      "text": "The Company's business, reputation, results of operations, financial condition ..."
+    }
+  ]
+}
+```
+
+</ResponseExample>

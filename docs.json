@@ -40,7 +40,7 @@
             ]
           },
           {
-            "group": "Concepts",
+            "group": "Core concepts",
             "pages": [
               "concepts/plans-credits",
               "concepts/rate-limits",
@@ -53,59 +53,199 @@
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "ETF data",
         "groups": [
           {
-            "group": "Overview",
+            "group": "ETF data",
             "pages": [
-              "api-reference/index"
+              "etf/overview",
+              "etf/identifiers"
             ]
           },
           {
-            "group": "Search & documents",
+            "group": "Portfolio",
             "pages": [
-              "api-reference/retrieval"
+              "etf/holdings",
+              "etf/classification"
             ]
           },
           {
-            "group": "SEC filings & financials",
+            "group": "Fund-level series",
             "pages": [
-              "api-reference/filings",
-              "api-reference/filing-items",
-              "api-reference/financials"
+              "etf/nav",
+              "etf/flows",
+              "etf/total-return",
+              "etf/distributions",
+              "etf/fees"
             ]
           },
           {
-            "group": "Companies & screening",
+            "group": "Selection",
             "pages": [
-              "api-reference/companies",
-              "api-reference/screener"
+              "etf/screening"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Ownership",
+        "groups": [
+          {
+            "group": "Holdings and insiders",
+            "pages": [
+              "ownership/13f",
+              "ownership/insider-trades",
+              "ownership/proxy-ownership",
+              "ownership/executive-compensation",
+              "ownership/short-interest"
             ]
           },
           {
-            "group": "Markets & ownership",
+            "group": "Advisers and investors",
             "pages": [
-              "api-reference/market-data",
-              "api-reference/ownership"
+              "advisers/form-adv",
+              "advisers/adv-brochure",
+              "advisers/screening",
+              "advisers/venture-investors"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Filings & financials",
+        "groups": [
+          {
+            "group": "Transcripts and documents",
+            "pages": [
+              "transcripts/earnings-call-transcripts",
+              "transcripts/semantic-retrieval",
+              "transcripts/documents"
             ]
           },
           {
-            "group": "Events & news",
+            "group": "SEC filings",
             "pages": [
-              "api-reference/events",
-              "api-reference/news"
+              "filings/index",
+              "filings/items",
+              "filings/coverage"
+            ]
+          },
+          {
+            "group": "Financial statements",
+            "pages": [
+              "financials/combined",
+              "financials/income-statements",
+              "financials/balance-sheets",
+              "financials/cash-flow-statements",
+              "financials/metrics",
+              "financials/segments",
+              "financials/company-facts"
+            ]
+          },
+          {
+            "group": "Companies",
+            "pages": [
+              "companies/registry",
+              "companies/identifiers",
+              "companies/listings",
+              "companies/corporate-events"
+            ]
+          },
+          {
+            "group": "Market data",
+            "pages": [
+              "market-data/prices",
+              "market-data/market-cap",
+              "market-data/benchmarks"
             ]
           },
           {
             "group": "International",
             "pages": [
-              "api-reference/international"
+              "international/taiwan-financials",
+              "international/taiwan-monthly-revenue",
+              "international/taiwan-foreign-ownership",
+              "international/korea-dart-financials",
+              "international/korea-dart-report-sections",
+              "international/form-20f"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Screening",
+        "groups": [
+          {
+            "group": "Screening",
+            "pages": [
+              "screening/overview"
             ]
           },
           {
-            "group": "Service",
+            "group": "Screening tools",
             "pages": [
-              "api-reference/status"
+              "companies/screening",
+              "etf/screening",
+              "advisers/screening"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Real-time events",
+        "groups": [
+          {
+            "group": "Real-time events",
+            "pages": [
+              "realtime/overview"
+            ]
+          },
+          {
+            "group": "News layer",
+            "pages": [
+              "news/news-events",
+              "news/company-news",
+              "news/themes"
+            ]
+          },
+          {
+            "group": "Filing events",
+            "pages": [
+              "events/8k-events",
+              "events/8k-exhibits"
+            ]
+          },
+          {
+            "group": "Guidance and results",
+            "pages": [
+              "events/guidance",
+              "events/guidance-changes",
+              "events/earnings-results"
+            ]
+          },
+          {
+            "group": "Market expectations",
+            "pages": [
+              "events/prediction-markets",
+              "events/earnings-consensus"
+            ]
+          },
+          {
+            "group": "Local markets",
+            "pages": [
+              "international/exchange-disclosures"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Account",
+        "groups": [
+          {
+            "group": "Account and service",
+            "pages": [
+              "account/usage",
+              "account/dataset-status"
             ]
           }
         ]

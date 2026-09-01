@@ -1,0 +1,98 @@
+---
+title: "Earnings Call Transcripts"
+sidebarTitle: "Earnings call transcripts"
+description: "Speaker-segmented earnings call transcripts and other company documents, searchable by meaning and citable back to the source passage."
+---
+
+Earnings Call Transcripts are quarterly earnings call records held in the FocusAlpha document corpus, alongside SEC filings and other company documents. Each document is associated with a company, a fiscal year and quarter, and a source URL, and is stored as ordered text segments. Transcripts are reached in two ways: by [semantic retrieval](/transcripts/semantic-retrieval) across the corpus, or by listing and fetching a specific document.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Earnings Call Transcripts For
+
+Find what management said about a topic — pricing, demand, margins, tariffs, competition — in their own words, with a citation. Read a full call in order rather than in fragments. Ground a generated answer in source passages so every claim can be checked. Pair management's language with the [guidance](/events/guidance) and [reported figures](/events/earnings-results) extracted from the same event.
+
+## What Is in the Document Corpus
+
+The corpus holds earnings call transcripts and company filings and documents. Every document carries a company, a fiscal `year` and `quarter` where the document has one, a document type, and a `source_url` pointing at the original.
+
+Documents are stored as ordered **segments**. A segment is a contiguous passage of the document, and it is the unit that retrieval returns and cites.
+
+## How to Find Which Periods Exist
+
+Do not assume a company's available periods from the current date. Call the document listing endpoint for a ticker first: it returns that company's documents most recent first, and it is the authoritative answer to which years and quarters exist.
+
+A guessed period returns stale passages rather than an error, so listing first is what prevents a silently wrong answer.
+
+## Key Document Fields
+
+`document_id` identifies a document and is what the fetch and segment endpoints take. `ticker` identifies the company. `year` and `quarter` place the document in fiscal time. The document type distinguishes a transcript from a filing. `source_url` links the original, and page numbers are carried where the source has them.
+
+## Earnings Call Transcript Date Convention
+
+`year` and `quarter` are the **fiscal** period the document covers, not the calendar date it was published. A company with a September fiscal year end reports its Q1 in January, and this dataset labels that document Q1 of the following fiscal year, as the company does.
+
+## Earnings Call Transcript Sources
+
+Transcripts are sourced from the calls themselves and are speaker-segmented. Filings in the corpus come from SEC EDGAR. Every document retains a `source_url`, so any passage returned by retrieval can be traced to the original document.
+
+## List and Fetch Documents
+
+Use the document listing endpoint to find a company's documents, then fetch one by id or read its ordered segments.
+
+<ParamField path="ticker" type="string" required>
+  The company's ticker.
+</ParamField>
+
+<ParamField query="year" type="integer">
+  Restrict to one fiscal year, between 2000 and 2100.
+</ParamField>
+
+<ParamField query="quarter" type="string">
+  Restrict to one fiscal quarter: `Q1`, `Q2`, `Q3` or `Q4`.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="20">
+  Maximum documents to return, up to 100. `offset` pages further.
+</ParamField>
+
+To read one document, pass its `document_id` to the document endpoint for metadata, or to the segments endpoint for its ordered text. The segments endpoint returns up to 100 segments per call, 20 by default.
+
+## Related Datasets
+
+See also [Semantic Retrieval](/transcripts/semantic-retrieval) to search the corpus by meaning, [Document Corpus](/transcripts/documents) for the listing and fetch endpoints in detail, [Management Guidance](/events/guidance) for forward-looking statements extracted from these calls, and [Reported Earnings Figures](/events/earnings-results) for the numbers the release printed.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/documents/by-ticker/NVDA?limit=3" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "documents": [
+    {
+      "document_id": "doc_9f3a21",
+      "ticker": "NVDA",
+      "year": 2026,
+      "quarter": "Q2",
+      "document_type": "earnings_call_transcript",
+      "title": "NVIDIA Corporation Q2 2026 Earnings Call",
+      "source_url": "https://example.com/nvda-q2-2026-call",
+      "segment_count": 184
+    }
+  ],
+  "total": 42,
+  "limit": 3,
+  "offset": 0
+}
+```
+
+</ResponseExample>

@@ -1,0 +1,108 @@
+---
+title: "ETF Fund Flows"
+sidebarTitle: "ETF fund flows"
+description: "Daily ETF creations and redemptions in currency, computed from split-adjusted share changes and the prior day's NAV."
+---
+
+ETF Fund Flows reports daily creations and redemptions for an ETF share class, expressed in the fund's currency. Each observation is associated with an `etf_id`, a valuation date, the previous valuation date it was measured against, and a status saying whether the flow could be trusted. Flows are calculated by FocusAlpha rather than reported by the issuer.
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use ETF Fund Flows For
+
+Identify which funds are gathering assets and which are bleeding them, independent of market moves. Separate a change in assets under management into performance and flow. Rank a peer group by twenty-day net flow to find where money is rotating. Cross flows against [ETF Classification](/etf/classification) to measure flows into a sector, a factor or a wrapper type rather than into a single fund.
+
+## How ETF Fund Flows Are Calculated
+
+Flow for a day is the change in split-adjusted shares outstanding since the previous valuation date, multiplied by the previous day's split-adjusted NAV. That is the standard construction: new shares are created and redeemed at NAV, so the share count is what moves when money moves.
+
+Because both inputs are split-adjusted, a share split does not produce a phantom flow.
+
+## Key ETF Fund Flow Fields
+
+`valuation_date` is the date the flow is attributed to. `previous_valuation_date` is the date it was measured against, which is not always the prior calendar day. `shares_change` is the change in split-adjusted shares outstanding. `flow` is that change valued at the previous day's NAV, in the fund's currency; a negative value is a net redemption. `flow_status` says whether the number is usable.
+
+## Why an ETF Fund Flow Can Be Null
+
+A `flow` of null with a `flow_status` of `no_flow` means shares multiplied by NAV did not reconcile to the fund's filed net assets on that day, so no flow number is published for it. FocusAlpha does not invent a number when the identity fails; a null here is a refusal, not a gap.
+
+Days where the fund did not publish, or published only part of the inputs, likewise carry no flow.
+
+## ETF Fund Flow Date Convention
+
+`valuation_date` is the date the flow is attributed to, and it matches the `valuation_date` of the underlying [NAV series](/etf/nav). `previous_valuation_date` is the earlier date used in the difference. When a fund skips a publication day, the two dates are more than one session apart and the flow covers the whole gap — read `previous_valuation_date` before annualising or summing.
+
+## ETF Fund Flow Sources
+
+Flows are calculated by FocusAlpha from issuer-published shares outstanding and issuer-published NAV. No vendor flow estimate is used, and no flow is modelled from price or volume.
+
+## Query ETF Fund Flows
+
+Use the ETF history endpoint with `series=flow` to retrieve the daily flow series for one fund.
+
+<ParamField path="id" type="string" required>
+  `etf_id` (`E000011`), a ticker (`SPY`), an ISIN, or a CUSIP.
+</ParamField>
+
+<ParamField query="series" type="string" required>
+  Set to `flow` for this dataset.
+</ParamField>
+
+<ParamField query="date_gte" type="string">
+  Earliest valuation date to return, `YYYY-MM-DD`. `date_lte` sets the ceiling.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="250">
+  Rows per page, between 1 and 1000. Pages run newest to oldest via `cursor`.
+</ParamField>
+
+To screen many funds by flow at once rather than reading one fund's history, use the `min_flow_20d` and `max_flow_20d` filters on [ETF Screening](/etf/screening).
+
+## Related Datasets
+
+See also [ETF NAV and Shares Outstanding](/etf/nav) for the inputs this series is built from, [ETF Screening](/etf/screening) for cross-fund flow filters, and [ETF Classification](/etf/classification) for grouping flows by segment.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/etfs/SPY/history?series=flow&date_gte=2026-08-25" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "etf_id": "E000011",
+  "ticker": "SPY",
+  "series": "flow",
+  "data": [
+    {
+      "valuation_date": "2026-08-29",
+      "previous_valuation_date": "2026-08-28",
+      "shares_change": -1200000,
+      "flow": -768900000.0,
+      "flow_status": "computed"
+    },
+    {
+      "valuation_date": "2026-08-28",
+      "previous_valuation_date": "2026-08-27",
+      "shares_change": null,
+      "flow": null,
+      "flow_status": "no_flow"
+    }
+  ],
+  "next_cursor": "MjAyNi0wOC0yNw",
+  "coverage": {
+    "available_from": "1993-02-01",
+    "available_to": "2026-08-29",
+    "update_frequency": "daily"
+  }
+}
+```
+
+</ResponseExample>

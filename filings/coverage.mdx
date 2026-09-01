@@ -1,0 +1,63 @@
+---
+title: "SEC Filings Coverage Endpoints"
+sidebarTitle: "Filings coverage"
+description: "Free discovery endpoints listing every ticker and CIK with SEC filings coverage, the supported form types, and the item types per form."
+---
+
+The SEC Filings Coverage endpoints enumerate what the SEC datasets cover: which tickers and CIKs have filings, which form types are supported, and which item codes exist per form type. All four are free — they cost no credits — so coverage can be checked before spending anything.
+
+<Info>
+  **Plan:** Free and above · **Credits:** free (not metered)
+</Info>
+
+## What You Can Use the Filings Coverage Endpoints For
+
+Check whether a company is covered before querying it. Validate a form type or an item code against the supported list rather than guessing one. Build a local universe of covered CIKs. Distinguish "not covered" from "covered but nothing found", which is the difference between a data gap and a real answer.
+
+## The Four Filings Coverage Endpoints
+
+The **covered tickers** endpoint lists every ticker in the filings index. The **covered CIKs** endpoint lists every CIK in it, zero-padded to ten characters.
+
+The **form types** endpoint lists the SEC form types the filings index supports. The **item types** endpoint lists the item codes available per form type, for use with [SEC Filing Items](/filings/items).
+
+Two further free endpoints cover the company-facts dataset specifically: its own covered-tickers and covered-CIKs lists. See [Company Facts](/financials/company-facts).
+
+## Why CIK Formatting Differs Here
+
+CIKs on these endpoints are **zero-padded ten-character strings**, for example `0000320193`. The [SEC Filings Index](/filings/index) returns `cik` as an integer instead. Both refer to the same identifier; only the representation differs, and the filings index is the exception.
+
+## Filings Coverage Sources
+
+The lists are derived from the filings index itself, which comes from SEC EDGAR. They describe what FocusAlpha holds, not what EDGAR contains.
+
+## Query the Filings Coverage Endpoints
+
+None of these endpoints takes a parameter. Each returns a `resource` naming the dataset and an array of values.
+
+Because they cost no credits, they are safe to call on every deployment or as a startup check.
+
+## Related Datasets
+
+See also [SEC Filings Index](/filings/index) to query the filings themselves, [SEC Filing Items](/filings/items) for the item codes these endpoints enumerate, [Company Facts](/financials/company-facts) for its own coverage endpoints, and [Coverage and Freshness](/concepts/coverage) for how coverage is reported on every other dataset.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/filings/types" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "filing_types": [
+    "10-K", "10-Q", "8-K", "20-F", "6-K", "DEF 14A", "S-1",
+    "424B4", "13F-HR", "13F-HR/A", "10-K/A", "10-Q/A", "8-K/A"
+  ]
+}
+```
+
+</ResponseExample>

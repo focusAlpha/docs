@@ -1,0 +1,129 @@
+---
+title: "Form 20-F Data"
+sidebarTitle: "Form 20-F"
+description: "Form 20-F content for foreign private issuers: filing profile, as-reported segments, disclosed ownership, notes and the filing's own XBRL facts."
+---
+
+Form 20-F Data serves the content of a foreign private issuer's annual Form 20-F filing with the SEC. Each observation belongs to one filing, addressed by section: the filing profile, as-reported segments, disclosed ownership, the notes, and the filing's own XBRL facts. A 20-F is an **annual** filing — there are no quarterly rows in this dataset.
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Form 20-F Data For
+
+Read a non-US issuer's segment breakdown as it reported it. See the holders the filing disclosed. Pull a specific XBRL fact from the filing's own instance. Confirm which accounting standard and reporting currency a filing used before comparing it with anything.
+
+## The Financial Statements Are Not in This Dataset
+
+<Warning>
+The three financial statements are **not** served here. [Income Statements](/financials/income-statements), [Balance Sheets](/financials/balance-sheets) and [Cash Flow Statements](/financials/cash-flow-statements) are the single contract for them, and a covered 20-F filer's annual IFRS statements are served there through the 20-F fallback.
+
+Look for a 20-F filer's statements on the ordinary statement endpoints, not here.
+</Warning>
+
+## The Form 20-F Sections
+
+`profile` says which filing this is: its date, its accession number, its reporting currency, and whether it reports under IFRS or US GAAP.
+
+`segments` carries as-reported business and geographic breakdowns, filterable by `dimension`, `metric` or `fiscal_year`.
+
+`ownership` carries the holders the filing disclosed.
+
+`notes` carries the filing's note disclosures.
+
+`xbrl-facts` carries the filing's own XBRL instance.
+
+## Do Not Sum Form 20-F Ownership Rows
+
+<Warning>
+Board-as-a-group lines appear **beside** individual holders in the `ownership` section. Adding them together double-counts every board member.
+</Warning>
+
+## XBRL Facts Require a Narrowing Parameter
+
+A single XBRL instance holds thousands of facts, so the `xbrl-facts` section **requires at least one** of `tag`, `accession` or `period_end`.
+
+An unnarrowed request is rejected rather than returning an unusable page.
+
+## Form 20-F Date Convention
+
+A 20-F covers a **fiscal year**. `fiscal_year` on the segments section selects one. `period_end` on the XBRL section selects facts by their period end date.
+
+## Form 20-F Sources
+
+All content is read from the issuer's own Form 20-F filing on SEC EDGAR, including the XBRL instance the issuer filed with it.
+
+## Query Form 20-F Data
+
+Use the 20-F endpoints. Each section is its own route under the company's `20f` path.
+
+<ParamField path="company_id" type="string" required>
+  A ticker, CIK, ISIN or `company_id`.
+</ParamField>
+
+<ParamField query="dimension" type="string">
+  `geographic` or `business`. Segments section only.
+</ParamField>
+
+<ParamField query="metric" type="string">
+  For example `revenue` or `assets`. Segments section only.
+</ParamField>
+
+<ParamField query="fiscal_year" type="integer">
+  Fiscal year. Segments section only.
+</ParamField>
+
+<ParamField query="tag" type="string">
+  An XBRL tag. XBRL-facts section — at least one of `tag`, `accession` or `period_end` is required there.
+</ParamField>
+
+<ParamField query="accession" type="string">
+  One filing's accession number.
+</ParamField>
+
+<ParamField query="period_end" type="string">
+  Period end date, `YYYY-MM-DD`. XBRL-facts section.
+</ParamField>
+
+<ParamField query="limit" type="integer">
+  Rows per page, between 1 and 1000. Page through with `cursor`.
+</ParamField>
+
+## Related Datasets
+
+See also [Income Statements](/financials/income-statements) and its siblings for a 20-F filer's statements, [Segmented Financials](/financials/segments) for the US-filer equivalent of the segments section, [SEC Filings Index](/filings/index) for the filing itself, and [Exchange Disclosures](/international/exchange-disclosures) for what the same issuer told its home market.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/TSM/20f/segments?dimension=geographic&metric=revenue" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "company_id": "cmp_014081",
+      "ticker": "TSM",
+      "accession": "0001193125-26-045123",
+      "fiscal_year": 2025,
+      "dimension": "geographic",
+      "member": "United States",
+      "metric": "revenue",
+      "value": 2410000000000,
+      "currency": "TWD",
+      "accounting_standard": "ifrs"
+    }
+  ],
+  "next_cursor": null,
+  "coverage": { "available_from": "2014-12", "update_frequency": "annual" }
+}
+```
+
+</ResponseExample>

@@ -1,0 +1,132 @@
+---
+title: "Exchange Disclosures (Taiwan, Korea, Japan)"
+sidebarTitle: "Exchange disclosures"
+description: "Company announcements filed to the Taiwan, Korean and Japanese markets — the authoritative local-market feed, in one call across all three."
+---
+
+Exchange Disclosures serves company announcements filed to the Taiwan (TWSE and TPEx), Korean (DART) and Japanese (TDnet) markets. Each observation is one announcement, newest first, in the local language. One call covers all three markets: omit `market` and it searches every market the company lists in.
+
+<Info>
+  **Plan:** Fund · **Credits:** 1 per call
+</Info>
+
+This is the authoritative local-market feed, and it includes disclosures that are often absent from SEC filings.
+
+## What You Can Use Exchange Disclosures For
+
+Monitor what an Asian-listed company told its own market. Catch an earnings flash, a buyback progress report or an officer change hours before it reaches an English-language wire. Reach disclosures that never appear in an SEC filing at all.
+
+<Note>
+A foreign private issuer may also furnish some local announcements to the SEC on Form 6-K, so this feed and the [SEC filings index](/filings/index) can overlap.
+</Note>
+
+## markets_searched Distinguishes Two Empty Results
+
+`markets_searched` names the markets that were actually consulted for the company.
+
+An empty result with an empty `markets_searched` means the company lists in none of the three markets — a different fact from a company that lists in one and announced nothing.
+
+## These Feeds Are Weeks Old, Not Archives
+
+<Warning>
+These are recency products. Japan starts **2026-06-15**, Taiwan **2026-07-22** and Korea **2026-07-28**.
+
+An empty result for an earlier date is the feed's start, not a company that announced nothing. Per-market start dates come back in the response's `coverage` block.
+
+Do not build historical studies on this feed. Use the filings and financial statement datasets for history.
+</Warning>
+
+## What Each Market Provides
+
+**Japan** links the document itself: `filing_url` is the PDF and `xbrl_url` carries the numbers for earnings releases. It also classifies every row in `category` — `earnings_flash`, `ma`, `buyback_progress`, `officer_change` and others.
+
+**Korea** links the original DART document and names the `filer`, who is often **not the company**: a large-holdings report about Samsung Electronics is filed by Samsung C&T.
+
+**Taiwan** carries the announcement's **full text**. `description_chars` says how long it is, and `include_text=true` returns it.
+
+## Category Filtering Excludes Two Markets
+
+`category` is **Japan's own classification**. Taiwan and Korea publish none, so filtering on `category` excludes them entirely rather than returning them unfiltered.
+
+## Exchange Disclosures Language
+
+Titles and text are in the local language and are **not translated**.
+
+## Exchange Disclosures Date Convention
+
+`date_gte` and `date_lte` filter on the disclosure date in the local market. Rows are returned newest first across all searched markets.
+
+## Exchange Disclosures Sources
+
+Announcements come from TWSE and TPEx, from DART, and from TDnet — the companies' own filings to their own markets.
+
+## Query Exchange Disclosures
+
+Use the disclosures endpoint. It accepts a suffixed ticker such as `2330.TW`, `005930.KS` or `6758.T`, a `company_id`, a CIK or an ISIN.
+
+<ParamField path="company_id" type="string" required>
+  A suffixed ticker, a `company_id`, a CIK or an ISIN.
+</ParamField>
+
+<ParamField query="market" type="string">
+  `taiwan`, `korea` or `japan`. Omit to search every market the company lists in.
+</ParamField>
+
+<ParamField query="category" type="string">
+  Japan's own classification, for example `earnings_flash`. Filtering on it excludes Taiwan and Korea.
+</ParamField>
+
+<ParamField query="date_gte" type="string">
+  Earliest disclosure date, `YYYY-MM-DD`. `date_lte` sets the ceiling.
+</ParamField>
+
+<ParamField query="include_text" type="boolean" default="false">
+  Return the Taiwanese announcement's full text.
+</ParamField>
+
+<ParamField query="limit" type="integer">
+  Rows per page. Page through with `cursor`.
+</ParamField>
+
+## Related Datasets
+
+See also [Korea DART Report Sections](/international/korea-dart-report-sections) for the sections of a Korean periodic report — this endpoint is the filing index, not the section content — [Taiwan Financials](/international/taiwan-financials), [Korea DART Financials](/international/korea-dart-financials), and [Company News Events](/news/news-events), where these filings also flow into the aggregated event stream.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/6758.T/disclosures?market=japan&category=earnings_flash" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "company_id": "cmp_022411",
+      "market": "japan",
+      "disclosure_date": "2026-08-06",
+      "title": "2027年3月期 第1四半期決算短信〔IFRS〕(連結)",
+      "category": "earnings_flash",
+      "filer": null,
+      "filing_url": "https://www.release.tdnet.info/inbs/....pdf",
+      "xbrl_url": "https://www.release.tdnet.info/inbs/....zip",
+      "description_chars": null
+    }
+  ],
+  "markets_searched": ["japan"],
+  "next_cursor": null,
+  "coverage": {
+    "japan": { "available_from": "2026-06-15" },
+    "taiwan": { "available_from": "2026-07-22" },
+    "korea": { "available_from": "2026-07-28" },
+    "update_frequency": "daily"
+  }
+}
+```
+
+</ResponseExample>

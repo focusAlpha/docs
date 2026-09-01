@@ -1,0 +1,128 @@
+---
+title: "Company Registry"
+sidebarTitle: "Company registry"
+description: "The canonical global company record: roughly 25,000 listed companies across 82 countries, resolvable from ticker, CIK, ISIN, Taiwan code or Korean DART code."
+---
+
+The Company Registry is FocusAlpha's canonical record of listed companies — roughly 25,000 companies across 82 countries. Each observation is one company, identified by a `company_id` such as `cmp_014081`, and carries its name, country, sector, primary listing and market capitalisation. The registry is what every other dataset's company identifier resolves against.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use the Company Registry For
+
+Resolve whatever identifier you hold — ticker, CIK, ISIN, Taiwan security code, Korean DART corp code — to one canonical `company_id`. Confirm which company a name refers to before running a larger query. Check what kind of company you are dealing with and which market it lists on.
+
+## Company Registry Coverage
+
+Roughly 25,000 listed companies in 82 countries.
+
+<Warning>
+The registry is **wider than the SEC datasets**. Finding a company here does not mean it files with the SEC. A company with no CIK files nothing with the SEC, so every SEC-scoped dataset will be empty for it no matter how it is queried — that is a coverage fact about the company, not a gap in the data.
+</Warning>
+
+The registry deliberately **excludes exchange-traded funds**. ETFs live in their own registry — see [ETF Identifiers](/etf/identifiers).
+
+## Company Registry Date Convention
+
+The registry is a **current snapshot**, not a history. A company's earlier name or ticker still resolves to it, but the row returned shows today's values. To see how a listing changed over time, use [Company Listings](/companies/listings), where each symbol carries the dates it was valid for.
+
+## Key Company Registry Fields
+
+`company_id` is the canonical identifier. Name, country, sector and industry describe the company. The primary listing carries the symbol and exchange. `market_cap` sizes it.
+
+<Warning>
+`market_cap` is denominated in `market_cap_currency`, which is **not** the row's `currency`. The row's `currency` is what the listing's price is quoted in. For London-listed names the price currency is GBp — pence — while the market cap is in GBP. To compare sizes across countries, use [Company Screening](/companies/screening), which converts to US dollars.
+</Warning>
+
+## How Non-US Symbols Are Spelled
+
+Non-US symbols carry their market suffix: `2330.TW`, `6976.TWO`, `005930.KS`. A bare local code passed as `ticker` finds nothing.
+
+Local codes have their own parameters instead. `local_security_code` takes a Taiwan security code such as `2330`, and `corp_code` takes an eight-digit Korean DART code.
+
+<Note>
+The regional endpoints accept a Taiwan code, a suffixed ticker, a Korean corp code, an ISIN or a `company_id` directly. There is no need to resolve an identifier through the registry before calling them.
+</Note>
+
+## Company Registry Sources
+
+The registry is assembled from exchange listing registries, regulator filings and identifier registries, and maintained as an append-only ledger of identifiers so a company keeps its `company_id` across renames and re-listings.
+
+## Search the Company Registry
+
+Use the companies endpoint. At least one parameter is required on every page.
+
+<ParamField query="q" type="string">
+  Company-name substring, minimum 2 characters.
+</ParamField>
+
+<ParamField query="ticker" type="string">
+  Trading symbol, with its market suffix for non-US listings.
+</ParamField>
+
+<ParamField query="cik" type="string">
+  SEC Central Index Key.
+</ParamField>
+
+<ParamField query="isin" type="string">
+  ISIN.
+</ParamField>
+
+<ParamField query="local_security_code" type="string">
+  A Taiwan security code, such as `2330`.
+</ParamField>
+
+<ParamField query="corp_code" type="string">
+  An eight-digit Korean DART corp code.
+</ParamField>
+
+<ParamField query="country" type="string">
+  Country of the company.
+</ParamField>
+
+<ParamField query="limit" type="integer">
+  Rows per page. Page through with `cursor`.
+</ParamField>
+
+To read one company by its `company_id`, use the company profile endpoint. An unknown `company_id` returns a `404`, not an empty list.
+
+## Related Datasets
+
+See also [Company Identifiers](/companies/identifiers) for every id a company is known by, [Company Listings](/companies/listings) for its symbols and their validity dates, [Corporate Events](/companies/corporate-events) for splits, mergers and ticker changes, [Company Screening](/companies/screening) to find companies by condition rather than by identifier, and [Company Facts](/financials/company-facts) for the SEC filer record.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies?q=taiwan%20semiconductor" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "company_id": "cmp_014081",
+      "name": "Taiwan Semiconductor Manufacturing Company Limited",
+      "country": "Taiwan",
+      "sector": "Information Technology",
+      "industry": "Semiconductors",
+      "primary_ticker": "2330.TW",
+      "exchange": "TWSE",
+      "currency": "TWD",
+      "market_cap": 28900000000000,
+      "market_cap_currency": "TWD",
+      "cik": null
+    }
+  ],
+  "next_cursor": null,
+  "coverage": { "update_frequency": "weekly" }
+}
+```
+
+</ResponseExample>

@@ -1,0 +1,159 @@
+---
+title: "Structured 8-K Events"
+sidebarTitle: "8-K events"
+description: "What an SEC 8-K filing said, as structured fields: officer changes, debt obligations, mergers, bankruptcies and eleven more event families, extracted within minutes of filing."
+---
+
+Structured 8-K Events turns what an SEC 8-K filing said into fields rather than text. Each observation is one concrete fact: an officer appointment with the person, role, effective date and predecessor; a borrowing with principal, rate, maturity and lender; a listing-deficiency notice with the rule, deadline and planned remedy. Rows are extracted within minutes of the filing reaching EDGAR.
+
+<Info>
+  **Plan:** Fund · **Credits:** 1 per call; the families vocabulary is free
+</Info>
+
+## What You Can Use Structured 8-K Events For
+
+Get deal, debt and issuance terms as fields instead of parsing filing prose. Screen across companies — every CEO departure this week, every bankruptcy this month — which no per-company endpoint can do. Pull the detail behind a headline: the [news event feed](/news/news-events) broadcasts one line per 8-K event and its rows carry the same `event_id`, so a feed row and its terms join on the accession number.
+
+For the filing's own prose, use [8-K Exhibits](/events/8k-exhibits). For Item 2.02 earnings numbers, use [Reported Earnings Figures](/events/earnings-results) — results are deliberately not in this dataset.
+
+## The Fourteen 8-K Event Families
+
+`officer_director_change`, `debt_obligation`, `unregistered_equity_sale`, `asset_transaction_completed`, `merger_announcement`, `auditor_change`, `listing_deficiency`, `charter_amendment`, `exit_or_disposal_plan`, `material_impairment`, `earnings_restatement`, `bankruptcy`, `obligation_acceleration`, `cybersecurity_incident`.
+
+Set `list_families` to true — it is free — to get the families, their fields, and the observed values of each. Then filter with `family` plus `attr_key` and `attr_value`, for example `family=officer_director_change`, `attr_key=role_group`, `attr_value=ceo`. A guessed value returns an empty page rather than an error.
+
+## Structured 8-K Event Latency
+
+Measured on 2026-08-13: the median is **12 minutes** from SEC acceptance to extraction, and 94% of filings are extracted within 30 minutes.
+
+That is recent enough to act on but not instant. A filing accepted in the last few minutes may not have its rows yet, and an empty result for one is that gap rather than an absence of events.
+
+## Two 8-K Dates That Are Not Interchangeable
+
+`announced_at` is the **SEC acceptance instant** — when the market learned. Windows and ordering on this endpoint run on `announced_at`, and `announced_gte` and `announced_lte` filter it.
+
+`occurred_on` is the **event's own date**. It is earlier than `announced_at` on 59% of rows, by a median of 3 days, 46 days at the 99th percentile, and years in the tail — an 8-K/A amending an old restructuring plan, for instance.
+
+Use `occurred_on` only to date the event itself, never to order or window a feed.
+
+## How to Read Attribute Values
+
+`attrs` values are strings **exactly as the filing printed them** — `$700 million`, `SOFR plus 1.75%`. They are never converted and never summed. Do not do arithmetic on them without parsing them deliberately.
+
+## How to Read the Quote and Verification Fields
+
+`quote` is the filing sentence the row came from. `quote_check` grades it: `verbatim`, `stitched` (assembled from two or three real passages), `short` (found in the filing word for word but too short to carry the row's facts — a three-word name, a table total), or `unverified`. **Only `unverified` is a warning.**
+
+`numbers_unverified` lists any number the filing text does not contain — almost always a value the extraction derived, such as a total it summed or a scale it applied from a table header. `derived_fields` names the fields holding them. Treat those fields as computed, not read.
+
+`gate` of `item` means the company filed under that item code, which is the statutory case. Any other value is a content probe that found the event described under a different code — lower certainty, kept distinguishable on purpose. Set `verified_only` for the strictest cut.
+
+## Counting 8-K Events Correctly
+
+<Warning>
+Filter or de-duplicate on `is_amendment`. 2.5% of rows come from an 8-K/A, and the amending filing usually carries the **whole event again**, not just the correction — 52 measured events hold rows from both the original and its amendment.
+
+Do not de-duplicate by person or amount instead. An amendment routinely renames the same person ("John Fraser" becomes "John (Jack) Fraser") and re-scopes roles, so the rows do not match field by field.
+</Warning>
+
+<Warning>
+A filing can yield several rows — two officers, three note tranches — ordered by `seq`. Never add a row whose `attrs.is_total` is `yes` to its siblings.
+
+But do not assume the siblings sum to it either. Measured over 75 groups, 69 reconcile and 6 do not, because the same section can also carry a separate offering, a cumulative-to-date series total, only the insider subset of a wider placement, or unenumerated tranches such as "additional tranches of $250,000 each". A gap is a question to check in the filing, not a missing row.
+</Warning>
+
+## Structured 8-K Events Sources
+
+Rows are extracted from the 8-K filings themselves on SEC EDGAR. Every row keeps the filing sentence it came from, and the verification fields above say exactly how far each value can be trusted.
+
+## Query Structured 8-K Events
+
+Use the 8-K events endpoint. Omitting `company` searches the whole market, which is this dataset's distinguishing mode.
+
+<ParamField query="company" type="string">
+  A `company_id`, ticker, CIK or ISIN. **Omit to screen across all companies.**
+</ParamField>
+
+<ParamField query="list_families" type="boolean">
+  Return the family, field and value vocabulary instead of events. Free — call it first.
+</ParamField>
+
+<ParamField query="family" type="string">
+  Event family, for example `officer_director_change`.
+</ParamField>
+
+<ParamField query="item" type="string">
+  8-K item code, for example `5.02`. The same events under an alternative key.
+</ParamField>
+
+<ParamField query="accession" type="string">
+  One filing, for example `0001437749-26-024904`. This is the join key from a news-feed row.
+</ParamField>
+
+<ParamField query="attr_key" type="string">
+  Attribute field to filter on, for example `role_group`. Requires `attr_value`.
+</ParamField>
+
+<ParamField query="gate" type="string">
+  `item` for statutory disclosure only, `probe` for content-probe rows only. Both by default.
+</ParamField>
+
+<ParamField query="verified_only" type="boolean">
+  Only rows whose quote is verbatim and whose numbers all matched the filing.
+</ParamField>
+
+<ParamField query="announced_gte" type="string">
+  Earliest acceptance instant, `YYYY-MM-DD` or `2026-08-12T21:30:00Z`. `announced_lte` sets the ceiling.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Rows per page, between 1 and 1000. Page through with `cursor`.
+</ParamField>
+
+## Related Datasets
+
+See also [8-K Exhibits](/events/8k-exhibits) for the filing's own prose, [Reported Earnings Figures](/events/earnings-results) for Item 2.02 numbers, [Management Guidance](/events/guidance) for forward-looking statements, [Company News Events](/news/news-events) for the same events as a broadcast feed, and [Company Screening](/companies/screening) to combine an event family with fundamental filters.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/8k-events?family=officer_director_change&attr_key=role_group&attr_value=ceo&announced_gte=2026-08-01" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "event_id": "0001437749-26-024904:5.02",
+      "accession": "0001437749-26-024904",
+      "ticker": "EXMP",
+      "family": "officer_director_change",
+      "item": "5.02",
+      "seq": 1,
+      "announced_at": "2026-08-12T21:30:00Z",
+      "occurred_on": "2026-08-08",
+      "is_amendment": false,
+      "gate": "item",
+      "attrs": {
+        "person_name": "John Fraser",
+        "role_group": "ceo",
+        "effective_date": "September 1, 2026",
+        "predecessor": "Maria Lopez"
+      },
+      "quote": "On August 8, 2026, the Board appointed John Fraser as Chief Executive Officer, effective September 1, 2026.",
+      "quote_check": "verbatim",
+      "numbers_unverified": [],
+      "derived_fields": []
+    }
+  ],
+  "next_cursor": null,
+  "coverage": { "update_frequency": "minutes" }
+}
+```
+
+</ResponseExample>

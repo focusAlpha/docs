@@ -1,0 +1,153 @@
+---
+title: "Macro and Policy News Themes"
+sidebarTitle: "Macro news themes"
+description: "Macro and policy news by theme — rates, inflation, jobs, trade, fx, geopolitics — for the events that move markets without naming a company."
+---
+
+Macro and Policy News Themes serves macro and policy news grouped by theme: rates, inflation, jobs, econ-data, trade, fx, fiscal, geopolitics, commodity, election, market and crisis. Each observation is one article under one theme. This is the only way to reach most of this data — 89% of macro items carry no ticker at all, so no company-scoped endpoint can return them.
+
+<Info>
+  **Plan:** Fund · **Credits:** 1 per call; listing the themes is free
+</Info>
+
+Calling the endpoint with no theme lists the vocabulary, and that call is free.
+
+## What You Can Use Macro News Themes For
+
+Track the policy and data events that move markets without naming a company. Separate a rate decision from commentary about one. Find where a policy event lands on named companies. Build a macro briefing that company feeds structurally cannot produce.
+
+## The Two Tracks
+
+`track` splits the dataset in half.
+
+`macro` is an event read as a macro story, usually with no company attached.
+
+`company` is the same policy event landing **on a name**. That is the half to ask for when the question is which of my holdings this hits.
+
+## Stance Separates Doing From Saying
+
+`stance` is `decided` for an action — a rate decision — and `talked` for commentary about one, such as a governor speaking. It is null where neither applies.
+
+Treating a governor's remark as a decision is the mistake this field exists to prevent.
+
+## Themes Are Not Mutually Exclusive
+
+A yen-defence rate move is both `rates` and `fx`, and it appears under each. An article carrying several themes appears once per theme, keyed by the same `news_id`.
+
+<Note>
+The theme names are a stable contract. The underlying rule tags are not, so filter on `theme` rather than trying to match keywords in the title.
+</Note>
+
+## Score and Impact Score Are Different Fields
+
+`score` is the rule pass, from 0 to 100, and it is on **every** row. It is what to rank on when you want everything.
+
+`impact_score` and `why` are null for items below the reading threshold, which means the model never read the item — not that it read it and had no view. A score of 40 or above means the model also read it.
+
+## Key Macro News Fields
+
+`news_id` identifies the article. `theme` is the stable theme name matched. `track` and `stance` are as described above. `global_reach` marks an item judged world-scale rather than confined to one country.
+
+`symbols` and `company_ids` list the companies the text names, where there are any. `title`, `summary` and `link` describe the article, and `summary_withheld` set to true means the blurb exists but may not be passed on.
+
+`channel`, `publisher` and `region` describe the source kind, the outlet and the market region. `human_reviewed` marks an item a person checked.
+
+`event_id`, `event_type`, `event_subtype` and `subject` carry the event grouping where the model assigned one.
+
+## Macro News Date Convention
+
+`event_at` is the event's own clock. `time_basis` says which clock that is, `time_precision` says how precise it is, and `is_scheduled` marks a future calendar entry rather than something that has happened.
+
+Read `time_basis` and `time_precision` before comparing `event_at` against another source's timestamps.
+
+## Macro News Sources
+
+Items come from news wires and primary policy sources. Theme assignment, `track`, `stance` and the impact read are FocusAlpha's, not the publisher's.
+
+## Query Macro News Themes
+
+Use the news themes endpoint. Omit `theme` to list the vocabulary and what feeds each theme — that call costs no credits.
+
+<ParamField query="theme" type="string">
+  Theme name. Omit to list the available themes.
+</ParamField>
+
+<ParamField query="track" type="string">
+  `macro` for an item read as a macro story, `company` for the same policy event landing on a named company.
+</ParamField>
+
+<ParamField query="stance" type="string">
+  `decided` for an action, `talked` for commentary about one.
+</ParamField>
+
+<ParamField query="region" type="string">
+  `us`, `jp`, `kr`, `tw`, `cn`, `eu`, `in` or `global`.
+</ParamField>
+
+<ParamField query="min_score" type="integer">
+  Minimum rule score, 0 to 100. 40 or above was read by the model.
+</ParamField>
+
+<ParamField query="since" type="string">
+  ISO timestamp lower bound. `until` sets the ceiling.
+</ParamField>
+
+<ParamField query="include_scheduled" type="boolean">
+  Include future calendar entries.
+</ParamField>
+
+<ParamField query="limit" type="integer">
+  Rows per page, up to 200. Page through with `cursor`.
+</ParamField>
+
+## Related Datasets
+
+See also [Company News Events](/news/news-events) for the company-scoped event feed, [Company News Articles](/news/company-news) for the individual write-ups, and [Index and Commodity Benchmarks](/market-data/benchmarks) for the market series a macro event moves.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/news/themes/rates?track=macro&stance=decided&min_score=40" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "news_id": "nws_5518899",
+      "theme": "rates",
+      "track": "macro",
+      "stance": "decided",
+      "global_reach": true,
+      "score": 82,
+      "impact_score": 74,
+      "why": "A 25bp cut against a market pricing no change.",
+      "human_reviewed": false,
+      "symbols": [],
+      "company_ids": [],
+      "title": "Federal Reserve cuts rates by 25 basis points",
+      "summary": "The FOMC lowered the target range ...",
+      "summary_withheld": false,
+      "link": "https://example.com/article",
+      "channel": "wire",
+      "publisher": "Reuters",
+      "region": "us",
+      "event_at": "2026-08-26T18:00:00Z",
+      "time_basis": "publish_time",
+      "time_precision": "minute",
+      "is_scheduled": false,
+      "event_type": "monetary_policy",
+      "subject": "FOMC"
+    }
+  ],
+  "next_cursor": null,
+  "coverage": { "available_from": "2026-07-26", "update_frequency": "minutes" }
+}
+```
+
+</ResponseExample>

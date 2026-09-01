@@ -1,0 +1,106 @@
+---
+title: "SEC Filings Index"
+sidebarTitle: "SEC filings index"
+description: "Which filings a company made with the SEC, of which form type, on which date — newest first, with accession numbers and EDGAR links."
+---
+
+The SEC Filings Index answers which filings a company made: one row per filing, newest first, with the form type, the period of report, the filing date, the accession number and a link to the filing folder on SEC EDGAR. Each observation is one filing by one filer, identified by CIK. The index is the discovery layer for every other SEC dataset.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use the SEC Filings Index For
+
+Find a company's most recent 10-K, 10-Q or 8-K and the accession number that identifies it. Feed that accession number to [SEC Filing Items](/filings/items) to read the filing's sections. Build a filing calendar for a company. Locate an investment manager's 13F-HR filings by CIK.
+
+## SEC Filings Index Coverage
+
+Coverage follows SEC EDGAR. The supported form types include `10-K`, `10-Q`, `8-K`, `20-F`, `6-K`, `DEF 14A`, `S-1`, `424B4`, `13F-HR` and the corresponding `/A` amendments; the [filings coverage endpoints](/filings/coverage) return the authoritative list, along with every covered ticker and CIK.
+
+<Note>
+13F-HR filings are indexed here too, but only institutional investment managers file them and most managers have no ticker. Reach those filings by `cik`. The positions inside them are served by [13F Institutional Holdings](/ownership/13f).
+</Note>
+
+## Key SEC Filing Index Fields
+
+`cik` identifies the filer. `accession_number` identifies the filing and is the key that other endpoints take. `filing_type` is the SEC form type. `ticker` is the filer's ticker where it has one. `url` links the filing folder on EDGAR.
+
+<Note>
+`cik` is an **integer** in this response. This is the one place in the API where CIK is numeric — everywhere else, including the filings coverage endpoints, CIKs are zero-padded ten-character strings.
+</Note>
+
+## SEC Filings Index Date Convention
+
+Two dates travel with every filing and they answer different questions.
+
+`report_date` is the period the filing covers — a fiscal year end for a 10-K, a quarter end for a 10-Q.
+
+`filing_date` is the day the document reached the SEC. It is the date the information became public, and it is the date this index sorts and filters on. The `filed_at_gte`, `filed_at_lte`, `filed_at_gt` and `filed_at_lt` parameters all apply to `filing_date`.
+
+<Note>
+For the most recent filing, omit the date filters and read the first row. Guessing a date range can return an empty list that reads like "the company filed nothing".
+</Note>
+
+## SEC Filings Index Sources
+
+The index comes straight from SEC EDGAR, with no third-party redistribution. Form types, dates and accession numbers are the SEC's own.
+
+## Query the SEC Filings Index
+
+Use the filings endpoint. At least one of `ticker` or `cik` is required.
+
+<ParamField query="ticker" type="string">
+  Trading symbol, resolved to a CIK internally. At least one of `ticker` or `cik` is required.
+</ParamField>
+
+<ParamField query="cik" type="string">
+  SEC Central Index Key, accepted with any zero-padding. At least one of `ticker` or `cik` is required.
+</ParamField>
+
+<ParamField query="filing_type" type="string[]">
+  One or more SEC form types, repeatable — `?filing_type=10-K&filing_type=10-Q`. A comma-separated value is rejected as an invalid form type with a `400`. Omit to return all forms.
+</ParamField>
+
+<ParamField query="filed_at_gte" type="string">
+  Only filings filed on or after this `YYYY-MM-DD` date. `filed_at_lte`, `filed_at_gt` and `filed_at_lt` bound the range in the other directions.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="10">
+  Number of filings to return, newest first. Minimum 1, no hard cap.
+</ParamField>
+
+These routes return a bare `filings` wrapper key rather than the standard envelope, page by `limit` only, and use the flat `{ error, message }` error body. Unknown query parameters are silently ignored on this route, so check parameter spelling.
+
+## Related Datasets
+
+See also [SEC Filing Items](/filings/items) to read a filing's sections, [Filings Coverage](/filings/coverage) for the covered tickers, CIKs and form types, [Financial Statements](/financials/combined) for the numbers inside these filings, and [8-K Events](/events/8k-events) for structured events extracted from 8-K filings.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/filings?ticker=AAPL&filing_type=10-K&limit=2" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "filings": [
+    {
+      "cik": 320193,
+      "accession_number": "0000320193-25-000123",
+      "filing_type": "10-K",
+      "report_date": "2025-09-27",
+      "filing_date": "2025-10-31",
+      "ticker": "AAPL",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000123"
+    }
+  ]
+}
+```
+
+</ResponseExample>

@@ -1,0 +1,73 @@
+---
+title: "ETF Data"
+sidebarTitle: "ETF data overview"
+description: "FocusAlpha ETF data: holdings, NAV, shares outstanding, fund flows, distributions, fees and classification, built from SEC filings and issuer files."
+---
+
+FocusAlpha ETF Data is a set of datasets describing exchange-traded funds: their identifiers, their daily NAV and shares outstanding, their security-level holdings, their fund flows, their distributions, their prospectus fees, and a holdings-derived classification. Every dataset is built from SEC filings and the issuers' own published files, and each observation carries the date the issuer attached to it. All of it is available through the FocusAlpha API and MCP.
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call
+</Info>
+
+## What an ETF Is in This Data Model
+
+An ETF is three different things at three different grains, and mixing them is the most common source of wrong numbers.
+
+The **share class** is identified by `etf_id` (for example `E000011`). NAV, shares outstanding, assets under management, fees, splits and distributions belong to the share class.
+
+The **portfolio** is identified by `portfolio_id`. Holdings, classification labels and exposure belong to the portfolio. Several share classes — including mutual-fund siblings — can sit on one portfolio and share these rows.
+
+The **listing** carries the ticker, the exchange and the currency. A fund can have more than one listing.
+
+When `series_class_count` is greater than 1, other share classes sit on the same portfolio. A portfolio-level asset figure is therefore not that share class's size: VTI's portfolio is roughly 3.3 times the size of the VTI share class.
+
+<Warning>
+ETFs are not companies in FocusAlpha. The company registry deliberately excludes funds, so searching the company endpoints for `SPY` returns nothing. ETF questions go to the ETF endpoints, and those endpoints cannot resolve operating companies.
+</Warning>
+
+## ETF Datasets
+
+<CardGroup cols={2}>
+  <Card title="ETF Holdings" icon="list" href="/etf/holdings">
+    Security-level portfolio holdings as reported by the issuer.
+  </Card>
+  <Card title="ETF NAV and Shares Outstanding" icon="chart-line" href="/etf/nav">
+    Daily net asset value, shares outstanding, net assets, market price and premium/discount.
+  </Card>
+  <Card title="ETF Fund Flows" icon="arrow-right-arrow-left" href="/etf/flows">
+    Daily creations and redemptions in currency.
+  </Card>
+  <Card title="ETF Total Return" icon="percent" href="/etf/total-return">
+    A distribution-reinvested NAV series, published separately from price-basis NAV.
+  </Card>
+  <Card title="ETF Distributions" icon="money-bill" href="/etf/distributions">
+    Declared distribution events with ex, record and pay dates.
+  </Card>
+  <Card title="ETF Fees" icon="receipt" href="/etf/fees">
+    Gross and net expense ratios from the prospectus fee table.
+  </Card>
+  <Card title="ETF Classification" icon="sitemap" href="/etf/classification">
+    The wrapper tier and the four-level holdings-derived taxonomy.
+  </Card>
+  <Card title="ETF Screening" icon="filter" href="/etf/screening">
+    Select funds by label and by measured portfolio characteristics.
+  </Card>
+  <Card title="ETF Identifiers" icon="fingerprint" href="/etf/identifiers">
+    Share class, portfolio and listing identifiers, and how to resolve one.
+  </Card>
+</CardGroup>
+
+## ETF Data Sources
+
+ETF data is assembled from three kinds of primary source. SEC filings supply registration identity (`cik`, `sec_series_id`, `sec_class_id`), the prospectus fee table and prospectus strategy text. Issuer files — the daily holdings and NAV files each sponsor publishes on its own site — supply holdings, NAV, shares outstanding and net assets. Adjudicated corporate-action records supply splits and distributions.
+
+Values that FocusAlpha computed rather than read are labelled as such. `aum_is_derived` says an AUM figure was computed as published NAV multiplied by published shares rather than read from a filing, and a per-value `status` of `derived` says the same thing about a NAV row.
+
+## Two Cadences in One Dataset
+
+ETF classification labels are recomputed from holdings once a month. The measured columns — AUM, flows, premium/discount, expense-ratio coverage — refresh daily. A fund that changed its portfolio mid-month keeps its old label until the next monthly run, and a newly launched fund can carry a full set of labels while every measured column is still null.
+
+## Related Datasets
+
+See also [13F Institutional Holdings](/ownership/13f) for holdings reported by investment managers rather than by funds, and [Company Registry](/companies/registry) for the operating companies an ETF's equity holdings link to.

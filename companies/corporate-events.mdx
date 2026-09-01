@@ -1,0 +1,77 @@
+---
+title: "Corporate Events"
+sidebarTitle: "Corporate events"
+description: "Registry-level corporate actions for a company: stock splits, mergers and ticker changes."
+---
+
+Corporate Events returns registry-level corporate actions for one company: stock splits, mergers and ticker changes. Each observation is one action with its effective date. These are the structural events that change what a company's identifiers and price series mean.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Corporate Events For
+
+Adjust a price or share-count series correctly across a split. Explain a discontinuity in a ticker-keyed dataset. Trace a company through a merger or a re-listing. Decide whether an apparent 50% price drop was a market move or a two-for-one split.
+
+## Why Corporate Events Matter for Price Series
+
+A stock split changes the price and the share count without changing the company's value. A series that is not split-adjusted therefore shows a large apparent move on the split date, which reads exactly like a market event.
+
+Market capitalisation is unaffected by a split, which is why it is the reliable check: if the price halved but the market cap did not, the cause was a split, not a sell-off.
+
+## Corporate Events Date Convention
+
+Each action carries the date it took effect. A ticker change takes effect on the date the new symbol began trading, which is also the boundary between two rows in [Company Listings](/companies/listings).
+
+## Corporate Events Sources
+
+Corporate actions come from exchange and regulator notices. They are structural registry facts, not extracted from news.
+
+## Query Corporate Events
+
+Use the company events endpoint with a canonical `company_id`.
+
+<ParamField path="company_id" type="string" required>
+  Canonical company id, for example `cmp_014081`.
+</ParamField>
+
+<Note>
+This endpoint is not the live news event feed. For what is happening to a company right now — filings, wires and IR disclosures aggregated into labelled events — see [Company News Events](/news/news-events).
+</Note>
+
+## Related Datasets
+
+See also [Company Listings](/companies/listings) for the symbol history a ticker change produces, [Daily Prices and Market Cap](/market-data/prices) for the series a split affects, and [8-K Events](/events/8k-events) for structured events extracted from SEC filings.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/cmp_014081/events" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "event_type": "split",
+      "effective_date": "2022-07-18",
+      "ratio": "20:1",
+      "detail": "Twenty-for-one stock split"
+    },
+    {
+      "event_type": "ticker_change",
+      "effective_date": "2019-04-01",
+      "detail": "ABC.OL renamed to XYZ.OL"
+    }
+  ],
+  "next_cursor": null
+}
+```
+
+</ResponseExample>

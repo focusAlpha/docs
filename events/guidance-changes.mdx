@@ -1,0 +1,106 @@
+---
+title: "Guidance Changes"
+sidebarTitle: "Guidance changes"
+description: "How a US company's guidance moved between earnings events — only the metrics that changed, with both values, both documents, and a flag for metrics where up is bad."
+---
+
+Guidance Changes reports how a company's guidance **moved**. Each observation is one metric compared against the same metric at the company's previous earnings event, carrying both values and both documents' ids. Only the metrics that changed appear, newest first.
+
+<Info>
+  **Plan:** Fund · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Guidance Changes For
+
+Detect a raise or a cut without diffing two guidance snapshots yourself. Build a list of what a company revised at its latest print. Feed a change signal into a screen — [Company Screening](/companies/screening) carries `guidance_raises_90d_gte` and `guidance_cuts_90d_gte` for the cross-company version of the same question.
+
+## Read the Change Together With higher_is_worse
+
+<Warning>
+`change` alone is not good news or bad news. Read it together with `higher_is_worse`.
+
+A cost line rising is a raise in the numbers and bad news for the company. Presenting `change` on its own inverts the meaning of every cost, expense and leverage metric.
+</Warning>
+
+## Why a Metric Can Be Missing From Guidance Changes
+
+Pairs that the comparability rules refused are **absent here rather than guessed at**. A basis switch, a period that does not line up, a metric renamed between events — each of those makes two figures non-comparable, and this dataset declines to compute a change rather than computing a misleading one.
+
+Those statements stay readable through [Management Guidance](/events/guidance), which serves the statements themselves. `view=latest` there is "what is it guiding now".
+
+<Note>
+An empty result can also simply mean the company reiterated everything. Pair with [Management Guidance](/events/guidance) before reading an empty response as silence.
+</Note>
+
+## Key Guidance Change Fields
+
+`metric_key` is the normalised metric. `current_value` and `prior_value` are the two phrasings, and `change` is the movement between them. `higher_is_worse` says which direction is good for this metric. `prior_transcript_id` identifies the earlier document, so both sides of the comparison can be checked.
+
+## Guidance Changes Date Convention
+
+`year` identifies the **fiscal** year of the earnings event, not a calendar date. Comparison is always against the company's **previous earnings event**, not against a fixed interval, so the gap between the two sides varies with the company's reporting calendar.
+
+## Guidance Changes Coverage
+
+Coverage is the same ledger as [Management Guidance](/events/guidance): US companies from 2025-01-29, through filed releases and earnings calls.
+
+## Guidance Changes Sources
+
+Both sides of every comparison are read from the company's own filed release or earnings call. The comparison itself is computed by FocusAlpha, under rules that refuse a pair rather than force one.
+
+## Query Guidance Changes
+
+Use the guidance changes endpoint for one company.
+
+<ParamField path="company_id" type="string" required>
+  A `company_id`, ticker, CIK or ISIN.
+</ParamField>
+
+<ParamField query="metric_key" type="string">
+  Normalised metric, for example `revenue`, `ebitda`, `core_eps`.
+</ParamField>
+
+<ParamField query="year" type="integer">
+  Fiscal year of the earnings event.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Rows per page, between 1 and 1000. Page through with `cursor`.
+</ParamField>
+
+## Related Datasets
+
+See also [Management Guidance](/events/guidance) for the statements themselves, [Reported Earnings Figures](/events/earnings-results) for what the quarter actually delivered, and [Company Screening](/companies/screening) for the same question across the whole universe.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/AAPL/guidance-changes?year=2026" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "ticker": "AAPL",
+      "metric_key": "gross_margin",
+      "period": "FY26Q4",
+      "current_value": "47% to 48%",
+      "prior_value": "46% to 47%",
+      "change": "raise",
+      "higher_is_worse": false,
+      "prior_transcript_id": "tr_87004",
+      "year": 2026
+    }
+  ],
+  "next_cursor": null,
+  "coverage": { "available_from": "2025-01-29", "update_frequency": "daily" }
+}
+```
+
+</ResponseExample>

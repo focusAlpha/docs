@@ -1,0 +1,120 @@
+---
+title: "ETF Identifiers and Share Classes"
+sidebarTitle: "ETF identifiers"
+description: "How FocusAlpha identifies an ETF: the etf_id share class, the portfolio_id pool, listings, ISIN, CUSIP and SEC series and class ids."
+---
+
+ETF Identifiers describes how an exchange-traded fund is identified in FocusAlpha data. A fund is represented at three grains — the share class (`etf_id`), the portfolio it invests through (`portfolio_id`), and its exchange listings — and different datasets are keyed to different grains. Every ETF endpoint accepts an `etf_id`, a ticker, an ISIN or a CUSIP as the identifier.
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use ETF Identifiers For
+
+Resolve a ticker a user typed into a stable internal id before storing it. Detect that two tickers are share classes of the same portfolio and must not be double-counted. Follow a fund across a ticker change, because former tickers and former names are kept on the record. Join an ETF to its SEC registration through `cik`, `sec_series_id` and `sec_class_id`.
+
+## The Three ETF Grains
+
+`etf_id` identifies the **share class**, for example `E000011`. NAV, shares outstanding, net assets, fees, splits and distributions are all share-class facts and are keyed here.
+
+`portfolio_id` identifies the **portfolio**, the pool of securities the share class owns a slice of. Holdings, classification labels and exposure are portfolio facts. Several share classes can sit on one portfolio, mutual-fund siblings included, and they share those rows.
+
+The **listing** carries the ticker, the exchange and the trading currency. A fund can have more than one listing, so a ticker is not a primary key.
+
+`series_class_count` says how many share classes sit on the portfolio, and `is_sole_class` is true when only one does. When more than one does, a portfolio-level asset figure is not that share class's size — VTI's portfolio is roughly 3.3 times its share class.
+
+## Key ETF Identifier Fields
+
+`etf_id` and `portfolio_id` are FocusAlpha identifiers. `ticker`, `exchange` and `currency` describe the primary listing, and `listings` carries every listing. `isin` and `cusip` are the standard security identifiers for the share class. `cik`, `sec_series_id` and `sec_class_id` are the fund's SEC registration identifiers. `former_tickers` and `former_names` carry the record's own history. `active` is false when the newest fetch reports the fund as inactive or delisted.
+
+## How ETF Identifier Resolution Works
+
+Identifier resolution is exact and most-specific first. A value matching `E` or `M` followed by six digits is read as an `etf_id`. A twelve-character value in ISIN shape is tried as an ISIN and then as a ticker. Everything else is tried as a ticker and then as a CUSIP.
+
+Ticker lookup is unambiguous or nothing. When a symbol maps to more than one fund, the lookup returns no row rather than guessing, because the listing registry it reads refuses ambiguous symbols by design.
+
+<Warning>
+ETFs are not companies in FocusAlpha, and the two registries do not overlap. The company endpoints exclude funds, so a company search for `SPY` returns nothing; the ETF endpoints exclude operating companies, so an ETF lookup for `AAPL` returns nothing.
+</Warning>
+
+## ETF Identifier Sources
+
+Registration identifiers come from SEC filings. Tickers, exchanges and listing currency come from the listing registry. ISIN and CUSIP come from the issuer files and the registration record. Nothing in this dataset is inferred.
+
+## Search the ETF Registry
+
+Use the ETF search endpoint to find a fund and its identifiers by name, ticker, ISIN or CUSIP. Calling it with no filter and paging with `cursor` and `limit=1000` is the supported way to pull the whole registry as a table.
+
+<ParamField query="q" type="string">
+  Fund-name substring, case-insensitive, minimum 2 characters.
+</ParamField>
+
+<ParamField query="ticker" type="string">
+  Exact ticker, case-insensitive, resolved at the listing level.
+</ParamField>
+
+<ParamField query="isin" type="string">
+  Exact ISIN.
+</ParamField>
+
+<ParamField query="cusip" type="string">
+  Exact CUSIP.
+</ParamField>
+
+<ParamField query="active" type="boolean" default="true">
+  Funds whose newest fetch reports them inactive or delisted are excluded. Pass `false` to include them.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="50">
+  Rows per page, between 1 and 1000. Page through with `cursor`.
+</ParamField>
+
+Each row carries the identifiers above plus the two coarsest labels — the wrapper tier and the asset class — so a search result is enough to tell an equity index fund from a leveraged commodity fund without a second call.
+
+## Related Datasets
+
+See also [ETF Data](/etf/overview) for how the three grains fit together, [ETF Holdings](/etf/holdings) for portfolio-grain data, [ETF NAV and Shares Outstanding](/etf/nav) for share-class-grain data, and [Company Identifiers](/concepts/company-identifiers) for the equivalent rules on operating companies.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/etfs?ticker=SPY" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "etf_id": "E000011",
+      "portfolio_id": "P000011",
+      "name": "SPDR S&P 500 ETF Trust",
+      "ticker": "SPY",
+      "exchange": "ARCX",
+      "currency": "USD",
+      "listings": [{ "ticker": "SPY", "exchange": "ARCX", "currency": "USD" }],
+      "isin": "US78462F1030",
+      "cusip": "78462F103",
+      "cik": "0000884394",
+      "sec_series_id": "S000006392",
+      "sec_class_id": "C000017575",
+      "series_class_count": 1,
+      "is_sole_class": true,
+      "former_tickers": [],
+      "former_names": [],
+      "active": true,
+      "tier": "plain_beta",
+      "asset_class": "equity"
+    }
+  ],
+  "next_cursor": null,
+  "coverage": { "update_frequency": "daily" }
+}
+```
+
+</ResponseExample>

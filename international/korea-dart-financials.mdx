@@ -1,0 +1,128 @@
+---
+title: "Korea DART Financials"
+sidebarTitle: "Korea DART financials"
+description: "Financial facts for Korean-listed companies as filed to DART, in the filer's own account concepts rather than a normalised statement."
+---
+
+Korea DART Financials provides financial facts for a Korean-listed company as filed to DART, the Korean regulator's disclosure system. Each observation is one account line for one reporting period, in KRW, carrying the filer's own account concept and label. Coverage runs from 2022 onward.
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Korea DART Financials For
+
+Read a Korean company's accounts as it actually files them. Build a series for a specific account concept across years. Compare consolidated against parent-only figures. Trace any figure back to the original DART document.
+
+## These Are the Filer's Own Accounts, Not a Normalised Statement
+
+<Warning>
+There is **no `revenue` field**. Which Korean account is revenue differs by filer and by industry, so this dataset does not pick one.
+
+Each row carries `account_id`, the machine concept — for example `ifrs-full_CostOfSales` or `dart_OperatingIncomeLoss` — and `account_nm`, the filer's own label in Korean.
+
+**Match on `account_id`.** Matching Korean label text is unreliable.
+</Warning>
+
+## The Korean Reporting Calendar Has No Q2
+
+`report_period` is `annual`, `half`, `q1` or `q3`.
+
+The Korean reporting year has a **half-year report and no standalone Q2**, and the figures in the half-year report cover six months. A pipeline that expects four quarterly reports will silently mis-scale the middle of the year.
+
+## Consolidated and Separate Are Different Books
+
+`basis` is `consolidated` or `separate`, meaning parent-only. Never mix them in one comparison.
+
+## Key Korea DART Financial Fields
+
+`statement` selects one of `balance_sheet`, `income`, `comprehensive_income`, `cash_flow` or `changes_in_equity`.
+
+Each row carries the amount in the row's `currency`, which is KRW, plus **the two prior periods as filed** in `amount_prior_period` and `amount_two_periods_prior`.
+
+Every row carries `filing_url`, the original DART document behind the figure. Cite that when quoting a number.
+
+## Korea DART Financials Coverage
+
+<Warning>
+Coverage is 2022 onward and is still backfilling, newest year and largest cap first.
+
+A missing older year for a small company means **not yet loaded**, not not filed.
+</Warning>
+
+## Korea DART Financials Date Convention
+
+`year` is the business year and is **required**. `report_period` names which of the year's reports the row came from, and as noted the half-year report covers six months rather than three.
+
+## Korea DART Financials Sources
+
+Facts are filed by the companies to DART. Account concepts and labels are the filer's own. Nothing is normalised, translated or restated.
+
+## Query Korea DART Financials
+
+Use the Korea financials endpoint. It accepts a Korean corp code, a suffixed ticker such as `005930.KS`, an ISIN or a `company_id` directly.
+
+<ParamField path="company_id" type="string" required>
+  A Korean DART corp code, a suffixed ticker, an ISIN or a `company_id`.
+</ParamField>
+
+<ParamField query="year" type="integer" required>
+  Business year.
+</ParamField>
+
+<ParamField query="report_period" type="string">
+  `annual`, `half`, `q1` or `q3`.
+</ParamField>
+
+<ParamField query="basis" type="string">
+  `consolidated` or `separate`.
+</ParamField>
+
+<ParamField query="statement" type="string">
+  `balance_sheet`, `income`, `comprehensive_income`, `cash_flow` or `changes_in_equity`.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="200">
+  Rows per page, between 1 and 1000. Page through with `cursor`.
+</ParamField>
+
+## Related Datasets
+
+See also [Korea DART Report Sections](/international/korea-dart-report-sections) for ownership, shareholders, share structure, investments and debt, and [Exchange Disclosures](/international/exchange-disclosures) for the Korean filing index.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/005930.KS/kr/financials?year=2026&report_period=half&basis=consolidated&statement=income" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "company_id": "cmp_003104",
+      "corp_code": "00126380",
+      "year": 2026,
+      "report_period": "half",
+      "basis": "consolidated",
+      "statement": "income",
+      "account_id": "dart_OperatingIncomeLoss",
+      "account_nm": "영업이익",
+      "amount": 18420000000000,
+      "amount_prior_period": 11240000000000,
+      "amount_two_periods_prior": 6680000000000,
+      "currency": "KRW",
+      "filing_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=..."
+    }
+  ],
+  "next_cursor": null,
+  "coverage": { "available_from": "2022-01-01", "history_status": "backfill in progress" }
+}
+```
+
+</ResponseExample>

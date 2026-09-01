@@ -1,0 +1,63 @@
+---
+title: "API Usage"
+sidebarTitle: "Usage"
+description: "Your request totals for a period, broken down by API key prefix. Free to call."
+---
+
+API Usage reports your own consumption: request totals for a date range, broken down by API key prefix. The endpoint is free — it costs no credits — so it can be polled from your own monitoring without affecting your balance.
+
+<Info>
+  **Plan:** Free and above · **Credits:** free (not metered)
+</Info>
+
+## What You Can Use API Usage For
+
+See how many requests each of your keys made in a period. Attribute consumption to a specific workload when several share an account. Monitor spend from your own systems rather than from the dashboard.
+
+## Key API Usage Fields
+
+`period` carries the `from` and `to` of the range reported, defaulting to the current billing month. `totals` carries the request count and, for retrieval workloads, the number of chunks returned. `byKey` breaks the request total down by API key `prefix`.
+
+## Why to Give Each Workload Its Own Key
+
+Keys are rate-limited individually, and this endpoint breaks totals down by key prefix. Giving each independent workload its own key therefore makes both throttling and consumption attributable to the workload that caused them.
+
+## API Usage Date Convention
+
+`period.from` and `period.to` bound the range the totals cover. With no range supplied, the response covers the current billing period.
+
+## Query API Usage
+
+Use the usage endpoint. It costs no credits.
+
+```bash
+curl "https://api.focusalpha.ai/v1/usage" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+Your dashboard at [app.focusalpha.ai](https://app.focusalpha.ai) shows the same numbers alongside your remaining credit balance.
+
+## Related Datasets
+
+See also [Plans and credits](/concepts/plans-credits) for how metering works and which endpoints are free, [Rate limits](/concepts/rate-limits) for the per-minute ceilings, and [Dataset Status](/account/dataset-status) for coverage and freshness.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/usage" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "period": { "from": "2026-08-01T00:00:00.000Z", "to": "2026-08-31T14:00:00.000Z" },
+  "totals": { "requests": 412, "chunksReturned": 3180 },
+  "byKey": [{ "prefix": "fa_live_7Fb3", "requests": 412 }]
+}
+```
+
+</ResponseExample>

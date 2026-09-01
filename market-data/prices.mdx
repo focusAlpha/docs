@@ -1,0 +1,108 @@
+---
+title: "Daily Prices"
+sidebarTitle: "Daily prices"
+description: "Daily open, high, low, close, adjusted close and volume for a listed security, in the listing's own currency."
+---
+
+Daily Prices provides the daily price series for a listed security: open, high, low, close, adjusted close and volume. Each observation is one symbol on one date, in that listing's own currency. Rows are returned newest date first.
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Daily Prices For
+
+Chart a security's recent trading. Compute returns over a window. Pair a price move with an [8-K event](/events/8k-events) or a [news event](/news/news-events) on the same date. Value a position at a specific date's close.
+
+## Daily Prices Coverage
+
+<Warning>
+History starts **2025-07-14** — about one year. There is nothing before that date. An empty result for an earlier range is this dataset's start, not a security that did not trade.
+
+For a long history, use [Benchmarks](/market-data/benchmarks), which runs from 2015.
+</Warning>
+
+## One Row Per Symbol Per Date
+
+A company with more than one listing returns **one row per symbol per date**, each naming its `symbol`.
+
+Pick the listing you mean rather than assuming the first row is the one you want. A dual-listed company's two rows are in different currencies and are not interchangeable.
+
+## Daily Prices Currency
+
+Values are in the row's own `currency` and are **not converted**. A London listing quotes in GBp — pence — not pounds, so a close of `2450` is £24.50.
+
+To compare sizes across countries, use [Company Screening](/companies/screening), which converts market capitalisation to US dollars.
+
+## Daily Prices Date Convention
+
+Each row is the trading session on that date, on the listing's own exchange calendar. Rows are returned newest first, and `date_gte` and `date_lte` bound the range.
+
+## Daily Prices Sources
+
+Prices come from market data vendors, as quoted on each listing's own exchange. Adjusted close is vendor-adjusted for corporate actions.
+
+<Note>
+For a valuation ratio, use [Financial Metrics](/financials/metrics) rather than deriving one here. This endpoint serves the raw series.
+</Note>
+
+## Query Daily Prices
+
+Use the market data endpoint with `series=prices`, which is the default.
+
+<ParamField path="company_id" type="string" required>
+  A ticker with its market suffix for non-US listings, a `company_id`, a CIK or an ISIN.
+</ParamField>
+
+<ParamField query="series" type="string" default="prices">
+  `prices` for this dataset, or `market_cap` for [daily market cap](/market-data/market-cap).
+</ParamField>
+
+<ParamField query="date_gte" type="string">
+  Earliest date, `YYYY-MM-DD`. `date_lte` sets the ceiling.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Rows per page, between 1 and 1000. Page through with `cursor`.
+</ParamField>
+
+## Related Datasets
+
+See also [Daily Market Cap](/market-data/market-cap) for the size series on the same endpoint, [Benchmarks](/market-data/benchmarks) for index and commodity prices with ten years of history, [Corporate Events](/companies/corporate-events) for the splits that break an unadjusted series, and [Company Screening](/companies/screening) for momentum filters across the universe.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/AAPL/market-data?series=prices&limit=2" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "symbol": "AAPL",
+      "date": "2026-08-31",
+      "open": 229.4,
+      "high": 232.1,
+      "low": 228.85,
+      "close": 231.4,
+      "adj_close": 231.4,
+      "volume": 41230000,
+      "currency": "USD"
+    }
+  ],
+  "next_cursor": "MjAyNi0wOC0yOA",
+  "coverage": {
+    "available_from": "2025-07-14",
+    "available_to": "2026-08-31",
+    "update_frequency": "daily"
+  }
+}
+```
+
+</ResponseExample>

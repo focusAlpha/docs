@@ -1,0 +1,108 @@
+---
+title: "Short Interest (FINRA)"
+sidebarTitle: "Short interest"
+description: "Reported short interest for US-listed securities per settlement date: shares short, change from the prior report, average daily volume and days to cover."
+---
+
+Short Interest provides reported short interest for a US-listed security. Each observation is one settlement date and carries the shares sold short, the change from the previous report, average daily volume and days to cover. Settlement happens twice a month and publication lags settlement by roughly eight days. History runs from 2017-12-29.
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Short Interest For
+
+Track how crowded a short position is and how it changed between settlements. Compute days to cover against average daily volume. Identify securities where short interest is large relative to float. Cross a short build against [company news](/news/company-news) or [8-K events](/events/8k-events) to see what preceded it.
+
+## Short Interest Coverage
+
+Coverage is US-listed securities reported by FINRA. History runs from 2017-12-29. Non-US listings are not covered.
+
+## Short Interest Date Convention
+
+`settlement_date` is the date the position was measured. Settlement occurs **twice a month**, at mid-month and at month-end.
+
+Publication lags settlement by roughly eight days, so the newest row is never today's position — it is the position as of a settlement date one to three weeks ago. Results are ordered newest settlement first.
+
+## Key Short Interest Fields
+
+`current_short_position` is the shares sold short at settlement, and `previous_short_position` is the prior report's figure. `change_previous` and `change_percent` express the move between them.
+
+`average_daily_volume` and `days_to_cover` size the position against trading activity. `float_shares` and `float_as_of` describe the share count used for ratios. `short_percent_float` and `short_percent_outstanding` are those ratios.
+
+`issue_name`, `category` and `market_class_code` describe the security. `revision_flag` and `stock_split_flag` mark rows affected by a revision or a split.
+
+## Why Short Interest Ratios Can Be Null
+
+`short_percent_float` and `short_percent_outstanding` are computed against a share-count source that only covers recent settlements. They are therefore **null across the older history**, while the reported short position beside them is complete for that whole period.
+
+A null ratio means there is no share count for that date. It does not mean the short position was zero. If you hold a float figure for that date, compute your own ratio from `current_short_position`.
+
+## Short Interest Sources
+
+Short positions are reported by FINRA. Float and shares outstanding come from a separate share-count source, which is why their coverage window differs from the position history. Days to cover and the two percentage ratios are calculated.
+
+## Query Short Interest
+
+Use the short interest endpoint for one company, newest settlement first.
+
+<ParamField path="company_id" type="string" required>
+  A ticker, CIK, ISIN, or canonical `cmp_` id.
+</ParamField>
+
+<ParamField query="date_gte" type="string">
+  Earliest settlement date, `YYYY-MM-DD`. `date_lte` sets the ceiling.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Rows per page, between 1 and 1000. Page through with `cursor`.
+</ParamField>
+
+## Related Datasets
+
+See also [Daily Prices and Market Cap](/market-data/prices) for the price series to pair with a short build, [13F Institutional Holdings](/ownership/13f) for the long side of the register, and [Company Screening](/companies/screening), which carries short-interest filters across the whole universe.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/GME/short-interest?limit=2" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "company_id": "cmp_001326380",
+      "ticker": "GME",
+      "issue_name": "GAMESTOP CORP CL A",
+      "category": "NYSE",
+      "market_class_code": "N",
+      "settlement_date": "2026-08-15",
+      "current_short_position": 51230000,
+      "previous_short_position": 48910000,
+      "change_previous": 2320000,
+      "change_percent": 4.74,
+      "average_daily_volume": 9120000,
+      "days_to_cover": 5.62,
+      "float_shares": 421000000,
+      "float_as_of": "2026-08-01",
+      "short_percent_float": 12.17,
+      "short_percent_outstanding": 11.42,
+      "revision_flag": false,
+      "stock_split_flag": false
+    }
+  ],
+  "next_cursor": "MjAyNi0wNy0zMQ",
+  "coverage": {
+    "available_from": "2017-12-29",
+    "update_frequency": "semi-monthly"
+  }
+}
+```
+
+</ResponseExample>

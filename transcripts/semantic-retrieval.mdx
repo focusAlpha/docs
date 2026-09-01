@@ -1,0 +1,119 @@
+---
+title: "Semantic Retrieval over Filings and Calls"
+sidebarTitle: "Semantic retrieval"
+description: "Search what management discussed across earnings call transcripts and SEC filings, returning ranked source passages with citations rather than a generated answer."
+---
+
+Semantic Retrieval searches company language across earnings call transcripts, SEC filings and other corpus documents. It takes a natural-language query and returns the most relevant source passages with their citations. It returns passages, not a generated answer: there is no model in the loop on the FocusAlpha side, so the caller chooses the model, the prompt and the reasoning.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Semantic Retrieval For
+
+Answer open-ended qualitative questions — what did management say about AI, how did they explain the margin move, what risks did they highlight, what was said about pricing or tariffs. Ground an LLM answer in citable source text. Compare how several companies described the same issue in the same quarter.
+
+## Semantic Retrieval Complements the Structured Endpoints
+
+Retrieval and the structured datasets answer different halves of a question and are not alternatives.
+
+When the discussion concerns **forward guidance**, also call [Management Guidance](/events/guidance) and present the parsed values alongside the supporting passages. When it concerns **reported figures or KPIs**, also call [Reported Earnings Figures](/events/earnings-results). Searching prose for a number a structured endpoint serves wastes a call and returns commentary instead of a value.
+
+## How Period Filters Change Retrieval Behaviour
+
+Leave `year` and `quarter` unset unless the caller named a specific period.
+
+With no period set, the search covers the whole corpus and ranks recent documents higher. This is the correct behaviour for "latest", "most recent", and for any unqualified question.
+
+Setting `year` restricts candidates to that fiscal year. Setting both `year` and `quarter` additionally **turns the recency preference off**.
+
+<Warning>
+Do not infer a period from your own sense of the current date. A guessed year silently returns stale passages rather than an error. To learn which periods exist for a company, call the [document listing](/transcripts/documents) first — it returns that ticker's documents most recent first.
+</Warning>
+
+## What a Retrieval Result Carries
+
+Each returned passage carries the text itself plus the provenance needed to cite it: the company, the fiscal year and quarter, the document type, the source URL, and page numbers where the source has them.
+
+Because every passage is traceable to a specific document and period, an answer built from them can always be checked against the original.
+
+## Semantic Retrieval Sources
+
+Retrieval runs over the FocusAlpha document corpus: earnings call transcripts and SEC filings and company documents. The ranking is computed by FocusAlpha; the text is the source document's own.
+
+## Query Semantic Retrieval
+
+Use the retrieve endpoint with a natural-language query. It is a `POST`, and it authenticates with a bearer token.
+
+<ParamField body="query" type="string" required>
+  The natural-language search query, between 1 and 2000 characters.
+</ParamField>
+
+<ParamField body="filters.tickers" type="string[]">
+  Restrict the search to these companies.
+</ParamField>
+
+<ParamField body="filters.year" type="integer">
+  Restrict to this fiscal year. Omit unless the caller named a year.
+</ParamField>
+
+<ParamField body="filters.quarter" type="string">
+  Restrict to this fiscal quarter: `Q1`, `Q2`, `Q3` or `Q4`. With `year`, it also disables the recency preference.
+</ParamField>
+
+<ParamField body="filters.source_types" type="string[]">
+  Restrict to these document or source types.
+</ParamField>
+
+<ParamField body="top_k" type="integer">
+  Number of passages to return, between 1 and 50. The ceiling is also capped by plan — see [Plans and credits](/concepts/plans-credits).
+</ParamField>
+
+<ParamField body="rerank" type="boolean">
+  Re-rank the candidate passages for relevance.
+</ParamField>
+
+## Related Datasets
+
+See also [Earnings Call Transcripts](/transcripts/earnings-call-transcripts) for what the corpus contains, [Document Corpus](/transcripts/documents) for listing and fetching a specific document, [SEC Filing Items](/filings/items) when you want a named section of a named filing rather than a semantic search, and [Management Guidance](/events/guidance) for the structured half of a forward-looking question.
+
+<RequestExample>
+
+```bash cURL
+curl -X POST "https://api.focusalpha.ai/v1/retrieve" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "How did management explain the gross margin decline?",
+    "filters": { "tickers": ["NVDA"] },
+    "top_k": 5,
+    "rerank": true
+  }'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "chunks": [
+    {
+      "text": "Gross margin declined sequentially, driven primarily by a richer mix of...",
+      "ticker": "NVDA",
+      "year": 2026,
+      "quarter": "Q2",
+      "document_type": "earnings_call_transcript",
+      "filing_type": null,
+      "source_url": "https://example.com/nvda-q2-2026-call",
+      "page_numbers": null,
+      "score": 0.83
+    }
+  ],
+  "query": "How did management explain the gross margin decline?",
+  "top_k": 5
+}
+```
+
+</ResponseExample>

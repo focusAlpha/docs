@@ -1,0 +1,166 @@
+---
+title: "Management Guidance"
+sidebarTitle: "Management guidance"
+description: "Forward-looking guidance a US company gave in its 8-K earnings release and on its earnings call, with the metric, the value as phrased, the direction and the verbatim quote."
+---
+
+Management Guidance is what a company said it expects, in its own words. Each observation is one guided metric for one period, carrying the value as management phrased it, the direction of the change, and the quote it was read from. Guidance comes from two documents — the 8-K earnings release and the earnings call — and is distinct from any filed financial-statement figure.
+
+<Info>
+  **Plan:** Fund · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Management Guidance For
+
+Read what a company is currently guiding, metric by metric. See what it guided at a specific quarter. Audit exactly which document stated a figure. Pair a guided number with the [commentary around it](/transcripts/semantic-retrieval) — the parsed figure and the explanation answer different halves of the question.
+
+For whether guidance moved up or down, use [Guidance Changes](/events/guidance-changes). For the market's expected-EPS line rather than management's own, see [Prediction Markets](/events/prediction-markets).
+
+## Pick the Guidance View by the Question
+
+Three views share the same column names, so switching between them costs nothing.
+
+`view=latest` returns the **newest figure for each metric**, whole and unpaged — one row per metric, basis and period. This is "what is it guiding now".
+
+`view=earnings_event` is the **default** and returns **one row per earnings event** per metric. This is the view to count with, to chart, and to answer "what are they guiding".
+
+`view=items` is the **audit trail**: one row per document. This is the view for "what did this specific document say".
+
+## Why Latest Guidance Has No Single As-Of Date
+
+<Warning>
+Guidance is not issued on one clock. A company guides revenue every quarter and margin once a year, so the newest revenue figure and the newest margin figure normally come from different events months apart.
+
+`conference_date` is therefore **per row**, not one date for the response, and it has to be shown beside each figure. A "current guidance" table with a single as-of date is wrong.
+</Warning>
+
+Take `view=latest` rather than the first page of another view when you want the current picture.
+
+## How the Release and the Call Are Reconciled
+
+A company that files an 8-K and holds a call hours later states the same figure twice.
+
+`view=earnings_event` has already collapsed that pair, keeping the **filed** figure. The release is filed text and the call is a speech transcription, and every disagreement traced so far has been the transcription.
+
+`has_call` and `has_release` say which documents existed, `n_docs` says how many stated the figure, and `restated_identically` marks a figure repeated unchanged — which is what "the company reiterated its guidance" actually means.
+
+`view=items` shows that same pair **twice**, hours apart. That is not a duplicate: it is one figure observed twice, and `source_kind` says which document each row is — `press_release` for the filed 8-K exhibit, `transcript` for the call. About 40% of covered companies both file and speak, so on those this view returns roughly double the rows.
+
+## Key Management Guidance Fields
+
+`metric_key` is the normalised metric — `revenue`, `ebitda`, `core_eps`. `direction` is `new`, `raise`, `cut` or `maintain`.
+
+`new_value` is the value **as the company phrased it**, for example `9% to 11%`, with the previous phrasing beside it. `quote` is the sentence it came from.
+
+The parsed `value_low`, `value_high` and `value_unit` are a convenience over the phrasing, not a replacement for it. Cite the quote.
+
+`value_is_band` means FocusAlpha converted a verbal band by convention — "mid-single digits" to 4–6% — and **the company never said those numbers**. `value_bound` marks an open-ended range: "over $3 billion" has only a floor, so the parsed high is not a company number.
+
+`source_url` is where the sentence came from, so the quote can be checked. On the release side it is the SEC address of the exhibit the figure was read out of. On the call side it is the vendor's company page, not that specific call — `transcript_id` pins the call.
+
+## Two Fields That Say What the Number Is Not
+
+`value_not_level` means the figure is **not the level of the money quantity its `metric_key` names**. Apple files "between nine and 11%" under `revenue`, which is a growth rate. Render it as growth, never as dollars. `value_not_level_reason` says which shape: `name_says_growth`, `share_of_another_metric`, or `percent_under_money_key`.
+
+`horizon=multi_year_target` means management framed the figure as a multi-year goal, not a figure for one fiscal period. "Reach $20 billion by 2030" carries period FY30 and reads exactly like FY30 guidance; "long-term", "per annum" and "over time" carry no period at all. Do not present a multi-year target as this year's outlook.
+
+## Management Guidance Date Convention
+
+`year` and `quarter` identify the **fiscal** year and quarter of the earnings event, not a calendar date.
+
+`period` on a row is the period being **guided**, for example `FY26`. That is not the quarter the company was reporting, and the two are routinely different.
+
+## Management Guidance Coverage
+
+<Warning>
+Coverage is not the same on both sides. A company can be covered through its calls, its filed releases, or both, and the **filed side reaches back further** than the call side.
+
+`coverage.available_from` in the response is measured from the data — read it there. An empty result means FocusAlpha holds neither document for that company, not that it issued no guidance.
+</Warning>
+
+## Management Guidance Sources
+
+Figures are read from the company's own filed 8-K earnings release and from the earnings call transcript. Every row keeps the sentence it came from and a link to check it against.
+
+## Query Management Guidance
+
+Use the guidance endpoints for one company. `view` selects which of the three the request goes to.
+
+<ParamField path="company_id" type="string" required>
+  A `company_id`, ticker, CIK or ISIN.
+</ParamField>
+
+<ParamField query="view" type="string" default="earnings_event">
+  `latest`, `earnings_event` or `items`.
+</ParamField>
+
+<ParamField query="metric_key" type="string">
+  Normalised metric, for example `revenue`, `ebitda`, `core_eps`.
+</ParamField>
+
+<ParamField query="direction" type="string">
+  `new`, `raise`, `cut` or `maintain`.
+</ParamField>
+
+<ParamField query="year" type="integer">
+  Fiscal year of the earnings event. Not accepted on `view=latest`.
+</ParamField>
+
+<ParamField query="quarter" type="integer">
+  Fiscal quarter of the earnings event, 1 to 4. Not accepted on `view=latest`.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Rows per page, between 1 and 1000. `view=latest` is unpaged and always returns `next_cursor` as null.
+</ParamField>
+
+## Related Datasets
+
+See also [Guidance Changes](/events/guidance-changes) for what moved, [Reported Earnings Figures](/events/earnings-results) for what the quarter delivered on the same `metric_key` vocabulary, [8-K Exhibits](/events/8k-exhibits) for the release the figure was read from, [Semantic Retrieval](/transcripts/semantic-retrieval) for the discussion around it, and [Company Screening](/companies/screening) to find every company that raised or cut guidance in a window.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/AAPL/guidance-latest" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "ticker": "AAPL",
+      "metric_key": "revenue",
+      "period": "FY26Q4",
+      "direction": "new",
+      "new_value": "9% to 11%",
+      "prior_value": null,
+      "value_low": 9,
+      "value_high": 11,
+      "value_unit": "percent",
+      "value_is_band": false,
+      "value_bound": null,
+      "value_not_level": true,
+      "value_not_level_reason": "percent_under_money_key",
+      "horizon": "quarter",
+      "conference_date": "2026-07-31",
+      "has_release": true,
+      "has_call": true,
+      "n_docs": 2,
+      "restated_identically": false,
+      "quote": "We expect revenue to grow between nine and 11% year over year.",
+      "source_kind": "press_release",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/320193/...",
+      "transcript_id": "tr_88213"
+    }
+  ],
+  "next_cursor": null,
+  "coverage": { "available_from": "2025-01-29", "update_frequency": "daily" }
+}
+```
+
+</ResponseExample>

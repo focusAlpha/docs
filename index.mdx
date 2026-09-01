@@ -3,7 +3,7 @@ title: "FocusAlpha Data API"
 description: "Institutional-grade fundamental, ownership, and event data for global equities — one REST API."
 ---
 
-The FocusAlpha Data API gives you programmatic access to the data layer behind FocusAlpha: SEC filings and financial statements, a global company registry spanning roughly 25,000 companies across 82 countries, institutional and insider ownership, corporate events and news signals, and native coverage of Taiwan, Korea, Japan, and foreign private issuers.
+The FocusAlpha Data API gives you programmatic access to the data layer behind FocusAlpha: SEC filings and financial statements, earnings call transcripts, a global company registry spanning roughly 25,000 companies across 82 countries, 13F and insider ownership, the Form ADV adviser directory, ETF holdings and NAV, corporate events and news signals, and native coverage of Taiwan, Korea, Japan and foreign private issuers.
 
 Everything is served as JSON over HTTPS from a single base URL:
 
@@ -22,9 +22,6 @@ Requests are authenticated with an API key and metered in credits — one credit
   <Card title="Authentication" icon="key" href="/authentication">
     How API keys work, how to send them, and how to manage them.
   </Card>
-  <Card title="API reference" icon="code" href="/api-reference">
-    Every endpoint, parameter, and response shape.
-  </Card>
   <Card title="Plans & credits" icon="coins" href="/concepts/plans-credits">
     What each plan includes and how usage is metered.
   </Card>
@@ -34,25 +31,41 @@ Requests are authenticated with an API key and metered in credits — one credit
   <Card title="Coverage & freshness" icon="clock" href="/concepts/coverage">
     What each dataset covers and how often it refreshes.
   </Card>
+  <Card title="Company identifiers" icon="fingerprint" href="/concepts/company-identifiers">
+    One identifier across every company-scoped dataset.
+  </Card>
 </CardGroup>
 
-## What's in the API
+## The datasets
 
-| Domain | What you get | Minimum plan |
+| Dataset | What it holds | Minimum plan |
 | --- | --- | --- |
-| [Search & documents](/api-reference/retrieval) | Semantic retrieval over SEC filings and earnings-call transcripts, with source attribution | Free |
-| [SEC filings](/api-reference/filings) | The filing index for 10-K, 10-Q, 8-K, 20-F, proxies, and more | Free |
-| [Filing items](/api-reference/filing-items) | Filings split into their individual items, as text | Free |
-| [Financial statements](/api-reference/financials) | Income statements, balance sheets, cash flow statements, computed metrics, and as-reported segments | Free |
-| [Company registry](/api-reference/companies) | Canonical company records, identifiers, listings, and corporate events | Free |
-| [Market data & benchmarks](/api-reference/market-data) | Daily prices, market cap, index and commodity benchmarks, short interest | Professional |
-| [Ownership & people](/api-reference/ownership) | 13F institutional holdings, insider trades, executive compensation, adviser and investor directories | Professional |
-| [International datasets](/api-reference/international) | Taiwan financials and monthly revenue, Korea DART reports, exchange disclosures, Form 20-F | Professional |
-| [Screener](/api-reference/screener) | Cross-company screening over 70+ fundamental, momentum, event, and ownership filters | Fund |
-| [Corporate events & guidance](/api-reference/events) | Structured 8-K events, management guidance, reported earnings, prediction markets | Fund |
-| [News & themes](/api-reference/news) | Company-linked news events with impact scoring, and cross-market theme tracking | Fund |
+| [Earnings call transcripts](/transcripts/earnings-call-transcripts) | Speaker-segmented calls, searchable by meaning with source citations | Free |
+| [Semantic retrieval](/transcripts/semantic-retrieval) | Ranked source passages across transcripts and filings | Free |
+| [SEC filings index](/filings/index) | The filing index for 10-K, 10-Q, 8-K, 20-F, proxies and more | Free |
+| [SEC filing items](/filings/items) | Filings split into their individual items, as text | Free |
+| [Financial statements](/financials/combined) | Income, balance sheet and cash flow, as reported | Free |
+| [Financial metrics](/financials/metrics) | Computed margins, returns, per-share and leverage measures | Free |
+| [Segmented financials](/financials/segments) | As-reported business and geographic breakdowns | Free |
+| [Company registry](/companies/registry) | ~25,000 companies in 82 countries, with identifiers and listings | Free |
+| [Daily prices](/market-data/prices) and [market cap](/market-data/market-cap) | Daily series per listing | Professional |
+| [Benchmarks](/market-data/benchmarks) | 425 indices and 40 commodities, ten years of history | Professional |
+| [13F institutional holdings](/ownership/13f) | Quarterly manager positions, by manager or by security | Professional |
+| [Insider trades](/ownership/insider-trades) | SEC Form 4 transactions | Professional |
+| [Proxy ownership](/ownership/proxy-ownership) and [executive compensation](/ownership/executive-compensation) | Beneficial ownership and named-executive pay | Professional |
+| [Short interest](/ownership/short-interest) | FINRA semi-monthly positions | Professional |
+| [Form ADV directory](/advisers/form-adv) and [brochure data](/advisers/adv-brochure) | The SEC adviser roster and what each firm says it does | Professional |
+| [ETF data](/etf/overview) | Holdings, NAV, flows, distributions, fees and classification | Professional |
+| [Taiwan](/international/taiwan-financials), [Korea](/international/korea-dart-financials) and [Form 20-F](/international/form-20f) | Native regional filings and foreign private issuers | Professional |
+| [Company screening](/companies/screening) | Ten axes across the whole company universe | Fund |
+| [ETF screening](/etf/screening) | Wrapper, classification and measured portfolio filters | Fund |
+| [8-K events](/events/8k-events) and [exhibits](/events/8k-exhibits) | What a filing said, as fields and as prose | Fund |
+| [Management guidance](/events/guidance) and [earnings results](/events/earnings-results) | What management expects, and what the quarter delivered | Fund |
+| [News events](/news/news-events) and [macro themes](/news/themes) | The live labelled event stream, company and macro | Fund |
+| [Exchange disclosures](/international/exchange-disclosures) | Taiwan, Korea and Japan local-market announcements | Fund |
+| [Prediction markets](/events/prediction-markets) | Contract prices and the earnings bar they settle against | Fund |
 
-Coverage windows and refresh cadence vary by dataset — the [Coverage & freshness](/concepts/coverage) page has the full picture, and `GET /v1/_status` reports it live.
+Coverage windows and refresh cadence vary by dataset — [Coverage & freshness](/concepts/coverage) has the full picture, and [Dataset status](/account/dataset-status) reports it live.
 
 ## How the API behaves
 

@@ -1,0 +1,117 @@
+---
+title: "ETF NAV and Shares Outstanding"
+sidebarTitle: "ETF NAV & shares"
+description: "Daily ETF net asset value, shares outstanding, net assets, market price and premium or discount, in both published and split-adjusted bases."
+---
+
+ETF NAV and Shares Outstanding is the daily fund-level series for an ETF share class. Each observation is associated with an `etf_id`, a valuation date, and a per-value status saying whether the number was published by the issuer or computed by FocusAlpha. The series carries net asset value, shares outstanding, net assets, market price and premium or discount, and is available through the FocusAlpha API and MCP.
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use ETF NAV Data For
+
+Compute a fund's return on a NAV basis. Track assets under management over time at the share-class grain. Measure how far an ETF's market price traded from its NAV, and how that premium or discount behaved through a stressed session. Derive creation and redemption activity from changes in shares outstanding — or read it directly from [ETF Fund Flows](/etf/flows), which does that computation and reports when it could not be trusted.
+
+## ETF NAV Coverage
+
+The series is one merged history per fund and can reach a long way back: SPY's begins in 1993. Coverage bounds are measured on the way out rather than promised here — every history response carries a `coverage` block with the actual first and last date held for that fund. Do not hard-code a start date.
+
+The series advances once a day, after the issuer's files for the prior session land. The newest `valuation_date` is therefore normally the last trading day, not today.
+
+## Key ETF NAV Fields
+
+`nav` is the net asset value per share as published on that day. `nav_split_adjusted` is the same value restated on today's share count, and it is the one that is comparable across time.
+
+`shares_outstanding` is the share count as published, and it also has a split-adjusted counterpart. `net_assets` is the fund's total net assets, and `net_assets_level` says whether that figure is a share-class figure or a portfolio figure.
+
+`market_price` is the closing market price of the listing, and `premium_discount` is the published gap between market price and NAV. `split_factor` carries the adjudicated split applied on that date.
+
+<Warning>
+Read `net_assets_level` before quoting assets under management. On a portfolio carrying several share classes, the portfolio figure and the share-class figure differ by three to four times, and only the share-class figure is that fund's size.
+</Warning>
+
+## How to Read the ETF NAV Value Status
+
+Every value in this dataset carries its own status, because the four cases mean genuinely different things.
+
+`published` means the fund printed exactly this number. `converted` means FocusAlpha rescaled a published number using adjudicated split events. `derived` means the value was rebuilt from net assets divided by NAV, or the equivalent identity. `withheld` means the basis for restating the value is unmeasured, so **the value is null on purpose** — it is a deliberate refusal to publish a number, not missing data.
+
+Treating a `withheld` null as a gap to interpolate produces a series the issuer never published.
+
+## ETF NAV Date Convention
+
+`valuation_date` is the date the fund struck the NAV. It is the date to filter, join and group on. Because the series is built after the issuer publishes, the newest row is normally the previous trading day.
+
+## ETF NAV Sources
+
+NAV, shares outstanding and net assets come from the issuers' own published daily files. Market price comes from exchange closing data. Split factors come from adjudicated corporate-action records. Values that FocusAlpha computed rather than read are flagged by the `derived` or `converted` status described above.
+
+## Query ETF NAV History
+
+Use the ETF history endpoint with `series=nav` to retrieve the daily NAV series for one fund. It is the default series, so the parameter can be omitted.
+
+<ParamField path="id" type="string" required>
+  `etf_id` (`E000011`), a ticker (`SPY`), an ISIN, or a CUSIP.
+</ParamField>
+
+<ParamField query="series" type="string" default="nav">
+  `nav` for this dataset. The other values — `flow`, `total_return`, `distributions` — are documented on their own pages.
+</ParamField>
+
+<ParamField query="date_gte" type="string">
+  Earliest valuation date to return, `YYYY-MM-DD`. `date_lte` sets the ceiling.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="250">
+  Rows per page, between 1 and 1000. Pages run newest to oldest via `cursor`.
+</ParamField>
+
+To read only the most recent day, call the ETF profile endpoint instead and use its `latest` block, which carries the same fields without paging a history.
+
+## Related Datasets
+
+See also [ETF Fund Flows](/etf/flows) for creations and redemptions computed from this series, [ETF Total Return](/etf/total-return) for the distribution-reinvested series that must not be compared with NAV, [ETF Distributions](/etf/distributions) for the events that step NAV down, and [ETF Holdings](/etf/holdings) for what the fund owned on the same valuation date.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/etfs/SPY/history?series=nav&limit=2" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "etf_id": "E000011",
+  "ticker": "SPY",
+  "series": "nav",
+  "data": [
+    {
+      "valuation_date": "2026-08-29",
+      "nav": 641.23,
+      "nav_status": "published",
+      "nav_split_adjusted": 641.23,
+      "shares_outstanding": 921450000,
+      "shares_outstanding_status": "published",
+      "net_assets": 590789000000,
+      "net_assets_level": "class",
+      "market_price": 641.55,
+      "premium_discount": 0.0005,
+      "split_factor": null
+    }
+  ],
+  "next_cursor": "MjAyNi0wOC0yOA",
+  "coverage": {
+    "available_from": "1993-01-29",
+    "available_to": "2026-08-29",
+    "update_frequency": "daily"
+  }
+}
+```
+
+</ResponseExample>

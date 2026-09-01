@@ -1,0 +1,140 @@
+---
+title: "ETF Holdings"
+sidebarTitle: "ETF holdings"
+description: "Security-level ETF portfolio holdings as reported by issuers, with weights, quantities, market values, identifiers and as-of dates."
+---
+
+ETF Holdings provides security-level portfolio holdings reported by ETF issuers. Each observation is associated with an ETF portfolio, an as-of date, and the issuer file it was read from. Historical holdings are available through the FocusAlpha API and MCP.
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call
+</Info>
+
+Each row is one line of a fund's portfolio on one day: a security, the quantity held, its market value, its weight in the portfolio, and the identifiers the fund printed for it.
+
+## What You Can Use ETF Holdings For
+
+Look through a fund to the companies it actually owns, rather than relying on its stated objective. Measure how concentrated a fund is, and how that concentration changed over time. Find every ETF holding a given company by joining `company_id` back to the company registry. Rebuild sector, country or credit-quality exposure from the underlying lines instead of from a label. Track a fund's turnover by differencing consecutive portfolio dates.
+
+## ETF Holdings Coverage
+
+Holdings are collected from the files ETF issuers publish themselves, so coverage follows what each sponsor discloses and how often. Most large US sponsors publish daily; some publish monthly, and some publish only summary exposure rather than full lines.
+
+Coverage is reported as a measured number rather than described in prose. Call [ETF screen facets](/etf/screening#etf-screen-facets), which is free, to read the current totals, and read the `coverage` block returned alongside every holdings response for the specific fund you queried.
+
+## Key ETF Holdings Fields
+
+`weight_pct` is the line's weight in the portfolio, as a percentage. `quantity` is the number of shares or units held; `par_value` carries face value for debt lines. `market_value` is the line's value in the fund's reporting currency, and `notional_value` carries economic exposure where the two differ. `price`, `currency` and `fx_rate` describe how the value was struck.
+
+`row_kind` classifies the line as one of `equity`, `bond`, `fund`, `cash`, `fx`, `derivative`, `physical`, `crypto` or `other`. `underlying_exposure`, `derivative_kind` and `counterparty` describe derivative lines further.
+
+`cusip`, `isin`, `sedol`, `figi` and `ticker_as_filed` are the identifiers as the fund printed them on that date. `company_id` is FocusAlpha's link from the line to the company registry, where an identifier matched.
+
+Bond lines additionally carry `maturity`, `coupon_pct`, `duration`, `ytm_pct` and `bond_issuer_type`. Equity lines carry `exchange`, `country` and `sector`.
+
+<Warning>
+Identifiers and names are as filed on that date. A holding that later changed its ticker keeps the old ticker on old rows, so join a holdings history by CUSIP or ISIN, never by ticker.
+</Warning>
+
+## ETF Holdings Date Convention
+
+Three dates appear on every holdings row, and all three are real rather than alternatives.
+
+`valuation_date` is the portfolio valuation date: the closing-price date the file prices at. This is the date to filter and group on.
+
+`position_date` is the day the quantities are effective. It is either the same day as `valuation_date` or the next trading day, depending on whether the fund publishes before or after creations settle. It is null where the offset could not be confirmed.
+
+`issuer_date` is the date label the issuer printed on the file. It is kept because it is the issuer's own claim, and it does not always equal either of the other two.
+
+One holdings file therefore carries two genuinely different dates — a price date and a quantity date — which is why a single as-of column cannot represent it faithfully.
+
+## ETF Holdings Sources
+
+Holdings come from the issuers' own published holdings files. Nothing on this dataset is vendor-supplied, and no line is imputed: a fund that does not publish full lines has no rows rather than estimated ones.
+
+`company_id` is calculated by FocusAlpha rather than reported by the issuer. A null `company_id` is a legitimate terminal state — options, swap legs, bonds and cash are not companies — and the newest portfolio day can lag one run behind on linking and row classification. The `coverage` block's `classified` value says how much of that day is classified.
+
+## Query ETF Holdings
+
+Use the ETF Holdings endpoint to retrieve security-level holdings for one fund. Pass an `etf_id`, ticker, ISIN or CUSIP as the identifier; the newest portfolio date is returned unless you ask for a specific one.
+
+<ParamField path="id" type="string" required>
+  `etf_id` (`E000011`), a ticker (`SPY`), an ISIN, or a CUSIP. Ticker lookup is exact and unambiguous or nothing: an ambiguous symbol returns no row rather than a guess.
+</ParamField>
+
+<ParamField query="valuation_date" type="string">
+  A specific portfolio valuation date, `YYYY-MM-DD`. Defaults to the newest date on file.
+</ParamField>
+
+<ParamField query="row_kind" type="string">
+  Comma-separated list of row kinds to include: `equity`, `bond`, `fund`, `cash`, `fx`, `derivative`, `physical`, `crypto`, `other`. Defaults to all.
+</ParamField>
+
+<ParamField query="linked_only" type="boolean" default="false">
+  Return only lines that resolved to a `company_id`.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="500">
+  Rows per page, between 1 and 1000. Page through with `cursor`.
+</ParamField>
+
+The response returns the fund's identifiers, the `valuation_date` served, a `data` array of holdings lines, a `next_cursor`, and a `coverage` block reporting how many rows the day holds, the sum of absolute weights, and the classified share.
+
+<Warning>
+On funds where `exposure_hidden` is true — leveraged, buffer and option-income funds — `market_value` is margin or option premium, not exposure. Read `notional_value` instead, and never sum `market_value` as "the portfolio": a 3x fund sums to roughly flat.
+</Warning>
+
+## Related Datasets
+
+See also [ETF NAV and Shares Outstanding](/etf/nav) for the fund-level daily series, [ETF Classification](/etf/classification) for the labels computed from these holdings, [ETF Screening](/etf/screening) to select funds by measured portfolio characteristics, and [13F Institutional Holdings](/ownership/13f) for holdings reported by investment managers.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/etfs/SPY/holdings?row_kind=equity&limit=3" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "etf_id": "E000011",
+  "ticker": "SPY",
+  "portfolio_id": "P000011",
+  "valuation_date": "2026-08-29",
+  "data": [
+    {
+      "valuation_date": "2026-08-29",
+      "position_date": "2026-09-01",
+      "issuer_date": "2026-08-29",
+      "line_no": 1,
+      "name": "APPLE INC",
+      "ticker_as_filed": "AAPL",
+      "cusip": "037833100",
+      "isin": "US0378331005",
+      "row_kind": "equity",
+      "weight_pct": 7.12,
+      "quantity": 178234567,
+      "market_value": 41234567890.12,
+      "notional_value": null,
+      "price": 231.4,
+      "currency": "USD",
+      "exchange": "XNAS",
+      "country": "US",
+      "sector": "Information Technology",
+      "company_id": "cmp_000320193"
+    }
+  ],
+  "next_cursor": "eyJsaW5lX25vIjozfQ",
+  "coverage": {
+    "n_rows": 503,
+    "weight_sum": 100.02,
+    "classified": 1.0
+  }
+}
+```
+
+</ResponseExample>

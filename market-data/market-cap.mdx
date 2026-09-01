@@ -1,0 +1,91 @@
+---
+title: "Daily Market Cap"
+sidebarTitle: "Daily market cap"
+description: "Daily market capitalisation for a listed security, in the listing's own currency."
+---
+
+Daily Market Cap provides the daily market capitalisation series for a listed security. Each observation is one symbol on one date, in that listing's own currency. It is served by the same endpoint as [daily prices](/market-data/prices), selected with `series=market_cap`, and rows are returned newest date first.
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Daily Market Cap For
+
+Track how a company's size changed over time. Distinguish a stock split from a real decline: a split halves the price but leaves market cap unchanged, so market cap is the reliable check. Build size bands for a universe on a given date.
+
+## Daily Market Cap Coverage
+
+<Warning>
+History starts **2025-07-14** — about one year, the same window as [daily prices](/market-data/prices). There is nothing before that date.
+</Warning>
+
+## One Row Per Symbol Per Date
+
+Like prices, a company with more than one listing returns one row per symbol per date, each naming its `symbol`. Choose the listing you mean.
+
+## Daily Market Cap Currency
+
+Values are in the row's own `currency` and are not converted to US dollars.
+
+Note the asymmetry with the [company registry](/companies/registry), where the profile's `market_cap` is denominated in `market_cap_currency` rather than in the listing's price currency — for London names, GBP against a GBp price. To compare sizes across countries, use [Company Screening](/companies/screening), which converts to US dollars.
+
+## Daily Market Cap Sources
+
+Market cap is a vendor-supplied daily figure for the listing.
+
+## Query Daily Market Cap
+
+Use the market data endpoint with `series=market_cap`.
+
+<ParamField path="company_id" type="string" required>
+  A ticker with its market suffix for non-US listings, a `company_id`, a CIK or an ISIN.
+</ParamField>
+
+<ParamField query="series" type="string" required>
+  Set to `market_cap` for this dataset.
+</ParamField>
+
+<ParamField query="date_gte" type="string">
+  Earliest date, `YYYY-MM-DD`. `date_lte` sets the ceiling.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Rows per page, between 1 and 1000. Page through with `cursor`.
+</ParamField>
+
+## Related Datasets
+
+See also [Daily Prices](/market-data/prices), [Corporate Events](/companies/corporate-events) for splits, [Company Screening](/companies/screening) for USD-converted size filters, and [Financial Metrics](/financials/metrics) for valuation ratios.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/AAPL/market-data?series=market_cap&limit=2" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "symbol": "AAPL",
+      "date": "2026-08-31",
+      "market_cap": 3441000000000,
+      "currency": "USD"
+    }
+  ],
+  "next_cursor": "MjAyNi0wOC0yOA",
+  "coverage": {
+    "available_from": "2025-07-14",
+    "available_to": "2026-08-31",
+    "update_frequency": "daily"
+  }
+}
+```
+
+</ResponseExample>
