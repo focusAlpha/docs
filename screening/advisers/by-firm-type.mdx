@@ -1,0 +1,79 @@
+---
+title: "Screen Advisers by Firm Type"
+sidebarTitle: "By firm type"
+description: "Filter SEC investment advisers by what kind of business the ADV Part 2A brochure describes — ten primary types, their subtypes, services offered and role flags — plus the independent Part 1-derived firm_type label."
+---
+
+Screening advisers by firm type selects firms by **what they are**, read from each firm's own Form ADV Part 2A brochure: a primary type, an optional subtype beneath it, the services the firm sells, and the facts that hold alongside its type. A separate label, `firm_type`, is derived from ADV Part 1 numbers for 13F filers — two independent classifications that are deliberately never merged.
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call; screen facets are free
+</Info>
+
+## The Primary Type Filter
+
+<ParamField query="primary_type" type="string">
+  Comma-separated; matches ANY. The ten values: `asset_manager`, `wealth_manager`, `allocator`, `program_sponsor`, `dual_bd_ria`, `retirement_specialist`, `trust_company`, `insurance_affiliated`, `research_services`, `restricted_mandate`.
+</ParamField>
+
+## The Subtype Filter
+
+<ParamField query="subtype" type="string">
+  Comma-separated; matches ANY. A subtype is always a **child** of a primary type, so filtering on one already implies the parent — and three primary types have no children at all, which is why subtype can never stand in for primary_type. Under `asset_manager`: `hedge_fund`, `public_markets`, `private_equity_venture`, `private_credit`, `real_estate`, `quant_systematic`, `clo_manager`, `fund_of_funds`, `registered_fund_adviser`, `digital_assets`, `natural_resources_infra`, `specialty_assets`. Under `wealth_manager`: `comprehensive_wealth`, `family_office`, `planning_only`, `digital_advice`. Under `allocator`: `ocio`, `institutional_consultant`, `manager_of_managers`. Under `program_sponsor`: `wrap_sponsor`, `tamp`. The free facets endpoint lists every subtype actually carried.
+</ParamField>
+
+## Services and Role Flags
+
+<ParamField query="services_offered" type="string">
+  What the firm **sells** clients; comma-separated, matches ANY: `portfolio_management`, `financial_planning`, `investment_consulting`, `pension_consulting`, `wrap_fee`, `subadvisory`, `private_fund`, `family_office`, `estate_tax_planning`, `consulting`, `research`, and more — facets lists all.
+</ParamField>
+
+<ParamField query="role_flags" type="string">
+  Facts that hold **alongside** `primary_type` — a wealth manager that is also a broker-dealer is still a wealth manager, and without the flag that true fact would have to steal the primary type. Values: `dually_registered_bd`, `sponsors_wrap_program`, `trust_powers`, `insurance_licensed`, `acts_as_subadviser`, `erisa_fiduciary`, `manages_private_funds`, `affiliate_only_clients`.
+</ParamField>
+
+<ParamField query="brochure_scope" type="string">
+  `entity` (the brochure describes the firm) or `business_line` (it describes one named programme inside it). One brochure answers per firm, and the firm-level one wins automatically — some large platforms file dozens of programme brochures; this filter excludes firms where only a programme brochure exists.
+</ParamField>
+
+## firm_type Is a Different Classification
+
+`firm_type` (`Hedge-Fund`, `Wealth-Manager`, `PE / VC`, `Mutual-Fund`, `Pension / Institutional`, …) is derived from ADV **Part 1 numbers** for 13F filers only — not read from any brochure. When it and `primary_type` disagree, that is two classifications disagreeing: report both with their sources rather than picking one.
+
+## Roster Filters on the Same Axis
+
+`sec_registration_type` (`Registered` or `ERA`), `state` (main-office US state code), `country` (as ADV spells it, e.g. `United States`), and the Part 1 private-fund flags `advises_private_funds`, `has_hedge_funds`, `has_pe_funds`, `has_vc_funds`.
+
+## Related Screens
+
+[By strategy and style](/screening/advisers/by-strategy-and-style) · [By products and scale](/screening/advisers/by-products-and-scale) · [Form ADV directory](/advisers/form-adv) · [Adviser screening overview](/advisers/screening)
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/institutions/screen?primary_type=asset_manager&subtype=quant_systematic&role_flags=acts_as_subadviser" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response (excerpt)
+{
+  "data": [
+    {
+      "crd": "105247",
+      "legal_name": "EXAMPLE QUANT MANAGEMENT LP",
+      "primary_type": "asset_manager",
+      "subtype": "quant_systematic",
+      "brochure_scope": "entity",
+      "firm_type": "Hedge-Fund",
+      "sec_registration_type": "Registered",
+      "role_flags": ["acts_as_subadviser"]
+    }
+  ]
+}
+```
+
+</ResponseExample>

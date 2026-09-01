@@ -26,100 +26,107 @@
     }
   },
   "navigation": {
-    "tabs": [
+    "groups": [
       {
-        "tab": "Documentation",
-        "groups": [
+        "group": "Get started",
+        "pages": [
+          "index",
+          "quickstart",
+          "authentication",
+          "mcp-setup"
+        ]
+      },
+      {
+        "group": "Core concepts",
+        "pages": [
+          "concepts/plans-credits",
+          "concepts/rate-limits",
+          "concepts/errors",
+          "concepts/pagination",
+          "concepts/company-identifiers",
+          "concepts/coverage"
+        ]
+      },
+      {
+        "group": "Screening tools",
+        "pages": [
+          "screening/overview",
           {
-            "group": "Getting started",
+            "group": "Company screening",
             "pages": [
-              "index",
-              "quickstart",
-              "authentication",
-              "mcp-setup"
+              "companies/screening",
+              "screening/companies/by-fundamentals",
+              "screening/companies/by-guidance",
+              "screening/companies/by-events",
+              "screening/companies/by-products-and-peers",
+              "screening/companies/by-positioning"
             ]
           },
           {
-            "group": "Core concepts",
+            "group": "ETF screening",
             "pages": [
-              "concepts/plans-credits",
-              "concepts/rate-limits",
-              "concepts/errors",
-              "concepts/pagination",
-              "concepts/company-identifiers",
-              "concepts/coverage"
+              "etf/screening",
+              "screening/etf/by-asset-class",
+              "screening/etf/by-geography",
+              "screening/etf/by-wrapper",
+              "screening/etf/by-size-and-fees",
+              "screening/etf/by-portfolio-shape",
+              "screening/etf/by-flows-and-premium"
+            ]
+          },
+          {
+            "group": "Adviser screening",
+            "pages": [
+              "advisers/screening",
+              "screening/advisers/by-firm-type",
+              "screening/advisers/by-strategy-and-style",
+              "screening/advisers/by-products-and-scale"
             ]
           }
         ]
       },
       {
-        "tab": "ETF data",
-        "groups": [
+        "group": "ETF data",
+        "pages": [
+          "etf/overview",
+          "etf/identifiers",
           {
-            "group": "ETF data",
-            "pages": [
-              "etf/overview",
-              "etf/identifiers"
-            ]
-          },
-          {
-            "group": "Portfolio",
+            "group": "Portfolio and labels",
             "pages": [
               "etf/holdings",
-              "etf/classification"
+              "etf/classification",
+              "etf/wrapper-tiers",
+              "etf/taxonomy"
             ]
           },
           {
-            "group": "Fund-level series",
+            "group": "Daily series",
             "pages": [
               "etf/nav",
               "etf/flows",
               "etf/total-return",
-              "etf/distributions",
               "etf/fees"
             ]
           },
           {
-            "group": "Selection",
+            "group": "Corporate actions",
             "pages": [
-              "etf/screening"
+              "etf/splits",
+              "etf/distributions"
             ]
           }
         ]
       },
       {
-        "tab": "Ownership",
-        "groups": [
+        "group": "Company essentials",
+        "pages": [
           {
-            "group": "Holdings and insiders",
+            "group": "Companies",
             "pages": [
-              "ownership/13f",
-              "ownership/insider-trades",
-              "ownership/proxy-ownership",
-              "ownership/executive-compensation",
-              "ownership/short-interest"
-            ]
-          },
-          {
-            "group": "Advisers and investors",
-            "pages": [
-              "advisers/form-adv",
-              "advisers/adv-brochure",
-              "advisers/screening",
-              "advisers/venture-investors"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "Filings & financials",
-        "groups": [
-          {
-            "group": "Transcripts and documents",
-            "pages": [
-              "transcripts/earnings-call-transcripts",
-              "transcripts/semantic-retrieval",
-              "transcripts/documents"
+              "companies/registry",
+              "companies/identifiers",
+              "companies/listings",
+              "companies/corporate-events"
             ]
           },
           {
@@ -143,12 +150,11 @@
             ]
           },
           {
-            "group": "Companies",
+            "group": "Transcripts and documents",
             "pages": [
-              "companies/registry",
-              "companies/identifiers",
-              "companies/listings",
-              "companies/corporate-events"
+              "transcripts/earnings-call-transcripts",
+              "transcripts/semantic-retrieval",
+              "transcripts/documents"
             ]
           },
           {
@@ -160,7 +166,7 @@
             ]
           },
           {
-            "group": "International",
+            "group": "International financials",
             "pages": [
               "international/taiwan-financials",
               "international/taiwan-monthly-revenue",
@@ -173,31 +179,60 @@
         ]
       },
       {
-        "tab": "Screening",
-        "groups": [
+        "group": "Ownership & incentives",
+        "pages": [
           {
-            "group": "Screening",
+            "group": "Institutional holdings",
             "pages": [
-              "screening/overview"
+              "ownership/13f"
             ]
           },
           {
-            "group": "Screening tools",
+            "group": "ETF holdings",
             "pages": [
-              "companies/screening",
-              "etf/screening",
-              "advisers/screening"
+              "etf/holdings"
+            ]
+          },
+          {
+            "group": "Insider holdings and trades",
+            "pages": [
+              "ownership/proxy-ownership",
+              "ownership/insider-trades"
+            ]
+          },
+          {
+            "group": "Management incentives",
+            "pages": [
+              "ownership/executive-compensation"
+            ]
+          },
+          {
+            "group": "Short interest",
+            "pages": [
+              "ownership/short-interest"
             ]
           }
         ]
       },
       {
-        "tab": "Real-time events",
-        "groups": [
+        "group": "Advisers & investors",
+        "pages": [
+          "advisers/form-adv",
+          "advisers/adv-brochure",
+          "advisers/screening",
+          "advisers/venture-investors"
+        ]
+      },
+      {
+        "group": "Real-time events",
+        "pages": [
+          "realtime/overview",
           {
-            "group": "Real-time events",
+            "group": "Guidance and changes",
             "pages": [
-              "realtime/overview"
+              "events/guidance",
+              "events/guidance-changes",
+              "events/earnings-results"
             ]
           },
           {
@@ -216,14 +251,6 @@
             ]
           },
           {
-            "group": "Guidance and results",
-            "pages": [
-              "events/guidance",
-              "events/guidance-changes",
-              "events/earnings-results"
-            ]
-          },
-          {
             "group": "Market expectations",
             "pages": [
               "events/prediction-markets",
@@ -231,23 +258,21 @@
             ]
           },
           {
-            "group": "Local markets",
+            "group": "Global disclosures",
             "pages": [
-              "international/exchange-disclosures"
+              "international/exchange-disclosures",
+              "international/disclosures-taiwan",
+              "international/disclosures-korea",
+              "international/disclosures-japan"
             ]
           }
         ]
       },
       {
-        "tab": "Account",
-        "groups": [
-          {
-            "group": "Account and service",
-            "pages": [
-              "account/usage",
-              "account/dataset-status"
-            ]
-          }
+        "group": "Account",
+        "pages": [
+          "account/usage",
+          "account/dataset-status"
         ]
       }
     ]

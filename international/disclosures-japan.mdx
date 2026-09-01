@@ -1,0 +1,87 @@
+---
+title: "Japan TDnet Disclosures"
+sidebarTitle: "Japan disclosures"
+description: "Company disclosures filed to Japan's TDnet — every row classified with TDnet's own category, linking the original PDF and, for earnings releases, the XBRL numbers."
+---
+
+Japan TDnet Disclosures is the feed of timely-disclosure filings on TDnet, the Tokyo Stock Exchange's disclosure network — earnings flashes (kessan tanshin), forecast revisions, buyback progress reports, officer changes. Japan is the market in this family that classifies every row: each disclosure carries TDnet's own `category`, and earnings releases link both the original PDF and the XBRL numbers.
+
+<Info>
+  **Plan:** Fund · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Japan Disclosures For
+
+Track a Japanese company's earnings flash and forecast revisions the day they are filed — Japanese guidance lives in this channel, not on IR pages. Follow buyback execution through the monthly `buyback_progress` reports. Pull the XBRL numbers behind an earnings flash directly rather than parsing the PDF.
+
+## Japan Disclosure Coverage
+
+The feed is a **rolling recent window, not an archive**; the per-market start date is measured in the response's `coverage` block. The feed ingests twice daily around the Tokyo disclosure windows.
+
+## Key Japan Disclosure Fields
+
+Each row carries the disclosure date, the title as filed (Japanese, untranslated), TDnet's `category`, `filing_url` (the original PDF), and — for earnings releases — `xbrl_url`, the structured numbers.
+
+The `category` vocabulary is TDnet's own: `earnings_flash`, `earnings_forecast_revision`, `earnings_presentation`, `ma`, `buyback`, `buyback_progress`, `officer_change`, `dividend_revision`, `equity_comp`, `governance`, `growth_plan`, `special_items`, and more — the same families the [company screen](/screening/companies/by-events) serves under `event_source=japan_tdnet`. Because only Japan publishes a category, filtering on `category` excludes Taiwan and Korea rather than returning them unfiltered.
+
+## Japan Disclosure Date Convention
+
+The disclosure date is the TDnet filing date, Tokyo time. Earnings flashes cluster around the quarterly reporting windows; forecast revisions can land any day, and are the Japanese market's primary guidance event — the [guidance ledger](/events/guidance) ingests Japanese guidance from this door.
+
+## Japan Disclosure Sources
+
+Rows come from TDnet, the exchange's timely-disclosure network. A foreign private issuer may furnish some of the same announcements to the SEC on Form 6-K, so the two feeds can overlap; TDnet is the earlier and more complete channel.
+
+## Query Japan Disclosures
+
+Use the company disclosures endpoint with `market=japan`, passing a Japanese ticker (`6758.T`), `company_id`, CIK or ISIN.
+
+<ParamField path="company" type="string" required>
+  Ticker (`6758.T`), `company_id`, CIK or ISIN.
+</ParamField>
+
+<ParamField query="market" type="string">
+  `japan` to restrict to this market; omit to search every listed market.
+</ParamField>
+
+<ParamField query="category" type="string">
+  TDnet's own classification, e.g. `earnings_flash`. Japan-only.
+</ParamField>
+
+<ParamField query="date_gte" type="string">
+  Earliest disclosure date, `YYYY-MM-DD`; `date_lte` sets the ceiling. `limit` (default 50, max 200) and `cursor` page newest-first.
+</ParamField>
+
+## Related Datasets
+
+See also [Global Exchange Disclosures](/international/exchange-disclosures) for the cross-market view, [Management Guidance](/events/guidance) for the guidance extracted from forecast revisions, and [Screen Companies by Events](/screening/companies/by-events) for the `japan_tdnet` event axis.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/6758.T/disclosures?market=japan&category=earnings_forecast_revision&limit=2" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response (excerpt)
+{
+  "markets_searched": ["japan"],
+  "data": [
+    {
+      "market": "japan",
+      "disclosed_at": "2026-08-06",
+      "title": "業績予想の修正に関するお知らせ",
+      "category": "earnings_forecast_revision",
+      "filing_url": "https://www.release.tdnet.info/…pdf",
+      "xbrl_url": null
+    }
+  ],
+  "coverage": { "japan": { "available_from": "…", "update_frequency": "twice daily, Tokyo disclosure windows" } }
+}
+```
+
+</ResponseExample>

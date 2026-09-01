@@ -1,0 +1,83 @@
+---
+title: "ETF Splits and Split Adjustment"
+sidebarTitle: "ETF splits"
+description: "Adjudicated ETF share split events — forward and reverse — with date, direction and ratio, and how every NAV, share count and distribution in the FocusAlpha API carries both a published and a split-adjusted basis."
+---
+
+ETF Splits records every share split an ETF carried out: the date, the direction (forward or reverse), and the ratio. FocusAlpha adjudicates each split event from issuer documents and then uses those events to restate historical NAV, shares outstanding and distributions onto today's share basis — while always keeping the number the fund originally published alongside the restated one.
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call
+</Info>
+
+## Why ETF Splits Matter More Than Stock Splits
+
+Splits are routine in the ETF market in a way they are not for common stock. Leveraged and inverse funds decay by construction, so they reverse-split repeatedly to keep their price tradable — SQQQ has reverse-split five times since 2019 — and successful leveraged funds forward-split just as often — TQQQ has forward-split 2-for-1 three times since 2021. A NAV history that ignores these events shows a 50% one-day loss that never happened, and a share-count history shows creations and redemptions that are actually the split itself.
+
+## Key ETF Split Event Fields
+
+Each split event carries three fields. `split_date` is the date the split took effect on the fund's published series. `split_type` is `forward` (each share becomes several; NAV per share falls) or `reverse` (several shares become one; NAV per share rises). `ratio` is the multiple: a `forward` split with ratio `2` is 2-for-1, a `reverse` split with ratio `5` is 1-for-5.
+
+Split events are returned in the `events.splits` block of the [ETF profile](/etf/overview), newest first.
+
+## How Split Adjustment Works in the FocusAlpha API
+
+Every NAV and share-count value in the [ETF NAV series](/etf/nav) is served in **two bases at once**: the value as the fund published it on that day (`nav`, `shares_outstanding`), and the value restated onto today's share count (`nav_split_adjusted`, `shares_outstanding_split_adjusted`). The published basis is what the fund actually printed; the split-adjusted basis is the one that is comparable across time.
+
+Each value carries its own status. `published` means the fund printed exactly that number. `converted` means FocusAlpha rescaled a published number using the adjudicated split events on this page. `derived` means the value was rebuilt from an accounting identity. `withheld` means the basis could not be established, so the value is null **on purpose** — a refusal to invent a number, not missing data.
+
+Distribution amounts get the same treatment: [ETF Distributions](/etf/distributions) serves `amount_per_share` as declared and `amount_per_share_split_adjusted` on today's share basis.
+
+## The Split Factor Column in the Daily Series
+
+On the day a split takes effect, the NAV series row carries the event in its `split_factor` column. Every other day the column is null. This is how a consumer of the daily series can see exactly where the published basis changed without joining a second dataset.
+
+## ETF Split Date Convention
+
+`split_date` is the date the fund's published per-share series changes basis — the first date on which the new share count applies. When the issuer's own notice dates the event, that date is used; otherwise the date is anchored to the observed break in the published series.
+
+## ETF Split Sources
+
+Split events are adjudicated by FocusAlpha from issuer notices and the funds' own published daily series, not taken from a market-data vendor's pre-folded history. This matters because vendor price histories typically fold splits (and sometimes ticker changes) silently into the series, which makes it impossible to tell what the fund actually published on a given day. Here the raw published value and the adjudicated event are both first-class, so either basis can be reconstructed exactly.
+
+## Query ETF Splits
+
+Split events are served in the `events` block of the ETF profile endpoint. There is no separate splits route.
+
+<ParamField path="id" type="string" required>
+  `etf_id` (`E000011`), a ticker (`TQQQ`), an ISIN, or a CUSIP.
+</ParamField>
+
+To see the split's effect day by day, read the [ETF NAV series](/etf/nav) around the `split_date` and compare `nav` with `nav_split_adjusted`.
+
+## Related Datasets
+
+See also [ETF NAV and Shares Outstanding](/etf/nav) for the two-basis daily series these events adjust, [ETF Distributions](/etf/distributions) for the other per-share quantity that is restated, and [ETF Fund Flows](/etf/flows), which is computed on the split-adjusted basis so a split never masquerades as a creation or redemption.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/etfs/SQQQ" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json events.splits (SQQQ)
+{
+  "events": {
+    "status": "available",
+    "splits": [
+      { "split_date": "2025-11-21", "split_type": "reverse", "ratio": 5 },
+      { "split_date": "2024-11-07", "split_type": "reverse", "ratio": 5 },
+      { "split_date": "2022-01-13", "split_type": "reverse", "ratio": 5 },
+      { "split_date": "2020-08-18", "split_type": "reverse", "ratio": 5 },
+      { "split_date": "2019-05-24", "split_type": "reverse", "ratio": 4 }
+    ]
+  }
+}
+```
+
+</ResponseExample>

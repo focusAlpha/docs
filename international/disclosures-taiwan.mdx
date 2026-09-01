@@ -1,0 +1,89 @@
+---
+title: "Taiwan Exchange Disclosures"
+sidebarTitle: "Taiwan disclosures"
+description: "Company announcements filed to the Taiwan Stock Exchange (TWSE) and Taipei Exchange (TPEx), with the announcement's full original text available per row."
+---
+
+Taiwan Exchange Disclosures is the feed of company announcements filed to the Taiwan Stock Exchange (TWSE) and the Taipei Exchange (TPEx) — the authoritative local-market record of what a Taiwanese listed company announced, including material information that never reaches an SEC filing. Taiwan is the one market in this family where the announcement's **full text** travels with the row.
+
+<Info>
+  **Plan:** Fund · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Taiwan Disclosures For
+
+Read what a Taiwan-listed company announced today, in the market's own words. Catch material-information announcements — capacity, orders, litigation, monthly revenue commentary — hours before any secondary coverage. Feed the full announcement text to a model for extraction, since the text itself is served rather than a link.
+
+## Taiwan Disclosure Coverage
+
+The feed is a **rolling recent window, not an archive**: it carries recent weeks of announcements and advances continuously. The per-market start date is measured on the way out in the response's `coverage` block — an empty result for an earlier date is the feed's start, not a silent company.
+
+Most Taiwan announcements land after the local close; the feed ingests on the market's own overnight schedule.
+
+## Key Taiwan Disclosure Fields
+
+Each row carries the disclosure date, the title as filed, and the announcement's original text. `description_chars` states how long the full text is; pass `include_text=true` to receive it. Titles and text are in the local language and are **not translated**.
+
+Taiwan publishes no per-announcement classification of its own, so rows from this market carry no `category` — filtering on `category` excludes Taiwan rather than returning it unfiltered.
+
+## Taiwan Disclosure Date Convention
+
+The disclosure date is the market's own announcement date, Taipei time. Because most announcements are filed after the close, the trading-relevant date is usually the **next** session.
+
+## Taiwan Disclosure Sources
+
+Rows come from the TWSE/TPEx market observation post system — the exchange's own disclosure channel. This is issuer speech as filed, not news coverage.
+
+## Query Taiwan Disclosures
+
+Use the company disclosures endpoint with `market=taiwan`, passing a Taiwan ticker (`2330.TW`), `company_id`, CIK or ISIN.
+
+<ParamField path="company" type="string" required>
+  Ticker (`2330.TW`), `company_id`, CIK or ISIN.
+</ParamField>
+
+<ParamField query="market" type="string">
+  `taiwan` to restrict to this market; omit to search every market the company lists in — `markets_searched` names which those were.
+</ParamField>
+
+<ParamField query="include_text" type="boolean" default="false">
+  Return the announcement's full original text.
+</ParamField>
+
+<ParamField query="date_gte" type="string">
+  Earliest disclosure date, `YYYY-MM-DD`; `date_lte` sets the ceiling. `limit` (default 50, max 200) and `cursor` page newest-first.
+</ParamField>
+
+## Related Datasets
+
+See also [Global Exchange Disclosures](/international/exchange-disclosures) for the cross-market view, [Taiwan Financial Statements](/international/taiwan-financials) and [Taiwan Monthly Revenue](/international/taiwan-monthly-revenue) for the structured numbers, and [Company Screening](/screening/companies/by-events) to find companies by disclosure events.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/2330.TW/disclosures?market=taiwan&include_text=true&limit=2" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response (excerpt)
+{
+  "company_id": "cmp_014081",
+  "markets_searched": ["taiwan"],
+  "data": [
+    {
+      "market": "taiwan",
+      "disclosed_at": "2026-08-28",
+      "title": "公告本公司受邀參加國際投資機構舉辦之投資人會議",
+      "description_chars": 412,
+      "text": "…"
+    }
+  ],
+  "coverage": { "taiwan": { "available_from": "…", "update_frequency": "daily, after the Taipei close" } }
+}
+```
+
+</ResponseExample>

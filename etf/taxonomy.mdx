@@ -1,0 +1,94 @@
+---
+title: "ETF Taxonomy"
+sidebarTitle: "Four-level taxonomy"
+description: "FocusAlpha's four-level ETF classification computed from holdings — 8 asset classes, 38 categories, over 300 segments and over 500 specializations, as dotted-path codes with a stated semantic for every node."
+---
+
+The ETF Taxonomy is FocusAlpha's four-level classification of what an ETF's holdings actually are: **asset class → category → segment → specializations**, expressed as dotted-path codes like `equity.sector.health_care.biotechnology`. It is computed from the fund's holdings, not from its name or marketing, and every node carries a one-sentence `semantic` stating what decides it. The full vocabulary — over 900 nodes — is served by a free endpoint.
+
+<Info>
+  **Plan:** the taxonomy endpoint is **free** for every plan; fund labels are served on ETF endpoints at **Professional and above**, 1 credit per call
+</Info>
+
+## The Four Levels of the ETF Taxonomy
+
+**Level 1 — `asset_class`** (8 values): `equity`, `fixed_income`, `multi_asset`, `commodity`, `crypto`, `currency`, `volatility`, and `unknown`. Crypto is deliberately split from currency, and volatility (VIX-futures funds) from alternatives, because their risk shapes have nothing in common with their neighbours.
+
+**Level 2 — `category`** (38 values) splits each asset class by the fund's structural approach. Equity splits into `equity.size_style`, `equity.sector`, `equity.thematic`, `equity.dividend_income`, `equity.active_select`, `equity.leveraged_inverse`, `equity.option_income`, `equity.structured_outcome`. Fixed income splits into `broad_market`, `government`, `corporate`, `municipal`, `securitized`, plus its own `leveraged_inverse` and `option_income`. Multi-asset splits into `allocation`, `target_date`, `long_short`, `managed_futures`, `market_neutral`, `merger_arb`, `risk_parity`. Commodity and crypto each split into `physical`, `futures`, `leveraged_inverse`, `option_income`; currency into `single_pair`, `basket`, `leveraged_inverse`; volatility into `long_vol`, `short_vol`, `tail_hedge`.
+
+**Level 3 — `segment`** (over 300 values) is **the peer-group key** — the level at which funds are genuinely comparable. Under `equity.sector` it is the eleven sectors (`technology`, `health_care`, `financials`, `energy`, `industrials`, `materials`, `real_estate`, `utilities`, `consumer_discretionary`, `consumer_staples`, `communication_services`). Under `equity.size_style` it is regions and countries (`us`, `global`, `developed_ex_us`, `emerging`, `region_europe`, `country_cn`, `country_jp`, `country_in`, …). Under fixed-income categories it is credit quality (`investment_grade`, `high_yield`, `broad_credit`). Under `equity.leveraged_inverse` it is the underlying (`single_stock`, `us_large_cap`, `nasdaq_100`, `sector_technology`, …).
+
+**Level 4 — `specializations`** (over 500 values) is the only **multi-valued** level: a fund can carry several, and a filter matches a fund carrying any of them. Under `equity.sector.health_care` this is where `biotechnology` lives; under `equity.thematic` it is themes like `ai_robotics`, `clean_energy`, `nuclear`, `space_defense`, `cybersecurity`.
+
+## ETF Taxonomy Codes Are Paths
+
+Codes are dotted paths, so a child can never sit under two parents, and a code always reveals its ancestry: `fixed_income.corporate.high_yield` is readable without a lookup. The path structure is also filterable — `taxonomy_prefix=equity.sector` in the [ETF screen](/etf/screening) matches every sector fund at once, at any level.
+
+Codes cannot be guessed. A misspelled code returns an empty page that reads exactly like "no such funds exist" — retrieve the vocabulary first, or check the free screen facets endpoint, which returns the codes **as actually carried by funds** with a count for each.
+
+## Every ETF Taxonomy Node Has a Semantic
+
+Each node carries a `label` (the human name) and a `semantic` — the sentence saying what decides membership. For example, the `equity` asset class's semantic states the exposure-dominance rule that assigns it. The semantics make the classification auditable: a label is a claim with a stated rule, not an opaque vendor category.
+
+## The Two Unknown Values Are Different Facts
+
+`unknown.no_holdings` means no holdings feed has arrived for the fund yet. `unknown.ambiguous` means holdings arrived but did not concentrate enough to clear the classification thresholds. The first is a coverage gap; the second is a genuine property of the fund's book.
+
+## ETF Taxonomy Date Convention
+
+Labels are recomputed from holdings **once a month**; the measured columns on the same fund refresh daily. A fund that changed its portfolio mid-month keeps its previous label until the next monthly run. `labels_as_of.holdings_as_of` is the portfolio date the current labels were computed from, and the `history` array on the profile dates every previous label change.
+
+## ETF Taxonomy Sources
+
+The taxonomy is calculated by FocusAlpha from issuer-published [holdings](/etf/holdings) under stated per-node rules. It is not licensed from an index provider and not copied from fund names — which is precisely what lets it catch a fund whose portfolio has drifted away from what its name implies.
+
+## Query the ETF Taxonomy
+
+The taxonomy endpoint returns the full vocabulary and takes no parameters. It is free.
+
+A fund's own labels are in the `labels` block of the [ETF profile](/etf/overview). To select funds by code, pass `asset_class`, `category`, `segment`, `specializations` or `taxonomy_prefix` to the [ETF screen](/etf/screening) — see [Screen ETFs by Asset Class](/screening/etf/by-asset-class).
+
+## Related Datasets
+
+See also [ETF Classification](/etf/classification) for how this taxonomy pairs with the [wrapper tier](/etf/wrapper-tiers), and [ETF Holdings](/etf/holdings) for the underlying data.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/etfs/taxonomy" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response (excerpt)
+{
+  "data": [
+    {
+      "code": "equity",
+      "level": 1,
+      "parent_code": null,
+      "label": "Equity",
+      "semantic": "What the fund holds: equity exposure >= the dominance threshold of non-cash weight."
+    },
+    {
+      "code": "equity.sector.health_care",
+      "level": 3,
+      "parent_code": "equity.sector",
+      "label": "Health Care",
+      "semantic": "Equity weight concentrates in health-care issuers."
+    },
+    {
+      "code": "equity.sector.health_care.biotechnology",
+      "level": 4,
+      "parent_code": "equity.sector.health_care",
+      "label": "Biotechnology",
+      "semantic": "A specialization: weight concentrated in biotech names."
+    }
+  ]
+}
+```
+
+</ResponseExample>

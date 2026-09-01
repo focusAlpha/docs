@@ -1,0 +1,76 @@
+---
+title: "Screen Companies by Products and Peers"
+sidebarTitle: "By products & peers"
+description: "Find who makes a product, who sits in its value chain, and who names whom as a peer or competitor — from FocusAlpha's filings-built entity-relations graph, with evidence on every match."
+---
+
+Screening companies by products and peers answers "who makes memory", "who is in the lithography value chain" and "who names Micron as a competitor" — from a relations graph built out of filings (10-K competitor naming, proxy-statement peer groups, business-section product extraction), not from an industry code. Every match returns its evidence.
+
+<Info>
+  **Plan:** Fund · **Credits:** 1 per call; screen facets and the term search are free
+</Info>
+
+## The Product and Relationship Filters
+
+<ParamField query="find_terms" type="string">
+  **Vocabulary search, not a screen** — free. Returns product terms matching a spelling with how many companies make each. Call it before `makes_term`: the vocabulary expands **spellings, not concepts** — `memory`, `dram`, `nand` and `memory chips` are four separate terms with four separate company lists, so `makes_term=memory` alone misses Kioxia, Winbond and Nanya. Pass every spelling it shows you.
+</ParamField>
+
+<ParamField query="makes_term" type="string">
+  Comma-separated product terms; companies that **make** any of them. Exact terms from `find_terms`.
+</ParamField>
+
+<ParamField query="related_to_term" type="string">
+  Companies **related** to any of the terms — in that product's value chain without making it. Direction is usually unknown, so read it as "connected to", not "supplies".
+</ParamField>
+
+<ParamField query="peer_of" type="string">
+  Companies in this company's disclosed **compensation peer group**, either direction. Takes a `company_id` or ticker; an identifier matching nothing is an error, not an empty page.
+</ParamField>
+
+<ParamField query="competitor_of" type="string">
+  Companies named as a competitor by (or naming) this company in a 10-K Item 1. Same identifier rules as `peer_of`.
+</ParamField>
+
+## Every Match Carries Its Evidence
+
+Matches come back with `matched_terms` or `matched_relation`: the term, its sources, its grade, and whether a peer selection was mutual. The evidence travels with the row because extraction has failure modes — a business-section extraction can put "memory" on a PCB maker that merely wrote the word — and a product list nobody can check is a product list nobody should trust.
+
+## Never Substitute Sector for These
+
+"Peers" from an industry filter is a different claim wearing the same word. If the graph holds nothing for a company, the honest answer is that FocusAlpha holds nothing — never that the company makes nothing or has no peers. The free facets endpoint reports how many companies each relationship axis reaches. One caution inherited from the source material: a proxy **compensation** peer group is who the board benchmarks pay against, and must never be read as a causal or supply-chain link.
+
+## Related Screens
+
+[By events](/screening/companies/by-events) · [By fundamentals](/screening/companies/by-fundamentals) · [Company registry](/companies/registry) · [Company screening overview](/companies/screening)
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/screen/terms?q=memory" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+
+curl "https://api.focusalpha.ai/v1/screen?makes_term=memory,dram,nand,memory%20chips&sort=market_cap_usd" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response (excerpt)
+{
+  "data": [
+    {
+      "company_id": "cmp_007613",
+      "name": "Micron Technology, Inc.",
+      "primary_ticker": "MU",
+      "matched_terms": [
+        { "term": "dram", "sources": ["10k_business"], "grade": "named_product" }
+      ]
+    }
+  ]
+}
+```
+
+</ResponseExample>

@@ -1,0 +1,79 @@
+---
+title: "Screen Companies by Fundamentals"
+sidebarTitle: "By fundamentals"
+description: "Filter companies by market cap in USD, valuation multiples, margins, leverage, growth and price momentum — with the unit rules and null conventions that make the numbers safe to rank on."
+---
+
+Screening companies by fundamentals bounds a universe of roughly 25,000 listed companies on size, valuation, profitability, leverage, growth and momentum. Sizes are converted to US dollars so they compare across countries; ratio filters follow strict unit and null conventions so a ranking never quietly puts a loss-maker at the top of a "cheap" list.
+
+<Info>
+  **Plan:** Fund · **Credits:** 1 per call; screen facets are free
+</Info>
+
+## The Size and Identity Filters
+
+<ParamField query="market_cap_usd_gte" type="number">
+  Market-cap floor in USD; `market_cap_usd_lte` sets the ceiling. Converted through a weekly FX snapshot; each row also carries `market_cap_local` and `market_cap_currency` so the conversion is checkable. There is deliberately no local-currency filter — 10bn JPY and 10bn USD differ by two orders of magnitude.
+</ParamField>
+
+<ParamField query="country" type="string">
+  ISO country code of domicile (`US`, `JP`, `TW`). `sector`, `industry` and `exchange` narrow the same way — values exactly as the free facets endpoint spells them. `has_cik=true` is the honest form of "US filers only", which `country` cannot answer.
+</ParamField>
+
+## The Valuation Filters
+
+`pe_ttm_gte`/`_lte` (trailing-twelve-month PE), `pb_gte`/`_lte` (price to book), `ps_ttm_gte`/`_lte` (price to TTM sales), `fcf_yield_gte`/`_lte` (free cash flow over market cap, a **fraction**, may be negative), `dividend_yield_gte`/`_lte` (a fraction: `0.03` is 3%).
+
+**A loss-maker has no PE.** `pe_ttm` is null rather than negative, so sorting ascending gives the cheapest *profitable* companies and can never rank losses as cheap. Screen the loss-makers themselves with `is_lossmaking=true`. `pb` goes null the same way when book equity is negative — common among heavy repurchasers.
+
+## The Profitability, Leverage and Growth Filters
+
+`gross_margin`, `operating_margin`, `net_margin`, `return_on_equity` — all fractions (`0.2` = 20%) with `_gte`/`_lte` bounds. `debt_to_equity_gte`/`_lte` bounds total debt over shareholders' equity. `revenue_growth_yoy` and `eps_growth_yoy` are fractions against the **same period one year earlier**.
+
+Gross and operating margin are **null for banks, insurers and REITs by design** — the concepts do not apply and no substitute is invented. Filter those sectors on `net_margin` or `return_on_equity` instead of reading the nulls as missing data.
+
+## The Momentum Filters
+
+`ret_1m`, `ret_3m`, `ret_6m`, `ret_12m` bounds — price returns in **percent** (`ret_1m_gte=20` is a 20% move), unlike the ratio filters, which are fractions on the same row. `return_suspect=true` marks a company whose return disagrees with its market-cap change over the same window — the fingerprint of an unadjusted split; those rows are excluded from return filters and sorts unless `include_suspect_returns` is set.
+
+## Coverage: Any Ratio Filter Narrows the Universe
+
+Valuation and fundamentals cover a tracked cohort, not every listed company — `has_fundamentals=true` asks what is screenable at all, and the free facets endpoint reports the count. Any ratio filter silently narrows the screen to that cohort, so "the cheapest companies in the world on PE" really means "the cheapest of the companies we hold statements for". A null margin means *not tracked in this source*, never *this company has no financials*. `fundamentals_stale=true` finds companies whose newest period is over two years old — those rows carry **no** price ratio at all, because today's price over 2009 earnings would rank as the cheapest stock on the exchange.
+
+`fundamentals_grain` says whether numbers are TTM or latest-annual; `fundamentals_filed_at` is when the market could first know them.
+
+## Related Screens
+
+[By guidance](/screening/companies/by-guidance) · [By events](/screening/companies/by-events) · [By positioning](/screening/companies/by-positioning) · [By products and peers](/screening/companies/by-products-and-peers) · [Company screening overview](/companies/screening)
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/screen?sector=Technology&market_cap_usd_gte=1000000000&pe_ttm_lte=20&net_margin_gte=0.1&sort=pe_ttm&order=asc" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response (excerpt)
+{
+  "data": [
+    {
+      "company_id": "cmp_014081",
+      "name": "Taiwan Semiconductor Manufacturing Company Limited",
+      "primary_ticker": "2330.TW",
+      "market_cap_usd": 892000000000,
+      "market_cap_local": 28950000000000,
+      "market_cap_currency": "TWD",
+      "pe_ttm": 18.4,
+      "net_margin": 0.401,
+      "fundamentals_grain": "ttm",
+      "ret_3m": 12.7
+    }
+  ]
+}
+```
+
+</ResponseExample>

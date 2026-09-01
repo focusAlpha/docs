@@ -1,0 +1,84 @@
+---
+title: "Screen Advisers by Products and Scale"
+sidebarTitle: "By products & scale"
+description: "Filter advisers by the vehicles they issue, the asset classes the money buys, geographic coverage, and self-reported AUM — with the ERA sorting rule and the has_brochure coverage switch."
+---
+
+Screening advisers by products and scale selects firms by **what they sell** and **how big they are**: the vehicles a firm issues, the asset classes its money buys, the geographies its brochure claims, and its self-reported regulatory AUM. The product and asset-class vocabularies are deliberately separate questions, and the scale axis carries a structural rule about exempt reporting advisers that decides what a ranking can see.
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call; screen facets are free
+</Info>
+
+## Vehicles Versus Asset Classes — Two Vocabularies
+
+<ParamField query="product_types" type="string">
+  What the firm **issues**; comma-separated, matches ANY: `mutual_fund`, `etf`, `private_fund`, `separately_managed_account`, `model_portfolio`, `wrap_program`, `closed_end_fund`, `interval_fund`, `collective_investment_trust`, `ucits`, `annuity_insurance`, `section_529_plan`.
+</ParamField>
+
+<ParamField query="asset_classes" type="string">
+  What the money **buys**; comma-separated, matches ANY: `equity`, `fixed_income`, `real_estate`, `private_equity`, `private_credit`, `structured_credit`, `structured_products`, `bank_loans`, `commodities`, `currencies`, `digital_assets`, `derivatives`, `infrastructure`, `multi_asset`, `cash`.
+</ParamField>
+
+The two are never interchangeable: an ETF issuer that buys bonds is `product_types=etf` plus `asset_classes=fixed_income`.
+
+<ParamField query="geographic_coverage" type="string">
+  Where the brochure says the money goes: `global`, `us`, `north_america`, `international_ex_us`, `emerging_markets`, `europe`, `asia_pacific`, `japan`, `latin_america`, `middle_east_africa`. Most brochures name none — this returns the firms that **wrote it down**, not the complete list of managers in a region.
+</ParamField>
+
+## The Scale Filters
+
+<ParamField query="min_aum" type="number">
+  Total regulatory AUM floor in USD, self-reported on ADV Part 1; `max_aum` sets the ceiling. This family spells bounds `min_`/`max_` — not the `_gte`/`_lte` of the company screen — and an unknown parameter returns a `400` rather than being silently ignored.
+</ParamField>
+
+## Sorting Drops a Whole Registration Class
+
+<Warning>
+An exempt reporting adviser files an abbreviated ADV that reports **no AUM, no account count and no headcount**, so the sorts `aum_total`, `aum_discretionary`, `accounts_total` and `employee_count` all drop every ERA — and any AUM bound excludes them too. `crd` is the only sort that keeps every firm, and paging it at `limit=1000` is the full-roster export path. When a sort empties the page, read the `unranked` block before concluding nothing matched.
+</Warning>
+
+## The Coverage Switches
+
+<ParamField query="has_brochure" type="boolean">
+  `true` restricts to firms whose Part 2A brochure is in the store. Every brochure filter on any adviser page silently narrows to that population — this switch, and the facets totals, make the narrowing visible instead of reading as "few firms do this".
+</ParamField>
+
+<ParamField query="has_style" type="boolean">
+  `true` restricts to 13F filers with a computed style row.
+</ParamField>
+
+## Related Screens
+
+[By firm type](/screening/advisers/by-firm-type) · [By strategy and style](/screening/advisers/by-strategy-and-style) · [Form ADV directory](/advisers/form-adv) · [Adviser screening overview](/advisers/screening)
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/institutions/screen?product_types=etf&asset_classes=fixed_income&min_aum=10000000000&sort=aum_total" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response (excerpt)
+{
+  "data": [
+    {
+      "crd": "110537",
+      "legal_name": "EXAMPLE FIXED INCOME ADVISORS LLC",
+      "primary_type": "asset_manager",
+      "product_types": ["etf", "mutual_fund", "separately_managed_account"],
+      "asset_classes": ["fixed_income", "structured_credit"],
+      "geographic_coverage": ["global"],
+      "aum_total": 87400000000,
+      "sec_registration_type": "Registered"
+    }
+  ],
+  "unranked": { "count": 0 }
+}
+```
+
+</ResponseExample>

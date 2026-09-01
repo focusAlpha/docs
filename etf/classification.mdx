@@ -1,63 +1,56 @@
 ---
-title: "ETF Classification and Taxonomy"
-sidebarTitle: "ETF classification"
-description: "Two independent ETF label sets: the nine-value wrapper tier, and a four-level asset class, category, segment and specialization taxonomy computed from holdings."
+title: "ETF Classification and Labels"
+sidebarTitle: "Classification overview"
+description: "How FocusAlpha labels every ETF with two independent systems — the nine-value wrapper tier and a four-level holdings-derived taxonomy — plus the fund's own declared flags and a dated label-change history."
 ---
 
-ETF Classification assigns two independent sets of labels to a fund. The **wrapper tier** says what kind of instrument the fund is. The **four-level taxonomy** — asset class, category, segment, specializations — says what its holdings actually are. The two are stored side by side and are never merged, because a leveraged fund and a plain index fund can hold the same underlying exposure.
+ETF Classification is the label layer FocusAlpha computes for every US-listed ETF. Each fund carries **two independent label systems side by side**: the [wrapper tier](/etf/wrapper-tiers), which says what kind of instrument the fund is, and the [four-level taxonomy](/etf/taxonomy), which says what its holdings actually are. They are never merged, because a leveraged fund and a plain index fund can wrap the same exposure — and separating the two axes is what makes both usable.
 
 <Info>
-  **Plan:** Professional and above · **Credits:** 1 per call; the taxonomy endpoint is free
+  **Plan:** Professional and above · **Credits:** 1 per call; the taxonomy endpoint and screen facets are free
 </Info>
+
+## The Two ETF Label Systems
+
+<CardGroup cols={2}>
+  <Card title="Wrapper tier" icon="layer-group" href="/etf/wrapper-tiers">
+    Nine mutually exclusive values — plain_beta, leveraged_inverse, structured_outcome, option_income, physical_commodity, futures_commodity, crypto, currency, alternative — plus the exposure_hidden flag.
+  </Card>
+  <Card title="Four-level taxonomy" icon="sitemap" href="/etf/taxonomy">
+    asset_class → category → segment → specializations, over 900 dotted-path codes computed from holdings, each with a stated semantic.
+  </Card>
+</CardGroup>
 
 ## What You Can Use ETF Classification For
 
-Build a peer group that is genuinely comparable, using the segment code as the peer key. Separate structural risk from exposure: find every leveraged fund regardless of what it tracks, or every health-care fund regardless of how it is wrapped. Aggregate flows or assets by segment. Detect a fund whose portfolio drifted away from the category its name implies.
-
-## The ETF Wrapper Tier
-
-The wrapper tier has nine mutually exclusive values, describing what kind of thing the fund is rather than what it holds: `leveraged_inverse`, `structured_outcome`, `option_income`, `physical_commodity`, `futures_commodity`, `crypto`, `currency`, `alternative`, and `plain_beta`.
-
-Alongside the tier sits `exposure_hidden`. When it is true, the fund's holdings market values are margin or option premium rather than exposure, so the holdings of a 3x fund sum to roughly flat. Any exposure calculation on such a fund must read notional value instead.
-
-## The Four-Level ETF Taxonomy
-
-The taxonomy is computed from the fund's holdings, not from its name or its stated objective. It has four levels, expressed as dotted-path codes.
-
-`asset_class` is level one, for example `equity`. `category` is level two, for example `equity.sector`. `segment` is level three and is the peer-group key, for example `equity.sector.health_care`. `specializations` is level four and is the one multi-valued level: a fund can carry several, and a filter on it matches a fund holding any of them.
-
-Because codes are paths, a child can never sit under two parents. Each node carries a human `label` and a `semantic` — the sentence saying what decides that node.
-
-Two "unknown" values mean different things. `unknown.no_holdings` means no holdings feed has arrived for the fund yet. `unknown.ambiguous` means holdings arrived but did not concentrate enough to decide a label.
-
-## ETF Classification Date Convention
-
-Labels are recomputed from holdings **once a month**, while the measured columns on the same fund refresh daily. A fund that changed its portfolio mid-month keeps its previous label until the next monthly run.
-
-`labels_as_of.holdings_as_of` is the portfolio date the current labels were computed from. `labels_as_of.label_since` is when the current label was assigned. The `history` array dates every previous label change, so a drift can be read directly rather than inferred.
+Build a peer group that is genuinely comparable, using the level-3 segment code as the peer key. Separate structural risk from exposure: find every leveraged fund regardless of what it tracks, or every health-care fund regardless of how it is wrapped. Aggregate flows or assets by segment. Detect a fund whose portfolio drifted away from the category its name implies — the taxonomy is computed from holdings, so the drift shows up as a dated label change.
 
 ## What the Fund Itself Declares
 
-Separately from both label sets, the record carries what the fund declares about itself: its `name`, its filed index flag, its fund-of-fund flag, and its filed leveraged or inverse flag. These are the issuer's claims, kept apart from FocusAlpha's computed labels so the two can be compared rather than confused.
+Separately from both computed label systems, the record carries the issuer's own claims: the fund `name`, the filed index flag, the fund-of-fund flag, and the filed leveraged/inverse flag. These are kept apart from FocusAlpha's computed labels so the two can be compared rather than confused — a fund whose filed flags and computed labels disagree is a finding, not an error.
+
+## ETF Classification Date Convention
+
+**Labels are monthly; numbers are daily.** The classification is recomputed from holdings once a month, while NAV, flows and the other measured columns refresh daily. `labels_as_of.holdings_as_of` is the portfolio date the current labels were computed from; `labels_as_of.label_since` is when the current label was assigned; the `history` array dates every previous label change, so a drift can be read directly rather than inferred.
+
+Two "unknown" values mean different things: `unknown.no_holdings` (no holdings feed yet) and `unknown.ambiguous` (holdings arrived but did not decide a label).
 
 ## ETF Classification Sources
 
-The four-level taxonomy is calculated by FocusAlpha from issuer-published holdings. The wrapper tier is derived from the fund's filed structure and its holdings shape. The declared flags are read from SEC filings. The vocabulary itself is a published artefact: over 900 nodes, each with a code, a label and a semantic.
+The taxonomy is calculated by FocusAlpha from issuer-published holdings; the wrapper tier is derived from the fund's filed structure and holdings shape; the declared flags are read from SEC filings. The vocabulary itself is a published artifact served by the free taxonomy endpoint.
 
-## Query the ETF Taxonomy
+## Query ETF Classification
 
-Use the ETF taxonomy endpoint to retrieve the full label vocabulary. It is free and takes no parameters. Call it before filtering on a code you have not seen in a response — codes cannot be guessed, and a misspelled code returns an empty page that reads like "no such funds".
-
-A fund's own labels are returned in the `labels` block of the ETF profile endpoint.
+A fund's labels are returned in the `labels` block of the [ETF profile](/etf/overview). The full vocabulary comes from the free taxonomy endpoint. To select funds by label, use the [ETF screen](/etf/screening).
 
 ## Related Datasets
 
-See also [ETF Holdings](/etf/holdings) for the data these labels are computed from, [ETF Screening](/etf/screening) for filtering a universe by these codes, and [ETF Data](/etf/overview) for the other profile blocks.
+See also [ETF Wrapper Tiers](/etf/wrapper-tiers) and [ETF Taxonomy](/etf/taxonomy) for each system in full, [ETF Holdings](/etf/holdings) for the data the labels are computed from, and [ETF Screening](/etf/screening) for filtering by them.
 
 <RequestExample>
 
 ```bash cURL
-curl "https://api.focusalpha.ai/v1/etfs/taxonomy" \
+curl "https://api.focusalpha.ai/v1/etfs/XBI" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 ```
 
@@ -65,26 +58,19 @@ curl "https://api.focusalpha.ai/v1/etfs/taxonomy" \
 
 <ResponseExample>
 
-```json Response
+```json labels block (XBI)
 {
-  "data": [
-    {
-      "code": "equity",
-      "level": "asset_class",
-      "parent_code": null,
-      "label": "Equity",
-      "semantic": "The portfolio's linked weight is predominantly common and preferred shares.",
-      "child_relation": "category"
-    },
-    {
-      "code": "equity.sector.health_care",
-      "level": "segment",
-      "parent_code": "equity.sector",
-      "label": "Health Care",
-      "semantic": "Equity weight concentrates in health-care issuers.",
-      "child_relation": "specialization"
-    }
-  ]
+  "labels": {
+    "tier": "plain_beta",
+    "exposure_hidden": false,
+    "asset_class": "equity",
+    "category": "equity.sector",
+    "segment": "equity.sector.health_care",
+    "specializations": ["equity.sector.health_care.biotechnology"],
+    "labels_as_of": { "holdings_as_of": "2026-08-03", "label_since": "2026-08-05" },
+    "history": [],
+    "declared": { "is_index": true, "multi_inverse": false }
+  }
 }
 ```
 

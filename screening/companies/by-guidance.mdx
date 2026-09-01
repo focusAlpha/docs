@@ -1,0 +1,72 @@
+---
+title: "Screen Companies by Guidance"
+sidebarTitle: "By guidance"
+description: "Find companies that raised or cut guidance — with the crucial distinction between the direction of the number (raises/cuts) and the direction of the news (better/worse), and per-tag date filters."
+---
+
+Screening companies by guidance finds who changed their outlook and when, across the guidance FocusAlpha extracts from earnings calls, releases and IR announcements. The axis has two vocabularies that are deliberately not the same: whether the guided **number** went up or down, and whether the change was **good or bad news** — a company raising its cost outlook filed a raise and told you something bad.
+
+<Info>
+  **Plan:** Fund · **Credits:** 1 per call; screen facets are free
+</Info>
+
+## Better/Worse Versus Raises/Cuts
+
+<ParamField query="guidance_better_90d_gte" type="integer">
+  At least N guidance moves that are **good news** in the last 90 days. `guidance_worse_90d_gte` is the bad-news mirror.
+</ParamField>
+
+<ParamField query="guidance_raises_90d_gte" type="integer">
+  At least N guidance numbers that went **up** — not the same thing as good news. `guidance_cuts_90d_gte` is the mirror.
+</ParamField>
+
+Screen on better/worse unless you specifically mean the direction of the number. The two disagree exactly where guidance is about costs, charges or expenses.
+
+## Time Is a Filter, Not Just a Count
+
+<ParamField query="guidance_better_since" type="string">
+  `YYYY-MM-DD`: newest good-news guidance move on or after this date — "who cut in the past ten days" is `guidance_worse_since` with a date, not a 90-day count.
+</ParamField>
+
+Every row also carries `guidance_last_better_at` and `guidance_last_worse_at`, so the recency of the move travels with the match.
+
+## What a Guidance Match Does Not Tell You
+
+The screen row says a company moved its guidance, and when. For **what** changed — which metric, from what range to what range, with the source quote — follow up with [Guidance Changes](/events/guidance-changes) on the companies returned. The two are halves of one extraction and share a metric vocabulary.
+
+## Guidance Coverage
+
+Guidance covers companies whose releases, calls or IR announcements FocusAlpha ingests — the free facets endpoint reports how many companies carry a guidance tag in the current window. A company outside that coverage never matches a guidance filter, which is a coverage fact rather than "the company never guides".
+
+## Related Screens
+
+[By events](/screening/companies/by-events) · [By fundamentals](/screening/companies/by-fundamentals) · [Management guidance](/events/guidance) · [Guidance changes](/events/guidance-changes) · [Company screening overview](/companies/screening)
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/screen?guidance_worse_since=2026-08-20&market_cap_usd_gte=10000000000&sort=market_cap_usd" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response (excerpt)
+{
+  "data": [
+    {
+      "company_id": "cmp_000972",
+      "name": "Example Corp",
+      "primary_ticker": "EXMP",
+      "guidance_worse_90d": 2,
+      "guidance_cuts_90d": 1,
+      "guidance_last_worse_at": "2026-08-27",
+      "market_cap_usd": 41200000000
+    }
+  ]
+}
+```
+
+</ResponseExample>

@@ -1,0 +1,93 @@
+---
+title: "Screen Advisers by Strategy and Style"
+sidebarTitle: "By strategy & style"
+description: "Filter advisers by what they run (investment strategy) and how they invest (approach, analysis basis, equity styles, value/growth bucket, cap focus, horizon, use of shorting/leverage/derivatives) — declared in the brochure, crossed with the 13F-revealed style tier."
+---
+
+Screening advisers by strategy and style works on two evidence layers that this screen deliberately keeps apart: what the firm's ADV Part 2A brochure **says** about how it invests, and what its 13F book **shows**. Crossing the two — a brochure that declares value against a book that holds growth — is a screen that exists nowhere else.
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call; screen facets are free
+</Info>
+
+## What the Firm Runs
+
+<ParamField query="investment_strategy" type="string">
+  Comma-separated; matches ANY. The vocabulary spans hedge-fund strategies (`long_short`, `global_macro`, `event_driven`, `merger_arbitrage`, `convertible_arbitrage`, `market_neutral`, `distressed`, `activist`, `multi_strategy`), private markets (`private_equity`, `venture_capital`, `private_credit`, `co_investment`, `secondaries`, `litigation_finance`), allocation (`asset_allocation`, `strategic_asset_allocation`, `tactical_asset_allocation`, `manager_selection`, `liability_driven`, `target_date_glide_path`), and long-only styles (`long_only`, `quantitative`, `index_passive`, `smart_beta`, `credit`, `real_assets`, `options_overlay`, `thematic`). This is not the style axis: a quant arb shop reads `quantitative` on analysis basis while its strategies name the arbitrages.
+</ParamField>
+
+## How the Firm Invests — Declared in the Brochure
+
+<ParamField query="analysis_basis" type="string">
+  `fundamental` / `quantitative` / `technical` / `mixed` / `unclear`. The **populated** axis for the quant-versus-fundamental cut.
+</ParamField>
+
+<ParamField query="equity_styles" type="string">
+  `value` / `growth` / `garp` / `blend_core` / `quality` / `income_dividend` / `index_passive` / `other`.
+</ParamField>
+
+<ParamField query="declared_vg_bucket" type="string">
+  The brochure's **own** value/growth bucket: `deep_growth` / `growth_biased` / `blend` / `value_biased` / `deep_value` / `unclear` / `not_applicable`.
+</ParamField>
+
+<ParamField query="market_cap_focus" type="string">
+  `large_cap` / `mid_cap` / `small_cap` / `micro_cap` / `all_cap` — where the brochure names one; most name none.
+</ParamField>
+
+<ParamField query="investment_horizon" type="string">
+  `short` / `medium` / `long` / `mixed` / `unclear`.
+</ParamField>
+
+<ParamField query="uses_short_selling" type="boolean">
+  `true` matches only firms whose brochure **says so** — it never matches silence. The same rule holds for `uses_leverage`, `uses_derivatives`, `uses_options`, `uses_esg`.
+</ParamField>
+
+## Two Axes Are Almost Always Silent
+
+`implementation_style` (`systematic_rules_based` / `discretionary` / `hybrid`) is `unclear` on the overwhelming majority of brochures, and `management_approach` (`active` / `passive`) on most. Filtering `implementation_style=discretionary` returns the few brochures that used the word — not the discretionary managers; in ADV, "discretionary" usually means delegated trading **authority**, a Part 1 fact, not a style. Treat these two as evidence when present and as nothing when absent; use `analysis_basis` for the quant/fundamental cut.
+
+## What the Book Shows — the Revealed Style
+
+<ParamField query="style_tier" type="string">
+  The 13F-revealed tier, computed from the firm's own holdings — Title Case, spelled exactly: `Deep Growth`, `Growth-Biased`, `Blend / Core`, `Value-Biased`, `Deep Value`. 13F filers only; null means the firm files no 13F, not that its style is unknown.
+</ParamField>
+
+**The declared-versus-revealed cross**: `declared_vg_bucket=value_biased` with `style_tier=Growth-Biased,Deep Growth` finds managers whose portfolio contradicts their own marketing. The facets `totals.with_both` says how many firms that cross can reach at all — report it alongside the hits. `has_style=true` restricts to firms with a style row.
+
+## Silence Is Not No
+
+The brochure tags are conservative — set only where the brochure states the thing in so many words. `unclear`, a null flag and an empty tag list all mean **the brochure does not say**, never that the firm does not do it. The facets response counts the silence per axis (`brochure_silent_on_*`).
+
+## Related Screens
+
+[By firm type](/screening/advisers/by-firm-type) · [By products and scale](/screening/advisers/by-products-and-scale) · [ADV brochure data](/advisers/adv-brochure) · [13F holdings](/ownership/13f) · [Adviser screening overview](/advisers/screening)
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/institutions/screen?analysis_basis=quantitative&investment_strategy=long_short&has_brochure=true" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response (excerpt)
+{
+  "data": [
+    {
+      "crd": "170881",
+      "legal_name": "EXAMPLE SYSTEMATIC LP",
+      "primary_type": "asset_manager",
+      "analysis_basis": "quantitative",
+      "investment_strategy": ["long_short", "market_neutral"],
+      "declared_vg_bucket": "not_applicable",
+      "style_tier": "Blend / Core",
+      "declared_style_summary": "Systematic long/short equity strategies driven by proprietary quantitative models."
+    }
+  ]
+}
+```
+
+</ResponseExample>

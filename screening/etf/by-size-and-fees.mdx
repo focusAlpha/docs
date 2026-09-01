@@ -1,0 +1,70 @@
+---
+title: "Screen ETFs by Size and Fees"
+sidebarTitle: "By size & fees"
+description: "Filter and rank ETFs by class-level assets under management and by net expense ratio, with the aum_is_derived flag and the fee-coverage rules that decide who can be ranked."
+---
+
+Screening ETFs by size and fees bounds and ranks funds on two of the most-asked measures: assets under management and expense ratio. Both are served with their provenance — `aum_is_derived` says how the size was obtained, and fee coverage is limited to funds that actually file a fee table — so a ranking here never silently invents a number.
+
+<Info>
+  **Plan:** Fund · **Credits:** 1 per call; screen facets are free
+</Info>
+
+## The Size and Fee Filters
+
+<ParamField query="min_aum" type="number">
+  Class-level AUM floor in USD. `max_aum` sets the ceiling.
+</ParamField>
+
+<ParamField query="min_expense_ratio" type="number">
+  Net expense ratio floor as a decimal — `0.002` is 20 basis points. `max_expense_ratio` sets the ceiling.
+</ParamField>
+
+<ParamField query="q" type="string">
+  Fund-name substring, case-insensitive, at least 2 characters.
+</ParamField>
+
+## How ETF Screen AUM Is Measured
+
+`aum` is always the **class-level** figure: either filed by the fund, or — on multi-class pools where the class does not file its own — derived as published NAV × published shares. `aum_is_derived` says which. A pool-level number is never served as a fund's size, because on a multi-class pool the two differ by three to four times. Funds on multi-class pools where no class size can be derived rank on nothing for `aum` and land in the `unranked` block when that empties a page.
+
+## How ETF Fee Coverage Works
+
+The expense ratio comes from the newest prospectus fee filing per class — gross and net separately, per [ETF Fees](/etf/fees). Unit investment trusts file no fee table at all, SPY and GLD included, so **ranking by `net_expense_ratio` drops them silently**: no fee row is not a zero fee. The response's `unranked` block counts what the sort dropped; re-run with `sort=ticker` to see every match.
+
+## Two Cadences in One Row
+
+Labels refresh monthly, measured columns daily. A newly launched fund can carry full labels while `aum` and fee columns are still null — a label filter finds it, any numeric sort drops it into `unranked`.
+
+## Related Screens
+
+[By asset class](/screening/etf/by-asset-class) · [By flows and premium](/screening/etf/by-flows-and-premium) · [ETF fees](/etf/fees) · [ETF screening overview](/etf/screening)
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/etfs/screen?taxonomy_prefix=equity.size_style.us&min_aum=1000000000&sort=net_expense_ratio&order=asc" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response (excerpt)
+{
+  "data": [
+    {
+      "ticker": "SPLG",
+      "name": "SPDR Portfolio S&P 500 ETF",
+      "aum": 58400000000,
+      "aum_is_derived": false,
+      "net_expense_ratio": 0.0002,
+      "gross_expense_ratio": 0.0002
+    }
+  ],
+  "unranked": { "count": 3, "reason": "no filed fee table" }
+}
+```
+
+</ResponseExample>

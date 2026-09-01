@@ -1,0 +1,82 @@
+---
+title: "Screen ETFs by Wrapper and Structure"
+sidebarTitle: "By wrapper & structure"
+description: "Filter ETFs by the nine wrapper tiers — leveraged/inverse, structured outcome, option income, commodity, crypto, currency, alternative, plain beta — and by filed structural flags."
+---
+
+Screening ETFs by wrapper selects funds by what kind of instrument they are, using the nine-value [wrapper tier](/etf/wrapper-tiers) and the fund's filed structural flags. It is the axis for questions like "every leveraged fund regardless of what it tracks" or "buffer funds on the S&P 500" — the structural half of a question whose exposure half is the [taxonomy](/screening/etf/by-asset-class).
+
+<Info>
+  **Plan:** Fund · **Credits:** 1 per call; screen facets are free
+</Info>
+
+## The Wrapper and Structure Filters
+
+<ParamField query="tier" type="string">
+  Comma-separated wrapper tiers; matches ANY. The nine values: `plain_beta`, `leveraged_inverse`, `structured_outcome`, `option_income`, `physical_commodity`, `futures_commodity`, `crypto`, `currency`, `alternative`.
+</ParamField>
+
+<ParamField query="exposure_hidden" type="boolean">
+  `true` selects funds whose holdings market values are margin or premium rather than exposure — the funds where summing `market_value` is wrong by construction. See [ETF Wrapper Tiers](/etf/wrapper-tiers).
+</ParamField>
+
+<ParamField query="multi_inverse" type="boolean">
+  The **filed** leveraged/inverse flag, from the fund's own SEC filing — the issuer's claim, kept separate from the computed `leveraged_inverse` tier so the two can be compared.
+</ParamField>
+
+<ParamField query="is_index" type="boolean">
+  The filed index-fund flag: `true` for index trackers, `false` for active funds.
+</ParamField>
+
+<ParamField query="is_fund_of_fund" type="boolean">
+  The filed fund-of-funds flag.
+</ParamField>
+
+<ParamField query="active" type="boolean" default="true">
+  Trading status, not management style: by default delisted and superseded funds are excluded; pass `false` to include them.
+</ParamField>
+
+<ParamField query="exchange" type="string">
+  Primary listing exchange, e.g. `AMEX`, `NASDAQ`, `CBOE`, `NYSE`.
+</ParamField>
+
+## Filed Flags and Computed Labels Can Disagree
+
+`multi_inverse` and `is_index` are read from filings; the tier is computed by FocusAlpha. A fund whose filed flags and computed tier disagree is a finding worth looking at, not a data error — the profile's `labels` block shows both.
+
+## A Wrapper Filter Crosses With Everything Else
+
+The tier composes with every other axis: `tier=leveraged_inverse` with `max_flow_20d=-50000000` is "leveraged funds bleeding assets"; `tier=structured_outcome` with `taxonomy_prefix=equity.structured_outcome.us_large_cap` narrows buffers to the S&P 500 complex; `tier=option_income` sorted by `aum` ranks the covered-call complex.
+
+## Related Screens
+
+[By asset class](/screening/etf/by-asset-class) · [By flows and premium](/screening/etf/by-flows-and-premium) · [By size and fees](/screening/etf/by-size-and-fees) · [ETF screening overview](/etf/screening)
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/etfs/screen?tier=leveraged_inverse&max_flow_20d=-50000000&sort=flow_20d&order=asc" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response (excerpt)
+{
+  "data": [
+    {
+      "ticker": "SQQQ",
+      "name": "ProShares UltraPro Short QQQ",
+      "tier": "leveraged_inverse",
+      "exposure_hidden": true,
+      "multi_inverse": true,
+      "aum": 2100000000,
+      "flow_20d": -310000000
+    }
+  ]
+}
+```
+
+</ResponseExample>

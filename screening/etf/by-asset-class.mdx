@@ -1,0 +1,77 @@
+---
+title: "Screen ETFs by Asset Class"
+sidebarTitle: "By asset class"
+description: "Filter the US-listed ETF universe by the four-level holdings taxonomy — asset_class, category, segment, specializations — or by a dotted-path taxonomy_prefix."
+---
+
+Screening ETFs by asset class uses the [four-level holdings taxonomy](/etf/taxonomy) as the filter vocabulary: `asset_class` at level 1, `category` at level 2, `segment` at level 3 (the peer-group key), and `specializations` at level 4. Because the labels are computed from holdings rather than fund names, a screen on these codes returns funds by what they actually hold.
+
+<Info>
+  **Plan:** Fund · **Credits:** 1 per call; screen facets and the taxonomy endpoint are free
+</Info>
+
+## The Asset-Class Filters on the ETF Screen
+
+<ParamField query="asset_class" type="string">
+  Comma-separated level-1 codes; matches ANY. The values are `equity`, `fixed_income`, `multi_asset`, `commodity`, `crypto`, `currency`, `volatility`.
+</ParamField>
+
+<ParamField query="category" type="string">
+  Comma-separated level-2 codes, e.g. `equity.sector`, `equity.size_style`, `equity.thematic`, `fixed_income.corporate`, `fixed_income.municipal`, `multi_asset.allocation`, `crypto.futures`. There are 38 categories; the free taxonomy endpoint lists them all.
+</ParamField>
+
+<ParamField query="segment" type="string">
+  Comma-separated level-3 codes — **the peer-group key**, e.g. `equity.sector.health_care`, `fixed_income.corporate.high_yield`, `equity.size_style.emerging`, `equity.leveraged_inverse.single_stock`.
+</ParamField>
+
+<ParamField query="specializations" type="string">
+  Comma-separated level-4 codes; matches funds carrying **any** of them — the only multi-valued level, e.g. `equity.sector.health_care.biotechnology`, `equity.thematic.ai_robotics`.
+</ParamField>
+
+<ParamField query="taxonomy_prefix" type="string">
+  A dotted-path prefix matching any level: `equity.sector` is every sector fund, `fixed_income` is every bond fund, `equity.leveraged_inverse` is every leveraged equity fund.
+</ParamField>
+
+## Codes Are Exact — an Empty Page Means a Misspelling
+
+The taxonomy codes cannot be guessed, and a misspelled code returns an empty page rather than an error — which reads exactly like "no such funds exist". Retrieve the vocabulary from the free [taxonomy endpoint](/etf/taxonomy), or call the free screen facets endpoint, which returns the codes **as actually carried by funds** with a count for each.
+
+## Labels Answer "What Is It", Not "How Big Is the Position"
+
+A taxonomy filter selects funds whose book **concentrates** in that node under the stated per-node rules. To bound the actual measured share of something — US weight, large-cap weight, treasury weight — combine the label filter with the measured filters documented on [Screen ETFs by Portfolio Shape](/screening/etf/by-portfolio-shape) and [by Geography](/screening/etf/by-geography). "Large-cap biotech" is a segment plus a specialization plus a measured floor, because sector funds carry no cap-band label.
+
+## Related Screens
+
+[By geography](/screening/etf/by-geography) · [By wrapper and structure](/screening/etf/by-wrapper) · [By size and fees](/screening/etf/by-size-and-fees) · [By portfolio shape](/screening/etf/by-portfolio-shape) · [By flows and premium](/screening/etf/by-flows-and-premium) · [ETF screening overview](/etf/screening)
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/etfs/screen?segment=fixed_income.corporate.high_yield&sort=aum" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response (excerpt)
+{
+  "data": [
+    {
+      "ticker": "HYG",
+      "name": "iShares iBoxx $ High Yield Corporate Bond ETF",
+      "tier": "plain_beta",
+      "asset_class": "fixed_income",
+      "category": "fixed_income.corporate",
+      "segment": "fixed_income.corporate.high_yield",
+      "aum": 16800000000,
+      "net_expense_ratio": 0.0049,
+      "duration": 3.1
+    }
+  ],
+  "next_cursor": "…"
+}
+```
+
+</ResponseExample>

@@ -1,0 +1,66 @@
+---
+title: "Screen ETFs by Geography"
+sidebarTitle: "By geography"
+description: "Filter ETFs by measured US and emerging-market weight, or by the region and country segments of the size & style taxonomy — two different questions, both supported."
+---
+
+Screening ETFs by geography works on two axes that must not be confused. The **measured** axis — `min_us_share`, `min_em_share` — bounds the actual share of the fund's linked equity weight in a region, computed from holdings. The **label** axis uses the region and country segments of the `equity.size_style` category — `equity.size_style.emerging`, `equity.size_style.country_jp` — which classify funds whose mandate is that geography.
+
+<Info>
+  **Plan:** Fund · **Credits:** 1 per call; screen facets are free
+</Info>
+
+## The Measured Geography Filters
+
+<ParamField query="min_us_share" type="number">
+  Floor on the share of linked equity weight in US issuers, `0..1`. Measured from the newest holdings day, so it works on **any** fund — a sector fund, a thematic fund — not only funds labelled by region.
+</ParamField>
+
+<ParamField query="min_em_share" type="number">
+  Floor on the emerging-market share of linked equity weight, `0..1`.
+</ParamField>
+
+## The Geography Labels
+
+Region and country live at level 3 of the taxonomy, under `equity.size_style`: `us`, `global`, `global_ex_us`, `developed_ex_us`, `emerging`, regions (`region_europe`, `region_asia_pacific`, `region_north_america`, `region_latin_america`) and country codes (`country_cn`, `country_jp`, `country_in`, `country_br`, `country_kr`, `country_tw`, and several dozen more). Pass them as `segment`, or use `taxonomy_prefix=equity.size_style` for every size-and-style fund at once. The free facets endpoint lists which country segments actually carry funds.
+
+## Measured or Labelled — Which to Use
+
+Ask "funds **mandated** to Japan" with the label (`segment=equity.size_style.country_jp`). Ask "funds **actually holding** mostly US names" with the measurement (`min_us_share=0.8`) — which will also surface sector and thematic funds that carry no geography label at all. The measured shares are computed from **linked** equity weight: holdings lines that did not resolve to a company (derivatives, cash) are outside the denominator.
+
+## Coverage of the Measured Shares
+
+The measured geography columns exist only for funds with a holdings profile; a fund without a holdings feed has nulls there and silently drops out of measured filters. The free facets endpoint reports how many funds carry a holdings profile.
+
+## Related Screens
+
+[By asset class](/screening/etf/by-asset-class) · [By portfolio shape](/screening/etf/by-portfolio-shape) · [ETF screening overview](/etf/screening)
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/etfs/screen?segment=equity.size_style.emerging&min_aum=1000000000&sort=net_expense_ratio&order=asc" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response (excerpt)
+{
+  "data": [
+    {
+      "ticker": "SPEM",
+      "name": "SPDR Portfolio Emerging Markets ETF",
+      "segment": "equity.size_style.emerging",
+      "aum": 11900000000,
+      "net_expense_ratio": 0.0007,
+      "us_share": 0.0,
+      "em_share": 0.97
+    }
+  ]
+}
+```
+
+</ResponseExample>

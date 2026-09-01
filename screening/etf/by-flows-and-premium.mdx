@@ -1,0 +1,68 @@
+---
+title: "Screen ETFs by Flows and Premium"
+sidebarTitle: "By flows & premium"
+description: "Filter ETFs by 20-day net creations and redemptions in dollars, and by the published premium or discount of market price to NAV."
+---
+
+Screening ETFs by flows and premium filters on two daily measures of how a fund is trading: `flow_20d`, the twenty-day net creation and redemption total in dollars, and `premium_discount`, the published gap between market price and NAV. Both are refreshed daily from the same series documented on [ETF Fund Flows](/etf/flows) and [ETF NAV](/etf/nav).
+
+<Info>
+  **Plan:** Fund · **Credits:** 1 per call; screen facets are free
+</Info>
+
+## The Flow Filters
+
+<ParamField query="min_flow_20d" type="number">
+  Twenty-day net flow floor in USD. A **negative ceiling** is how you find outflows: `max_flow_20d=-100000000` selects funds that lost at least $100M over twenty days.
+</ParamField>
+
+Screen rows also carry `flow_1d` and `flow_5d` for reading, alongside the filterable `flow_20d`.
+
+## How ETF Screen Flows Are Computed
+
+Flows are computed, not vendor-reported: the change in split-adjusted shares outstanding times the previous day's split-adjusted NAV, per [ETF Fund Flows](/etf/flows). Computing on the split-adjusted basis is what prevents a [split](/etf/splits) from masquerading as a giant creation. A day whose shares × NAV does not reconcile to filed net assets carries **no flow** rather than an invented one, so a twenty-day total is a sum of verified days.
+
+## The Premium Filters
+
+<ParamField query="min_premium" type="number">
+  Floor on the published premium/discount of market price to NAV. `max_premium` sets the ceiling — a negative bound selects discounts.
+</ParamField>
+
+Premium and discount are as published in the fund's own daily file. Persistent discounts concentrate in less-liquid books; a screen bounding `max_premium` below zero sorted by `premium_discount` surfaces them directly.
+
+## Ranking on Flows and Premium
+
+`sort=flow_20d` ranks the whole universe by twenty-day money movement — ascending for the biggest bleeders, descending for the biggest gatherers. `sort=premium_discount` ranks by dislocation. As on every ETF sort, funds without the measure fall into the `unranked` block rather than being invented.
+
+## Related Screens
+
+[By wrapper and structure](/screening/etf/by-wrapper) · [By size and fees](/screening/etf/by-size-and-fees) · [ETF fund flows](/etf/flows) · [ETF screening overview](/etf/screening)
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/etfs/screen?min_aum=500000000&sort=flow_20d&order=asc&limit=25" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response (excerpt)
+{
+  "data": [
+    {
+      "ticker": "XLY",
+      "name": "Consumer Discretionary Select Sector SPDR Fund",
+      "aum": 21400000000,
+      "flow_1d": -80000000,
+      "flow_5d": -240000000,
+      "flow_20d": -612000000,
+      "premium_discount": -0.0001
+    }
+  ]
+}
+```
+
+</ResponseExample>
