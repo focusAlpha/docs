@@ -298,12 +298,64 @@
     "options": [
       "copy",
       "view",
-      "chatgpt",
-      "claude",
-      "perplexity",
-      "mcp",
-      "cursor",
-      "vscode"
+      {
+        "title": "Connect in Claude",
+        "description": "Add the FocusAlpha MCP server as a custom connector",
+        "icon": "message",
+        "href": "/mcp-setup#claude"
+      },
+      {
+        "title": "Connect in ChatGPT",
+        "description": "Add the FocusAlpha MCP server in the app or on the web",
+        "icon": "comment",
+        "href": "/mcp-setup#chatgpt"
+      },
+      {
+        "title": "Connect in Cursor",
+        "description": "One-click install of the FocusAlpha MCP server",
+        "icon": "arrow-pointer",
+        "href": "/mcp-setup#cursor"
+      },
+      {
+        "title": "Connect in VS Code",
+        "description": "One-click install of the FocusAlpha MCP server",
+        "icon": "code",
+        "href": "/mcp-setup#vs-code"
+      },
+      {
+        "title": "Connect in Claude terminal",
+        "description": "One command adds the FocusAlpha MCP server",
+        "icon": "terminal",
+        "href": "/mcp-setup#claude-terminal"
+      },
+      {
+        "title": "Ask a question in Claude",
+        "description": "Opens Claude with this page as context",
+        "icon": "circle-question",
+        "href": {
+          "base": "https://claude.ai/new",
+          "query": [
+            {
+              "key": "q",
+              "value": "Read $page.md so I can ask questions about it."
+            }
+          ]
+        }
+      },
+      {
+        "title": "Ask a question in ChatGPT",
+        "description": "Opens ChatGPT with this page as context",
+        "icon": "circle-question",
+        "href": {
+          "base": "https://chatgpt.com/",
+          "query": [
+            {
+              "key": "q",
+              "value": "Read $page.md so I can ask questions about it."
+            }
+          ]
+        }
+      }
     ]
   },
   "footer": {
