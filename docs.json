@@ -32,8 +32,8 @@
         "pages": [
           "index",
           "quickstart",
-          "authentication",
-          "mcp-setup"
+          "mcp-setup",
+          "authentication"
         ]
       },
       {
