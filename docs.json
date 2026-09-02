@@ -323,10 +323,10 @@
         "href": "/mcp-setup#vs-code"
       },
       {
-        "title": "Connect in Claude Code",
+        "title": "Connect in Claude terminal",
         "description": "One command adds the FocusAlpha MCP server",
         "icon": "terminal",
-        "href": "/mcp-setup#claude-code"
+        "href": "/mcp-setup#claude-terminal"
       },
       {
         "title": "Ask a question in Claude",

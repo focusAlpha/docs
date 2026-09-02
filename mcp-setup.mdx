@@ -12,7 +12,7 @@ https://mcp.focusalpha.ai/mcp
 
 Connecting takes about a minute: paste the URL into your client, and when it asks you to sign in, log in with your FocusAlpha account and click **Approve**. That's it — a dedicated API key is created for that client behind the scenes, so you never copy a key. Revoking that key in the [dashboard](https://app.focusalpha.ai) instantly disconnects the client.
 
-Prefer to manage keys yourself (for scripts, agents, or shared configs)? The server also accepts your normal API key as a header on every request:
+Prefer to manage keys yourself (for scripts, agents, or shared configs)? The server also accepts a regular API key — created on the [API keys page](https://app.focusalpha.ai/keys) of your dashboard — as a header on every request:
 
 ```text
 Authorization: Bearer fa_live_...
@@ -76,7 +76,7 @@ One click — Cursor opens its MCP settings with the server pre-filled; click **
   <img noZoom src="https://cursor.com/deeplink/mcp-install-dark.svg" alt="Add FocusAlpha to Cursor" height="32" />
 </a>
 
-Or configure it by hand in `.cursor/mcp.json` (project) or `~/.cursor/mcp.json` (global) — with a pinned key, or without `headers` to use the sign-in flow:
+Or configure it by hand in `.cursor/mcp.json` (project) or `~/.cursor/mcp.json` (global) — replace `fa_live_your_key_here` with a key from the [API keys page](https://app.focusalpha.ai/keys), or drop the `headers` line entirely to use the sign-in flow:
 
 ```json
 {
@@ -110,13 +110,17 @@ Or add it by hand: run **MCP: Add Server** from the Command Palette, or create `
 
 VS Code handles the sign-in flow for remote servers; add a `"headers"` object with the `Authorization` header if you prefer a pinned key.
 
-## Claude Code
+## Claude terminal
+
+In the Claude Code terminal, one command adds the server:
 
 ```bash
 claude mcp add --transport http focusalpha https://mcp.focusalpha.ai/mcp
 ```
 
-Then run `/mcp` inside Claude Code and choose **Authenticate** — the sign-in opens in your browser. To pin a specific key instead, attach it as a header:
+Then run `/mcp` inside Claude Code and choose **Authenticate** — the sign-in opens in your browser, and you're done.
+
+Alternatively, you can skip the sign-in by attaching an API key directly. `fa_live_your_key_here` is a placeholder — replace it with a real key, created on the [API keys page](https://app.focusalpha.ai/keys) of your dashboard:
 
 ```bash
 claude mcp add --transport http focusalpha https://mcp.focusalpha.ai/mcp \
