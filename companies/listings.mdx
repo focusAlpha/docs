@@ -22,7 +22,7 @@ Joining a historical series by ticker therefore silently mixes companies. Join b
 
 ## Key Company Listing Fields
 
-Each row carries the symbol, the exchange it traded on, the trading currency, and the dates the symbol was valid between. An open end date means the listing is current.
+Each row carries the `symbol`, the `exchange` it trades on, whether that venue is a `US` or `non-US` market, its `status`, and the validity dates where recorded. A null `valid_to` means the listing is current.
 
 ## Company Listings Date Convention
 
@@ -47,7 +47,7 @@ See also [Company Registry](/companies/registry) for the current record, [Compan
 <RequestExample>
 
 ```bash cURL
-curl "https://api.focusalpha.ai/v1/companies/cmp_014081/listings" \
+curl "https://api.focusalpha.ai/v1/companies/cmp_008395/listings" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 ```
 
@@ -60,20 +60,34 @@ curl "https://api.focusalpha.ai/v1/companies/cmp_014081/listings" \
   "data": [
     {
       "symbol": "2330.TW",
-      "exchange": "TWSE",
-      "currency": "TWD",
-      "valid_from": "1994-09-05",
+      "exchange": "TAI",
+      "market": "non-US",
+      "status": "active",
+      "valid_from": null,
       "valid_to": null
     },
     {
       "symbol": "TSM",
       "exchange": "NYSE",
-      "currency": "USD",
-      "valid_from": "1997-10-08",
+      "market": "US",
+      "status": "active",
+      "valid_from": null,
+      "valid_to": null
+    },
+    {
+      "symbol": "TSMWF",
+      "exchange": "OTC",
+      "market": "non-US",
+      "status": "active",
+      "valid_from": null,
       "valid_to": null
     }
   ],
-  "next_cursor": null
+  "next_cursor": null,
+  "coverage": {
+    "update_frequency": "weekly",
+    "history_status": "current_snapshot"
+  }
 }
 ```
 

@@ -43,7 +43,7 @@ Labels refresh monthly, measured columns daily. A newly launched fund can carry 
 <RequestExample>
 
 ```bash cURL
-curl "https://api.focusalpha.ai/v1/etfs/screen?taxonomy_prefix=equity.size_style.us&min_aum=1000000000&sort=net_expense_ratio&order=asc" \
+curl "https://api.focusalpha.ai/v1/etfs/screen?segment=equity.sector.health_care&min_aum=1000000000&sort=net_expense_ratio&order=asc" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 ```
 
@@ -51,19 +51,19 @@ curl "https://api.focusalpha.ai/v1/etfs/screen?taxonomy_prefix=equity.size_style
 
 <ResponseExample>
 
-```json Response (excerpt)
+```json Response (XLV, fields trimmed)
 {
   "data": [
     {
-      "ticker": "SPLG",
-      "name": "SPDR Portfolio S&P 500 ETF",
-      "aum": 58400000000,
+      "ticker": "XLV",
+      "name": "State Street Health Care Select Sector SPDR ETF",
+      "aum": 43909783508.08,
       "aum_is_derived": false,
-      "net_expense_ratio": 0.0002,
-      "gross_expense_ratio": 0.0002
+      "gross_expense_ratio": 0.0008,
+      "net_expense_ratio": 0.0008,
+      "net_is_filed": false
     }
-  ],
-  "unranked": { "count": 3, "reason": "no filed fee table" }
+  ]
 }
 ```
 

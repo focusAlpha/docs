@@ -20,7 +20,7 @@ The feed is a **rolling recent window, not an archive**; the per-market start da
 
 ## Key Japan Disclosure Fields
 
-Each row carries the disclosure date, the title as filed (Japanese, untranslated), TDnet's `category`, `filing_url` (the original PDF), and — for earnings releases — `xbrl_url`, the structured numbers.
+Each row carries the disclosure `date`, the `title` as filed (Japanese, untranslated), TDnet's `category`, `filing_url` (the original PDF), and — for earnings releases — `xbrl_url`, the structured numbers.
 
 The `category` vocabulary is TDnet's own: `earnings_flash`, `earnings_forecast_revision`, `earnings_presentation`, `ma`, `buyback`, `buyback_progress`, `officer_change`, `dividend_revision`, `equity_comp`, `governance`, `growth_plan`, `special_items`, and more — the same families the [company screen](/screening/companies/by-events) serves under `event_source=japan_tdnet`. Because only Japan publishes a category, filtering on `category` excludes Taiwan and Korea rather than returning them unfiltered.
 
@@ -67,20 +67,40 @@ curl "https://api.focusalpha.ai/v1/companies/6758.T/disclosures?market=japan&cat
 
 <ResponseExample>
 
-```json Response (excerpt)
+```json Response
 {
-  "markets_searched": ["japan"],
   "data": [
     {
       "market": "japan",
-      "disclosed_at": "2026-08-06",
-      "title": "業績予想の修正に関するお知らせ",
-      "category": "earnings_forecast_revision",
-      "filing_url": "https://www.release.tdnet.info/…pdf",
-      "xbrl_url": null
+      "source_id": "140120260805509201",
+      "date": "2026-08-05",
+      "company_name": "ソニーグループ",
+      "local_code": "6758",
+      "title": "自己株式の取得状況に関するお知らせ（会社法第459条第１項の規定による定款の定めに基づく自己株式の取得）",
+      "category": "buyback_progress",
+      "filing_url": "https://www.release.tdnet.info/inbs/140120260805509201.pdf",
+      "exchanges": "東",
+      "categories": [
+        "buyback_progress",
+        "buyback",
+        "ma"
+      ],
+      "is_progress": false,
+      "is_correction": false
     }
   ],
-  "coverage": { "japan": { "available_from": "…", "update_frequency": "twice daily, Tokyo disclosure windows" } }
+  "next_cursor": null,
+  "markets_searched": [
+    "japan"
+  ],
+  "coverage": {
+    "japan": {
+      "available_from": "2026-06-15",
+      "available_to": null,
+      "update_frequency": "daily",
+      "history_status": "recent_only_started_2026_06_15"
+    }
+  }
 }
 ```
 

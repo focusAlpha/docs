@@ -146,27 +146,69 @@ curl "https://api.focusalpha.ai/v1/institutions/screen?primary_type=asset_manage
 
 <ResponseExample>
 
-```json Response
+```json Response (one row; coverage omitted)
 {
   "data": [
     {
-      "crd": "105247",
-      "legal_name": "EXAMPLE CAPITAL MANAGEMENT LP",
-      "primary_type": "asset_manager",
-      "subtype": "hedge_fund",
-      "brochure_scope": "entity",
-      "declared_vg_bucket": "value_biased",
-      "style_tier": "Growth-Biased",
-      "firm_type": "Hedge-Fund",
+      "crd": "142463",
+      "cik": "0001529735",
+      "legal_name": "METLIFE INVESTMENT MANAGEMENT, LLC",
+      "firm_type": "PE / VC",
       "sec_registration_type": "Registered",
-      "aum_total": 24500000000,
-      "product_types": ["private_fund"],
-      "asset_classes": ["equity"]
+      "main_office_state": "NJ",
+      "main_office_country": "United States",
+      "aum_total": 563779494417,
+      "aum_discretionary": 560911238227,
+      "accounts_total": "805",
+      "employee_count": "956",
+      "has_brochure": true,
+      "brochure_scope": "business_line",
+      "business_line_name": "MIM Equity",
+      "brochure_date": "2026-03-31",
+      "primary_type": "asset_manager",
+      "subtype": "public_markets",
+      "role_flags": [],
+      "services_offered": [],
+      "investment_strategy": [
+        "long_only"
+      ],
+      "management_approach": "unclear",
+      "analysis_basis": "fundamental",
+      "implementation_style": "unclear",
+      "equity_styles": [
+        "value",
+        "growth"
+      ],
+      "declared_vg_bucket": "value_biased",
+      "market_cap_focus": [
+        "small_cap"
+      ],
+      "investment_horizon": "long",
+      "uses_short_selling": null,
+      "uses_leverage": null,
+      "uses_derivatives": null,
+      "uses_options": null,
+      "uses_esg": null,
+      "declared_style_summary": "MIM Equity is the equity investment management unit of MetLife Investment Management, offering discretionary U.S. equity strategies (Small Cap Value, SMID Cap Value, Small Cap Core) through separately managed accounts, RICs, and CITs.",
+      "product_types": [
+        "separately_managed_account",
+        "collective_investment_trust",
+        "other",
+        "etf"
+      ],
+      "asset_classes": [
+        "equity"
+      ],
+      "geographic_coverage": [
+        "us"
+      ],
+      "vg_score": 0.78,
+      "style_tier": "Growth-Biased",
+      "style_report_period": "2026-03-31",
+      "adv_as_of": "2026-08-03"
     }
   ],
-  "next_cursor": null,
-  "unranked": { "count": 0 },
-  "coverage": { "update_frequency": "monthly" }
+  "next_cursor": "WyI1NjM3Nzk0OTQ0MTcuMCIsIjE0MjQ2MyJd"
 }
 ```
 

@@ -106,22 +106,34 @@ curl "https://api.focusalpha.ai/v1/companies/AAPL/earnings-results?metric_key=re
   "data": [
     {
       "ticker": "AAPL",
-      "metric_key": "revenue",
-      "period": "Q3 2026",
-      "level": "consolidated",
-      "basis": "gaap",
-      "value": 94040000000,
-      "value_unit": "usd",
-      "yoy": "+10%",
-      "observed_at": "2026-07-31T20:30:00Z",
-      "occurred_on": "2026-06-27",
       "year": 2026,
       "quarter": 3,
-      "quote": "The Company posted quarterly revenue of $94.0 billion, up 10 percent year over year."
+      "observed_at": "2026-07-30T20:30:28Z",
+      "occurred_on": "2026-07-30",
+      "doc_id": "0000320193-26-000018:EX-99.1",
+      "source_ref": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+      "source_feed": "edgar_8k",
+      "metric_key": "revenue",
+      "basis": "",
+      "period": "Q3-FY26",
+      "label": "Quarterly revenue",
+      "segment": null,
+      "value_text": "$109.4 billion",
+      "value_low": "109400000000.0",
+      "value_high": "109400000000.0",
+      "value_unit": "usd",
+      "yoy": "up 16 percent year over year",
+      "value_is_band": false,
+      "quote": "The Company posted quarterly revenue of $109.4 billion, up 16 percent year over year."
     }
   ],
   "next_cursor": null,
-  "coverage": { "update_frequency": "daily", "history_status": "backfill in progress" }
+  "coverage": {
+    "available_from": "2025-01-02",
+    "available_to": null,
+    "update_frequency": "daily",
+    "history_status": "starts_2025_01_02"
+  }
 }
 ```
 

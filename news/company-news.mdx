@@ -111,7 +111,7 @@ See also [Company News Events](/news/news-events) for the deduplicated event vie
 <RequestExample>
 
 ```bash cURL
-curl "https://api.focusalpha.ai/v1/companies/NVDA/news?min_impact=60&limit=5" \
+curl "https://api.focusalpha.ai/v1/companies/NVDA/news?min_impact=60&limit=1" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 ```
 
@@ -119,33 +119,57 @@ curl "https://api.focusalpha.ai/v1/companies/NVDA/news?min_impact=60&limit=5" \
 
 <ResponseExample>
 
-```json Response
+```json Response (one row; reaches trimmed)
 {
   "data": [
     {
-      "news_id": "nws_5512034",
-      "event_id": "0001045810-26-000123:2.02",
+      "news_id": "1538d77b885c4f76c41c3662bfdb901d980fe6c3",
+      "event_id": "NVDA:results:20260901",
       "relation": "direct",
       "ticker": "NVDA",
-      "ticker_confirmed": true,
-      "title": "Nvidia data-center revenue tops estimates",
-      "summary": "The chipmaker reported ...",
-      "summary_withheld": false,
-      "link": "https://example.com/article",
-      "publisher": "Reuters",
-      "channel": "wire",
-      "event_type": "earnings",
-      "score": 78,
-      "read_by_model": true,
-      "impact_score": 84,
       "direction": "bullish",
-      "why": "Data-center revenue beat the high end of guidance.",
+      "impact_score": 70,
+      "ticker_confirmed": true,
+      "title": "Nvidia: Betting Against AI's Landlord Is A Widow-Maker Trade",
+      "event_type": "analyst",
+      "event_subtype": "analyst_opinion,analyst_price_target",
+      "subject": "NVIDIA Corporation",
+      "why": "An analyst is initiating coverage with a strong buy rating, highlighting revenue sharing, AI integration, and private equity backing as key drivers for NVDA.",
       "human_reviewed": false,
-      "event_at": "2026-08-27T20:22:00Z"
+      "score": 57,
+      "read_by_model": true,
+      "link": "https://seekingalpha.com/article/4942244-nvidia-betting-against-ai-landlord-is-a-widow-maker-trade",
+      "channel": "wire",
+      "publisher": "seekingalpha.com",
+      "summary": null,
+      "summary_withheld": true,
+      "event_at": "2026-09-01T23:06:54.000Z",
+      "time_basis": "published",
+      "time_precision": "minute",
+      "is_scheduled": false,
+      "reaches": [
+        {
+          "via": "competition",
+          "why": "Nvidia's AI dominance and recurring revenue model intensify competition for AMD's AI accelerator products.",
+          "ticker": "AMD",
+          "direction": "bearish",
+          "magnitude": 60
+        },
+        {
+          "via": "product",
+          "why": "Private equity firms like BX benefit from the massive AI compute demand Nvidia is underwriting.",
+          "ticker": "BX",
+          "direction": "bullish",
+          "magnitude": 30
+        }
+      ]
     }
   ],
-  "next_cursor": null,
-  "coverage": { "available_from": "2026-07-26", "update_frequency": "minutes" }
+  "next_cursor": "2026-09-01T23:06:54.000Z|1538d77b885c4f76c41c3662bfdb901d980fe6c3",
+  "symbols_searched": [
+    "NVDA",
+    "NVD.DE"
+  ]
 }
 ```
 

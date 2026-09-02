@@ -79,7 +79,7 @@ See also [Structured 8-K Events](/events/8k-events) for the same filings as fiel
 <RequestExample>
 
 ```bash cURL
-curl "https://api.focusalpha.ai/v1/companies/AAPL/8k-exhibits?item=2.02&limit=3" \
+curl "https://api.focusalpha.ai/v1/companies/AAPL/8k-exhibits?item=2.02&limit=1" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 ```
 
@@ -91,21 +91,28 @@ curl "https://api.focusalpha.ai/v1/companies/AAPL/8k-exhibits?item=2.02&limit=3"
 {
   "data": [
     {
-      "accession": "0000320193-26-000081",
+      "company_id": "cmp_000584",
+      "cik": "320193",
       "ticker": "AAPL",
-      "item": "2.02",
-      "filing_date": "2026-07-31",
+      "company_name": "Apple Inc.",
+      "accession": "0000320193-26-000018",
+      "form": "8-K",
+      "filing_date": "2026-07-30",
+      "acceptance_ts": "2026-07-30T20:30:28.000Z",
+      "items": "2.02,9.01",
       "exhibit_type": "EX-99.1",
-      "chars": 18422,
-      "body": null
+      "description": "EX-99.1",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+      "format": "htm",
+      "chars": 10888
     }
   ],
-  "next_cursor": "MjAyNi0wNS0wMQ",
+  "next_cursor": null,
   "coverage": {
-    "available_from": "2024-01-02",
-    "available_to": "2026-08-31",
+    "available_from": "2024-12-31",
+    "available_to": null,
     "update_frequency": "daily",
-    "history_status": "backfill in progress"
+    "history_status": "starts_2024_12_31"
   }
 }
 ```

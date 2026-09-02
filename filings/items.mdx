@@ -103,17 +103,19 @@ curl "https://api.focusalpha.ai/v1/filings/items?ticker=AAPL&filing_type=10-K&ye
 
 <ResponseExample>
 
-```json Response
+```json Response (text truncated)
 {
+  "resource": "filings",
   "ticker": "AAPL",
+  "cik": 320193,
   "filing_type": "10-K",
+  "accession_number": "0000320193-25-000079",
   "year": 2025,
-  "accession_number": "0000320193-25-000123",
   "items": [
     {
-      "item": "Item-1A",
-      "title": "Risk Factors",
-      "text": "The Company's business, reputation, results of operations, financial condition ..."
+      "number": "Item-1A",
+      "name": "Risk Factors",
+      "text": "Risk Factors\nThe following summarizes factors that could have a material adverse effect on the Company’s business, reputation, results of operations, financial condition and stock price. …"
     }
   ]
 }

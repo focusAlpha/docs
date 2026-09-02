@@ -71,21 +71,32 @@ curl "https://api.focusalpha.ai/v1/etfs/taxonomy" \
       "level": 1,
       "parent_code": null,
       "label": "Equity",
-      "semantic": "What the fund holds: equity exposure >= the dominance threshold of non-cash weight."
+      "semantic": "What the fund holds: equity exposure >= l1_dominant_exposure_min of non-cash weight",
+      "child_relation": "hierarchy"
+    },
+    {
+      "code": "equity.sector",
+      "level": 2,
+      "parent_code": "equity",
+      "label": "Sector",
+      "semantic": "Top GICS sector >= l2_sector_min",
+      "child_relation": "hierarchy"
     },
     {
       "code": "equity.sector.health_care",
       "level": 3,
       "parent_code": "equity.sector",
       "label": "Health Care",
-      "semantic": "Equity weight concentrates in health-care issuers."
+      "semantic": "Segment: top sector of linked equity weight >= l2_sector_min. Industries (level 4) registered on demand under this node",
+      "child_relation": "hierarchy"
     },
     {
       "code": "equity.sector.health_care.biotechnology",
       "level": 4,
       "parent_code": "equity.sector.health_care",
       "label": "Biotechnology",
-      "semantic": "A specialization: weight concentrated in biotech names."
+      "semantic": "Specialization: industry >= l4_industry_min of the top sector weight (registered on demand)",
+      "child_relation": null
     }
   ]
 }

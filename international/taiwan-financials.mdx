@@ -99,22 +99,40 @@ curl "https://api.focusalpha.ai/v1/companies/2330/tw/financials?statement=income
 {
   "data": [
     {
-      "company_id": "cmp_014081",
-      "ticker": "2330.TW",
-      "statement": "income",
+      "company_id": "cmp_008395",
+      "local_security_code": "2330",
+      "company_name": "台積電",
+      "market": "twse",
+      "industry_class": "ci",
       "year": 2026,
       "season": 2,
-      "currency": "TWD",
-      "unit": "thousands",
-      "revenue_ytd": 1842000000,
-      "revenue_q": 962000000,
-      "operating_income_ytd": 812000000,
-      "operating_income_q": 428000000,
-      "quarter_basis": "derived_from_ytd"
+      "period_key": 20262,
+      "period_end": "2026-06-30",
+      "statement": "income",
+      "revenue_ytd": "2404483690.00",
+      "gross_profit_ytd": "1611606116.00",
+      "operating_income_ytd": "1425568793.00",
+      "pretax_income_ytd": "1550229773.00",
+      "net_income_ytd": "1279582227.00",
+      "eps_basic_ytd": "49.33",
+      "revenue_q": "1270380250.00",
+      "gross_profit_q": "860310695.00",
+      "operating_income_q": "766602651.00",
+      "net_income_q": "706780923.00",
+      "eps_basic_q": "27.25",
+      "quarter_basis": "derived_from_ytd",
+      "report_date": "2026-09-01"
     }
   ],
   "next_cursor": null,
-  "coverage": { "available_from": "2024-01-01", "update_frequency": "quarterly" }
+  "currency": "TWD",
+  "unit": "thousands",
+  "coverage": {
+    "available_from": "2024-03-31",
+    "available_to": null,
+    "update_frequency": "quarterly",
+    "history_status": "complete_from_2024q1"
+  }
 }
 ```
 

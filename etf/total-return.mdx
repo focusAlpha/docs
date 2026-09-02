@@ -67,7 +67,7 @@ See also [ETF NAV and Shares Outstanding](/etf/nav) for the price-basis series, 
 <RequestExample>
 
 ```bash cURL
-curl "https://api.focusalpha.ai/v1/etfs/SPY/history?series=total_return&limit=2" \
+curl "https://api.focusalpha.ai/v1/etfs/SPXL/history?series=total_return&limit=2" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 ```
 
@@ -77,18 +77,24 @@ curl "https://api.focusalpha.ai/v1/etfs/SPY/history?series=total_return&limit=2"
 
 ```json Response
 {
-  "etf_id": "E000011",
-  "ticker": "SPY",
+  "etf_id": "E000266",
+  "ticker": "SPXL",
   "series": "total_return",
   "data": [
-    { "valuation_date": "2026-08-29", "total_return_nav": 1284.77 },
-    { "valuation_date": "2026-08-28", "total_return_nav": 1281.02 }
+    {
+      "valuation_date": "2026-08-28T00:00:00.000Z",
+      "total_return_nav": "290.14"
+    },
+    {
+      "valuation_date": "2026-08-27T00:00:00.000Z",
+      "total_return_nav": "292.25"
+    }
   ],
-  "next_cursor": "MjAyNi0wOC0yNw",
+  "next_cursor": "Thu Aug 27 2026 00:00:00 GMT+0000 (Coordinated Universal Time)",
   "coverage": {
-    "available_from": "1993-01-29",
-    "available_to": "2026-08-29",
-    "update_frequency": "daily"
+    "available_from": "2008-11-05",
+    "available_to": "2026-08-28",
+    "note": "A total-return series folds distributions back in: it is a DIFFERENT QUANTITY from the nav series and must not be compared with it. Only funds that publish one have rows here."
   }
 }
 ```

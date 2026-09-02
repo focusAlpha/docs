@@ -22,7 +22,7 @@ Most Taiwan announcements land after the local close; the feed ingests on the ma
 
 ## Key Taiwan Disclosure Fields
 
-Each row carries the disclosure date, the title as filed, and the announcement's original text. `description_chars` states how long the full text is; pass `include_text=true` to receive it. Titles and text are in the local language and are **not translated**.
+Each row carries the disclosure `date`, the `title` as filed, and the announcement's original text. `description_chars` states how long the full text is; pass `include_text=true` to receive it. Titles and text are in the local language and are **not translated**.
 
 Taiwan publishes no per-announcement classification of its own, so rows from this market carry no `category` — filtering on `category` excludes Taiwan rather than returning it unfiltered.
 
@@ -69,20 +69,35 @@ curl "https://api.focusalpha.ai/v1/companies/2330.TW/disclosures?market=taiwan&i
 
 <ResponseExample>
 
-```json Response (excerpt)
+```json Response
 {
-  "company_id": "cmp_014081",
-  "markets_searched": ["taiwan"],
   "data": [
     {
       "market": "taiwan",
-      "disclosed_at": "2026-08-28",
-      "title": "公告本公司受邀參加國際投資機構舉辦之投資人會議",
-      "description_chars": 412,
-      "text": "…"
+      "source_id": "9531e292382a996328b9f880ca88440a",
+      "date": "2026-08-17",
+      "company_name": "台積電",
+      "local_code": "2330",
+      "title": "本公司受邀參加機構投資人說明會",
+      "text": "符合條款第四條第XX款：12\r\n事實發生日：115/08/24\r\n1.召開法人說明會之日期：115/08/24 ~ 115/08/27 …",
+      "statute": "第12款",
+      "exchange": "twse",
+      "fact_date": "2026-08-24",
+      "description_chars": 342
     }
   ],
-  "coverage": { "taiwan": { "available_from": "…", "update_frequency": "daily, after the Taipei close" } }
+  "next_cursor": null,
+  "markets_searched": [
+    "taiwan"
+  ],
+  "coverage": {
+    "taiwan": {
+      "available_from": "2026-07-22",
+      "available_to": null,
+      "update_frequency": "daily",
+      "history_status": "recent_only_started_2026_07_22"
+    }
+  }
 }
 ```
 

@@ -46,10 +46,12 @@ Matches come back with `matched_terms` or `matched_relation`: the term, its sour
 
 <RequestExample>
 
-```bash cURL
+```bash Term search first (free)
 curl "https://api.focusalpha.ai/v1/screen/terms?q=memory" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
 
+```bash Then screen on every spelling
 curl "https://api.focusalpha.ai/v1/screen?makes_term=memory,dram,nand,memory%20chips&sort=market_cap_usd" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 ```
@@ -58,15 +60,66 @@ curl "https://api.focusalpha.ai/v1/screen?makes_term=memory,dram,nand,memory%20c
 
 <ResponseExample>
 
-```json Response (excerpt)
+```json Term search: /v1/screen/terms?q=memory
+{
+  "data": {
+    "query": "memory",
+    "terms": [
+      {
+        "term": "memory",
+        "companies_makes": 20,
+        "companies_rel": 7,
+        "companies": 27,
+        "kinds": [
+          "product"
+        ],
+        "sources": [
+          "10k_item1",
+          "20f_item4",
+          "curated_semi",
+          "dart_business",
+          "website"
+        ]
+      },
+      {
+        "term": "memory chips",
+        "companies_makes": 4,
+        "companies_rel": 3,
+        "companies": 7,
+        "kinds": [
+          "category"
+        ],
+        "sources": [
+          "curated_semi"
+        ]
+      }
+    ]
+  }
+}
+```
+
+```json Screen: makes_term=dram (fields trimmed)
 {
   "data": [
     {
-      "company_id": "cmp_007613",
-      "name": "Micron Technology, Inc.",
-      "primary_ticker": "MU",
+      "company_id": "cmp_007386",
+      "company_name": "Samsung Electronics Co., Ltd.",
+      "primary_ticker": "005930.KS",
+      "product_terms": 100,
+      "related_terms": 68,
+      "peer_companies": 0,
+      "competitor_companies": 15,
       "matched_terms": [
-        { "term": "dram", "sources": ["10k_business"], "grade": "named_product" }
+        {
+          "role": "makes",
+          "term": "dram",
+          "grade": null,
+          "sources": [
+            "curated_semi",
+            "dart_business",
+            "graph"
+          ]
+        }
       ]
     }
   ]

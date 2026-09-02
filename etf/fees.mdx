@@ -67,22 +67,19 @@ curl "https://api.focusalpha.ai/v1/etfs/VOO" \
 
 <ResponseExample>
 
-```json Response
+```json fees block (VOO)
 {
-  "data": {
-    "identity": { "etf_id": "E000042", "ticker": "VOO" },
-    "fees": {
-      "status": "available",
-      "gross_expense_ratio": 0.0003,
-      "net_expense_ratio": 0.0003,
-      "net_is_filed": false,
-      "management_fee": 0.0003,
-      "fee_12b1": null,
-      "acquired_fund_fees": null,
-      "waiver": null,
-      "waiver_expiry": null,
-      "fee_as_of": "2026-04-28"
-    }
+  "fees": {
+    "status": "available",
+    "gross_expense_ratio": 0.0003,
+    "net_expense_ratio": 0.0003,
+    "net_is_filed": false,
+    "management_fee": 0.0002,
+    "fee_12b1": 0,
+    "acquired_fund_fees": null,
+    "waiver": 0,
+    "waiver_expiry": null,
+    "fee_as_of": "2025-12-31T00:00:00.000Z"
   }
 }
 ```

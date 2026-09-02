@@ -28,12 +28,14 @@ Each action carries the date it took effect. A ticker change takes effect on the
 
 Corporate actions come from exchange and regulator notices. They are structural registry facts, not extracted from news.
 
+This layer is sparsely populated today (`history_status: "partial"` in the coverage block). An empty `data` array means no action is **recorded** for the company — it is not evidence that none ever happened. For ETF share splits, which are fully adjudicated, see [ETF Splits](/etf/splits).
+
 ## Query Corporate Events
 
 Use the company events endpoint with a canonical `company_id`.
 
 <ParamField path="company_id" type="string" required>
-  Canonical company id, for example `cmp_014081`.
+  Canonical company id, for example `cmp_008395`.
 </ParamField>
 
 <Note>
@@ -47,7 +49,7 @@ See also [Company Listings](/companies/listings) for the symbol history a ticker
 <RequestExample>
 
 ```bash cURL
-curl "https://api.focusalpha.ai/v1/companies/cmp_014081/events" \
+curl "https://api.focusalpha.ai/v1/companies/cmp_008395/events" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 ```
 
@@ -57,20 +59,14 @@ curl "https://api.focusalpha.ai/v1/companies/cmp_014081/events" \
 
 ```json Response
 {
-  "data": [
-    {
-      "event_type": "split",
-      "effective_date": "2022-07-18",
-      "ratio": "20:1",
-      "detail": "Twenty-for-one stock split"
-    },
-    {
-      "event_type": "ticker_change",
-      "effective_date": "2019-04-01",
-      "detail": "ABC.OL renamed to XYZ.OL"
-    }
-  ],
-  "next_cursor": null
+  "data": [],
+  "next_cursor": null,
+  "coverage": {
+    "available_from": null,
+    "available_to": null,
+    "update_frequency": "weekly",
+    "history_status": "partial"
+  }
 }
 ```
 

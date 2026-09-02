@@ -83,7 +83,7 @@ See also [Semantic Retrieval](/transcripts/semantic-retrieval) to search the cor
 <RequestExample>
 
 ```bash cURL
-curl "https://api.focusalpha.ai/v1/documents/doc_9f3a21/segments?limit=2" \
+curl "https://api.focusalpha.ai/v1/documents/56eaec3c-c65e-4014-94b0-5aed74314f1c/segments?limit=1" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 ```
 
@@ -93,22 +93,22 @@ curl "https://api.focusalpha.ai/v1/documents/doc_9f3a21/segments?limit=2" \
 
 ```json Response
 {
-  "document_id": "doc_9f3a21",
   "segments": [
     {
-      "segment_id": "seg_0001",
-      "order": 1,
-      "speaker": "Operator",
-      "text": "Good afternoon. My name is ... and I will be your conference operator today."
-    },
-    {
-      "segment_id": "seg_0002",
-      "order": 2,
-      "speaker": "Colette Kress",
-      "text": "Thanks, operator. Revenue for the quarter was ..."
+      "id": "dd18d8cc-5521-47ff-b1f8-02744cf8a4ae",
+      "documentId": "56eaec3c-c65e-4014-94b0-5aed74314f1c",
+      "content": "Good afternoon. My name is Tiffany and I will be your conference operator today. At this time, I would like to welcome everyone to NVIDIA's second quarter earnings call. …",
+      "sequence": 0,
+      "speakerName": "Tiffany",
+      "speakerTitle": "Conference Operator",
+      "charStart": 0,
+      "charEnd": 557
     }
   ],
-  "limit": 2
+  "meta": {
+    "total": 31,
+    "latencyMs": 388
+  }
 }
 ```
 

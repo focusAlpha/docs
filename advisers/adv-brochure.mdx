@@ -117,7 +117,7 @@ See also [Form ADV Adviser Directory](/advisers/form-adv) to find the firm, [Adv
 <RequestExample>
 
 ```bash cURL
-curl "https://api.focusalpha.ai/v1/institutions/crd:105247" \
+curl "https://api.focusalpha.ai/v1/institutions/crd:105129" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 ```
 
@@ -125,48 +125,89 @@ curl "https://api.focusalpha.ai/v1/institutions/crd:105247" \
 
 <ResponseExample>
 
-```json Response
+```json Response (Bridgewater, trimmed)
 {
   "data": {
-    "crd": "105247",
-    "legal_name": "EXAMPLE CAPITAL MANAGEMENT LP",
+    "crd": "105129",
+    "cik": "0001350694",
+    "legal_name": "BRIDGEWATER ASSOCIATES, LP",
+    "firm_type": "Hedge-Fund",
+    "sec_registration_type": "Registered",
+    "aum_total": "150159985476.0",
+    "n_holdings": 993,
+    "vg_score": "0.69",
+    "style_tier": "Growth-Biased",
+    "style_report_period": "2026-03-31",
     "brochure": {
       "status": "available",
+      "brochure_date": "2026-03-30T00:00:00.000Z",
+      "brochure_name": "BRIDGEWATER ASSOCIATES, LP, PART 2A, MARCH 2026",
+      "brochure_url": "https://files.adviserinfo.sec.gov/IAPD/Content/Common/crd_iapd_Brochure.aspx?BRCHR_VRSN_ID=1032747",
       "brochure_scope": "entity",
-      "brochure_date": "2026-03-28",
-      "brochure_url": "https://reports.adviserinfo.sec.gov/reports/ADV/105247/PDF/105247.pdf",
       "primary_type": "asset_manager",
-      "subtype": "hedge_fund",
-      "investment_strategy": ["long_short", "merger_arbitrage"],
-      "management_approach": "active",
-      "analysis_basis": "fundamental",
-      "implementation_style": "unclear",
-      "equity_styles": ["value"],
-      "declared_vg_bucket": "value_biased",
-      "market_cap_focus": "all_cap",
-      "uses_short_selling": true,
-      "uses_leverage": true,
-      "product_types": ["private_fund"],
-      "asset_classes": ["equity"],
-      "fees": [
-        {
-          "fee_text": "The Adviser generally charges an annual management fee of 1.5% of net assets and a performance allocation of 20% of net profits, subject to a high-water mark.",
-          "rate_pct": 1.5,
-          "performance_fee_pct": 20,
-          "high_water_mark": true,
-          "from_brochure": "Example Capital Management LP — Firm Brochure",
-          "from_this_brochure": true
-        }
+      "subtype": "public_markets",
+      "role_flags": [
+        "manages_private_funds"
+      ],
+      "services_offered": [
+        "portfolio_management"
+      ],
+      "investment_strategy": [
+        "asset_allocation",
+        "strategic_asset_allocation"
+      ],
+      "investment_style": {
+        "management_approach": "unclear",
+        "analysis_basis": "fundamental",
+        "implementation_style": "systematic_rules_based",
+        "equity_styles": [],
+        "declared_vg_bucket": "not_applicable",
+        "market_cap_focus": [],
+        "investment_horizon": "long",
+        "uses_short_selling": true,
+        "uses_leverage": true,
+        "uses_derivatives": true,
+        "uses_options": null,
+        "uses_esg": null,
+        "summary": "Bridgewater is a global macro asset manager providing discretionary investment management to institutional clients through pooled funds and managed accounts. It employs a fundamental, systematic, and diversified approach, separating alpha and beta strategies."
+      },
+      "products": {
+        "product_types": [
+          "private_fund",
+          "separately_managed_account"
+        ],
+        "asset_classes": [
+          "equity",
+          "fixed_income",
+          "commodities",
+          "currencies",
+          "derivatives",
+          "structured_credit",
+          "other"
+        ]
+      },
+      "geographic_coverage": [
+        "emerging_markets"
       ],
       "quotes": [
-        { "topic": "primary_type", "text": "...", "adv_item": "Item 4", "page": 3 }
+        {
+          "topic": "uses_short_selling",
+          "item": "8",
+          "page": 36,
+          "section": "Item 8: Methods of Analysis, Investment Strategies and Risk of Loss",
+          "text": "The strategies will engage in short selling of any of the instruments they trade to the extent permitted by local laws and regulations"
+        }
+      ],
+      "fees": [
+        {
+          "fee_text": "Bridgewater offers fee arrangements which vary by strategy and involve management fees (generally a percentage of assets), performance fees/allocations (generally a percentage of profits) or some combination of the two",
+          "service_type": "portfolio_management",
+          "fee_type": "aum_percent",
+          "rate_basis": "aum",
+          "negotiable": true,
+          "from_this_brochure": true
+        }
       ]
-    },
-    "style": {
-      "report_period": "2026-03-31",
-      "vg_score": 1.42,
-      "tier": "Value-Biased",
-      "long_us_equity_value": 8120000000
     }
   }
 }

@@ -96,23 +96,31 @@ curl -X POST "https://api.focusalpha.ai/v1/retrieve" \
 
 <ResponseExample>
 
-```json Response
+```json Response (text truncated)
 {
   "chunks": [
     {
-      "text": "Gross margin declined sequentially, driven primarily by a richer mix of...",
-      "ticker": "NVDA",
-      "year": 2026,
-      "quarter": "Q2",
-      "document_type": "earnings_call_transcript",
-      "filing_type": null,
-      "source_url": "https://example.com/nvda-q2-2026-call",
-      "page_numbers": null,
-      "score": 0.83
+      "id": "chunk_01",
+      "text": "… I think the most important thing that matters for the industry is that one, AI is now doing productive and useful work. Two, AI is generating profitable tokens. and three, if we had more compute, we could generate more profitable tokens …",
+      "score": 0.39127600807928287,
+      "evidenceText": "If you think about the 100% growth you talked about in terms of the plus unconstrained demand growth you're expecting, the 70% you expect to fulfill in terms of supply, can we talk about some of the, or rank order, some of the most acute constraints …",
+      "source": {
+        "documentId": "56eaec3c-c65e-4014-94b0-5aed74314f1c",
+        "documentTitle": "NVDA Q2 2027 Earnings Call",
+        "documentType": "earnings_call",
+        "ticker": "NVDA",
+        "year": 2027,
+        "quarter": "Q2",
+        "filingType": null,
+        "sourceUrl": null
+      }
     }
   ],
-  "query": "How did management explain the gross margin decline?",
-  "top_k": 5
+  "meta": {
+    "total": 1,
+    "periodMismatch": null,
+    "requestId": "req_8da2fcd216e1450a"
+  }
 }
 ```
 

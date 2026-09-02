@@ -63,20 +63,25 @@ curl "https://api.focusalpha.ai/v1/screen?market_cap_usd_gte=2000000000&market_c
 
 <ResponseExample>
 
-```json Response (excerpt)
+```json Response (fields trimmed)
 {
   "data": [
     {
-      "company_id": "cmp_003318",
-      "name": "Example Therapeutics, Inc.",
-      "primary_ticker": "EXTX",
-      "market_cap_usd": 3400000000,
-      "short_percent_float": 32.7,
-      "days_to_cover": 9.1,
-      "insider_net_90d": "buying"
+      "company_id": "cmp_009325",
+      "company_name": "Vistance Networks, Inc.",
+      "primary_ticker": "VISN",
+      "market_cap_usd": 1423344372,
+      "short_percent_float": "10.83",
+      "short_percent_outstanding": "10.32",
+      "days_to_cover": "2.29",
+      "short_interest_change_pct": "27.79",
+      "short_interest_as_of": "2026-08-14",
+      "ceo_name": "Charles L. Treadway",
+      "ceo_total_comp": "15417850",
+      "ceo_comp_fiscal_year": 2025,
+      "insider_ownership_pct": "3.5"
     }
-  ],
-  "coverage": { "short_interest": "US listings, settled twice monthly" }
+  ]
 }
 ```
 

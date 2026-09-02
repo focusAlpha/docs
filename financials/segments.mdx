@@ -79,18 +79,72 @@ curl "https://api.focusalpha.ai/v1/financials/segments?ticker=AAPL&period=annual
 
 <ResponseExample>
 
-```json Response
+```json Response (trimmed)
 {
-  "segments": [
+  "segmented_financials": [
     {
       "ticker": "AAPL",
       "report_period": "2025-09-27",
+      "fiscal_period": "FY2025",
       "period": "annual",
       "currency": "USD",
-      "accounting_standard": "us_gaap",
-      "axis": "Products and Services",
-      "member": "iPhone",
-      "revenue": 209900000000
+      "accession_number": "0000320193-25-000079",
+      "income_statement": {
+        "revenue": {
+          "product": [
+            {
+              "label": "iPhone",
+              "value": 209586000000
+            },
+            {
+              "label": "Mac",
+              "value": 33708000000
+            },
+            {
+              "label": "iPad",
+              "value": 28023000000
+            }
+          ],
+          "segment": [
+            {
+              "label": "Americas",
+              "value": 178353000000
+            },
+            {
+              "label": "Europe",
+              "value": 111032000000
+            },
+            {
+              "label": "Greater China",
+              "value": 64377000000
+            }
+          ],
+          "geography": [
+            {
+              "label": "U.S.",
+              "value": 151790000000
+            },
+            {
+              "label": "China",
+              "value": 64377000000
+            }
+          ]
+        },
+        "operating_income": {
+          "segment": [
+            {
+              "label": "Americas",
+              "value": 72480000000
+            },
+            {
+              "label": "Europe",
+              "value": 47739000000
+            }
+          ]
+        }
+      },
+      "balance_sheet": null,
+      "cash_flow_statement": null
     }
   ]
 }

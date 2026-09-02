@@ -125,35 +125,50 @@ curl "https://api.focusalpha.ai/v1/companies/NVDA/news/events?relation=direct&mi
 
 <ResponseExample>
 
-```json Response
+```json Response (one event; reaches trimmed)
 {
   "data": [
     {
-      "event_id": "0001045810-26-000123:2.02",
+      "event_id": "NVDA:results:20260901",
       "relation": "direct",
       "ticker": "NVDA",
-      "n_articles": 14,
-      "first_at": "2026-08-27T20:20:00Z",
-      "last_at": "2026-08-28T13:05:00Z",
-      "weakest_time_basis": "publish_time",
-      "occurred_on": "2026-07-27",
-      "peak_impact": 88,
+      "n_articles": "9",
+      "first_at": "2026-09-01T10:00:00.000Z",
+      "last_at": "2026-09-01T23:06:54.000Z",
+      "peak_impact": 95,
       "peak_magnitude": null,
       "via": null,
       "direction": "bullish",
       "human_reviewed": false,
+      "headline": "Everyone Loves a Winner: Investors Can't Get Enough of Nvidia After Blowout Earnings",
+      "why": "[capped 95->25 (moved -1.3%)] Nvidia reported blowout earnings with revenue doubling year-over-year to $96 billion and raised guidance for fiscal 2028 to 70% growth, indicating strong continued demand.",
       "event_type": "earnings",
-      "headline": "NVIDIA reports record data-center revenue",
-      "why": "Data-center revenue beat the high end of guidance.",
-      "link": "https://example.com/article",
-      "publishers": ["Reuters", "Bloomberg", "SEC"],
+      "link": "https://247wallst.com/investing/2026/09/01/everyone-loves-a-winner-investors-cant-get-enough-of-nvidia-after-blowout-earnings/",
+      "publishers": [
+        "247wallst.com",
+        "barrons.com",
+        "fool.com",
+        "seekingalpha.com",
+        "zacks.com"
+      ],
+      "weakest_time_basis": "published",
+      "occurred_on": null,
       "reaches": [
-        { "ticker": "AVGO", "direction": "bullish", "magnitude": 34, "via": "competition", "why": "..." }
+        {
+          "via": "competition",
+          "why": "Nvidia's blowout earnings and guidance suggest continued market share gains in AI chips, pressuring AMD's competitive position.",
+          "ticker": "AMD",
+          "direction": "bearish",
+          "magnitude": 70
+        }
       ]
     }
   ],
-  "next_cursor": null,
-  "coverage": { "available_from": "2026-07-26", "update_frequency": "minutes" }
+  "next_cursor": "2026-09-01T23:06:54.000Z|NVDA:results:20260901",
+  "symbols_searched": [
+    "NVDA",
+    "NVD.DE"
+  ]
 }
 ```
 

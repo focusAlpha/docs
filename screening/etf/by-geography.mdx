@@ -39,7 +39,7 @@ The measured geography columns exist only for funds with a holdings profile; a f
 <RequestExample>
 
 ```bash cURL
-curl "https://api.focusalpha.ai/v1/etfs/screen?segment=equity.size_style.emerging&min_aum=1000000000&sort=net_expense_ratio&order=asc" \
+curl "https://api.focusalpha.ai/v1/etfs/screen?min_us_share=0.95&min_aum=10000000000&sort=aum" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 ```
 
@@ -47,17 +47,17 @@ curl "https://api.focusalpha.ai/v1/etfs/screen?segment=equity.size_style.emergin
 
 <ResponseExample>
 
-```json Response (excerpt)
+```json Response (XLV, fields trimmed)
 {
   "data": [
     {
-      "ticker": "SPEM",
-      "name": "SPDR Portfolio Emerging Markets ETF",
-      "segment": "equity.size_style.emerging",
-      "aum": 11900000000,
-      "net_expense_ratio": 0.0007,
-      "us_share": 0.0,
-      "em_share": 0.97
+      "ticker": "XLV",
+      "name": "State Street Health Care Select Sector SPDR ETF",
+      "segment": "equity.sector.health_care",
+      "aum": 43909783508.08,
+      "us_share": "0.9773",
+      "em_share": "0.0000",
+      "large_share": "0.8534"
     }
   ]
 }

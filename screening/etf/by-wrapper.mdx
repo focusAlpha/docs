@@ -55,7 +55,7 @@ The tier composes with every other axis: `tier=leveraged_inverse` with `max_flow
 <RequestExample>
 
 ```bash cURL
-curl "https://api.focusalpha.ai/v1/etfs/screen?tier=leveraged_inverse&max_flow_20d=-50000000&sort=flow_20d&order=asc" \
+curl "https://api.focusalpha.ai/v1/etfs/screen?tier=leveraged_inverse&sort=aum" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 ```
 
@@ -63,17 +63,18 @@ curl "https://api.focusalpha.ai/v1/etfs/screen?tier=leveraged_inverse&max_flow_2
 
 <ResponseExample>
 
-```json Response (excerpt)
+```json Response (SQQQ, fields trimmed)
 {
   "data": [
     {
       "ticker": "SQQQ",
-      "name": "ProShares UltraPro Short QQQ",
+      "name": "ProShares - UltraPro Short QQQ",
       "tier": "leveraged_inverse",
       "exposure_hidden": true,
-      "multi_inverse": true,
-      "aum": 2100000000,
-      "flow_20d": -310000000
+      "is_index": true,
+      "is_multi_inverse_index": true,
+      "aum": 1978010813.61,
+      "aum_is_derived": false
     }
   ]
 }

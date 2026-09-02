@@ -83,7 +83,7 @@ See also [Earnings Consensus from Prediction Markets](/events/earnings-consensus
 <RequestExample>
 
 ```bash cURL
-curl "https://api.focusalpha.ai/v1/companies/TSLA/prediction-markets?category=earnings_beat&status=open" \
+curl "https://api.focusalpha.ai/v1/companies/TSLA/prediction-markets?limit=2" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 ```
 
@@ -95,21 +95,32 @@ curl "https://api.focusalpha.ai/v1/companies/TSLA/prediction-markets?category=ea
 {
   "data": [
     {
+      "company_id": "cmp_008544",
       "ticker": "TSLA",
-      "category": "earnings_beat",
-      "question": "Will Tesla beat EPS estimates for Q3 2026?",
-      "status": "open",
-      "yes_bid": 0.58,
-      "yes_ask": 0.62,
-      "implied_probability": 0.6,
-      "volume": 184200,
-      "as_of": "2026-08-31T18:00:00Z",
-      "as_of_age_minutes": 96,
-      "settled_yes": null
+      "market_id": "pmk_04e71fc342b65d5a",
+      "category": "kpi_ladder",
+      "question": "Tesla deliveries in Q2",
+      "outcome": "above 420000",
+      "period": "26JUL",
+      "closes_at": "2026-07-02T13:32:48.000Z",
+      "settled": true,
+      "settled_yes": true,
+      "yes_bid": null,
+      "yes_ask": null,
+      "implied_probability": null,
+      "volume": null,
+      "as_of": null,
+      "as_of_age_minutes": null
     }
   ],
   "next_cursor": null,
-  "coverage": { "update_frequency": "hourly, 12:00-24:00 UTC" }
+  "coverage": {
+    "update_frequency": "snapshots, roughly hourly between 12:00 and 24:00 UTC (nine per day, uneven)",
+    "staleness": "NOT LIVE. Median observed gap between snapshots 1.0h; every night there is a gap of about 12.5h. Read as_of_age_minutes on each row before calling a probability current.",
+    "available_from": "2026-08-05",
+    "available_to": null,
+    "history_status": "begins at first capture and cannot be backfilled"
+  }
 }
 ```
 

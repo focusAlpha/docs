@@ -69,20 +69,41 @@ curl "https://api.focusalpha.ai/v1/financials?ticker=AAPL&period=annual&limit=2"
 
 <ResponseExample>
 
-```json Response
+```json Response (one period per statement, trimmed)
 {
-  "financials": [
-    {
-      "ticker": "AAPL",
-      "report_period": "2025-09-27",
-      "period": "annual",
-      "currency": "USD",
-      "accounting_standard": "us_gaap",
-      "income_statement": { "revenue": 416160000000, "net_income": 112010000000 },
-      "balance_sheet": { "total_assets": 364980000000, "shareholders_equity": 66700000000 },
-      "cash_flow_statement": { "net_cash_flow_from_operations": 124800000000 }
-    }
-  ]
+  "financials": {
+    "income_statements": [
+      {
+        "ticker": "AAPL",
+        "report_period": "2025-09-27",
+        "fiscal_period": "FY",
+        "revenue": 416161000000,
+        "operating_income": 133050000000,
+        "net_income": 112010000000,
+        "earnings_per_share_diluted": 7.46
+      }
+    ],
+    "balance_sheets": [
+      {
+        "ticker": "AAPL",
+        "report_period": "2025-09-27",
+        "fiscal_period": "FY",
+        "total_assets": 359241000000,
+        "total_debt": 98657000000,
+        "shareholders_equity": 73733000000
+      }
+    ],
+    "cash_flow_statements": [
+      {
+        "ticker": "AAPL",
+        "report_period": "2025-09-27",
+        "fiscal_period": "FY",
+        "net_cash_flow_from_operations": 111482000000,
+        "capital_expenditure": 12715000000,
+        "free_cash_flow": 98767000000
+      }
+    ]
+  }
 }
 ```
 

@@ -105,7 +105,7 @@ See also [Form ADV Part 2A Brochure Data](/advisers/adv-brochure) for what a fir
 <RequestExample>
 
 ```bash cURL
-curl "https://api.focusalpha.ai/v1/institutions?firm_type=Hedge-Fund&state=CT&min_aum=1000000000" \
+curl "https://api.focusalpha.ai/v1/institutions?firm_type=Hedge-Fund&state=CT&min_aum=1000000000&limit=1" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 ```
 
@@ -117,27 +117,34 @@ curl "https://api.focusalpha.ai/v1/institutions?firm_type=Hedge-Fund&state=CT&mi
 {
   "data": [
     {
-      "crd": "105247",
-      "cik": "0001112520",
-      "legal_name": "EXAMPLE CAPITAL MANAGEMENT LP",
-      "business_name": "Example Capital",
+      "crd": "105129",
+      "cik": "0001350694",
+      "legal_name": "BRIDGEWATER ASSOCIATES, LP",
+      "business_name": "BRIDGEWATER ASSOCIATES, LP",
       "firm_type": "Hedge-Fund",
       "sec_registration_type": "Registered",
-      "city": "Greenwich",
-      "state": "CT",
-      "country": "United States",
-      "phone": "+1 203 555 0100",
-      "website": "https://example-capital.com",
-      "email_primary": "ir@example-capital.com",
-      "aum_total": 24500000000,
+      "main_office_city": "WESTPORT",
+      "main_office_state": "CT",
+      "main_office_country": "United States",
+      "main_office_phone": "203-226-3030",
+      "website": "HTTPS://SOUNDCLOUD.COM/BRIDGEWATER-ASSOCIATES",
+      "email_primary": "compliance@bwater.com",
+      "email_domain_matches_firm": false,
+      "aum_total": "150159985476.0",
+      "advises_private_funds": true,
       "has_hedge_funds": true,
       "has_pe_funds": false,
       "has_vc_funds": false,
-      "style_tier": "Value-Biased"
+      "adv_as_of": "2026-08-03T00:00:00.000Z"
     }
   ],
-  "next_cursor": "eyJjcmQiOiIxMDUyNDcifQ",
-  "coverage": { "update_frequency": "monthly" }
+  "next_cursor": "105129",
+  "coverage": {
+    "update_frequency": "monthly_snapshot",
+    "contact_source": "ADV Part 1 roster; e-mail extracted from the ADV Part 2 brochure",
+    "style_source": "13F holdings, latest quarter only (13F filers only)",
+    "self_reported": true
+  }
 }
 ```
 

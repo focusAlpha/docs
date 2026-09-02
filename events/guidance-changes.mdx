@@ -88,18 +88,32 @@ curl "https://api.focusalpha.ai/v1/companies/AAPL/guidance-changes?year=2026" \
   "data": [
     {
       "ticker": "AAPL",
-      "metric_key": "gross_margin",
-      "period": "FY26Q4",
-      "current_value": "47% to 48%",
-      "prior_value": "46% to 47%",
+      "year": 2026,
+      "quarter": 3,
+      "conference_date": "2026-07-30T21:00:00Z",
+      "transcript_id": "AAPL_2026q3",
+      "metric_key": "opex",
+      "basis": "",
+      "period": "Q3-FY26",
+      "current_value": "between 19.1 billion and $19.4 billion",
+      "prior_value": "$18.8 billion and $19.1 billion",
+      "prior_transcript_id": "AAPL_2026q2",
       "change": "raise",
-      "higher_is_worse": false,
-      "prior_transcript_id": "tr_87004",
-      "year": 2026
+      "higher_is_worse": true,
+      "pct_change": "1.58",
+      "range_move": "moved_above",
+      "within_prior_range": false,
+      "prior_source": "paired",
+      "value_unit": "usd"
     }
   ],
   "next_cursor": null,
-  "coverage": { "available_from": "2025-01-29", "update_frequency": "daily" }
+  "coverage": {
+    "available_from": "2025-01-02",
+    "available_to": null,
+    "update_frequency": "daily",
+    "history_status": "starts_2025_01_02"
+  }
 }
 ```
 

@@ -65,7 +65,7 @@ The brochure tags are conservative — set only where the brochure states the th
 <RequestExample>
 
 ```bash cURL
-curl "https://api.focusalpha.ai/v1/institutions/screen?analysis_basis=quantitative&investment_strategy=long_short&has_brochure=true" \
+curl "https://api.focusalpha.ai/v1/institutions/screen?primary_type=asset_manager&declared_vg_bucket=value_biased&style_tier=Growth-Biased,Deep%20Growth&has_brochure=true" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 ```
 
@@ -73,18 +73,30 @@ curl "https://api.focusalpha.ai/v1/institutions/screen?analysis_basis=quantitati
 
 <ResponseExample>
 
-```json Response (excerpt)
+```json Response (fields trimmed)
 {
   "data": [
     {
-      "crd": "170881",
-      "legal_name": "EXAMPLE SYSTEMATIC LP",
+      "crd": "142463",
+      "legal_name": "METLIFE INVESTMENT MANAGEMENT, LLC",
       "primary_type": "asset_manager",
-      "analysis_basis": "quantitative",
-      "investment_strategy": ["long_short", "market_neutral"],
-      "declared_vg_bucket": "not_applicable",
-      "style_tier": "Blend / Core",
-      "declared_style_summary": "Systematic long/short equity strategies driven by proprietary quantitative models."
+      "investment_strategy": [
+        "long_only"
+      ],
+      "analysis_basis": "fundamental",
+      "equity_styles": [
+        "value",
+        "growth"
+      ],
+      "declared_vg_bucket": "value_biased",
+      "market_cap_focus": [
+        "small_cap"
+      ],
+      "investment_horizon": "long",
+      "declared_style_summary": "MIM Equity is the equity investment management unit of MetLife Investment Management, offering discretionary U.S. equity strategies (Small Cap Value, SMID Cap Value, Small Cap Core) through separately managed accounts, RICs, and CITs.",
+      "vg_score": 0.78,
+      "style_tier": "Growth-Biased",
+      "style_report_period": "2026-03-31"
     }
   ]
 }

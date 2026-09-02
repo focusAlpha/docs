@@ -64,13 +64,42 @@ curl "https://api.focusalpha.ai/v1/etfs/screen?tier=leveraged_inverse,structured
 ```json labels block (TQQQ)
 {
   "labels": {
-    "tier": "leveraged_inverse",
-    "exposure_hidden": true,
-    "asset_class": "equity",
-    "category": "equity.leveraged_inverse",
-    "segment": "equity.leveraged_inverse.nasdaq_100",
-    "specializations": [],
-    "declared": { "is_index": true, "multi_inverse": true }
+    "wrapper": {
+      "tier": "leveraged_inverse",
+      "exposure_hidden": true
+    },
+    "asset_class": {
+      "code": "equity",
+      "label": "Equity",
+      "semantic": "What the fund holds: equity exposure >= l1_dominant_exposure_min of non-cash weight"
+    },
+    "category": {
+      "code": "equity.leveraged_inverse",
+      "label": "Leveraged / Inverse",
+      "semantic": "Tier: daily leveraged or inverse (vendor flags, cross-checked with N-CEN multi/inverse)"
+    },
+    "segment": {
+      "code": "equity.leveraged_inverse.nasdaq_100",
+      "label": "Nasdaq-100",
+      "semantic": "Segment: the underlying the packaging is applied to. Nasdaq-100"
+    },
+    "specializations": [
+      {
+        "code": "equity.leveraged_inverse.lev_3x",
+        "label": "3x"
+      }
+    ],
+    "declared": {
+      "name": "ProShares UltraPro QQQ",
+      "multi_inverse_index": true,
+      "is_index": true,
+      "is_fund_of_fund": null
+    },
+    "labels_as_of": {
+      "holdings_as_of": null,
+      "label_since": "2026-09-01T00:00:00.000Z"
+    },
+    "status": "available"
   }
 }
 ```

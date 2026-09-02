@@ -109,20 +109,33 @@ curl "https://api.focusalpha.ai/v1/companies/TSM/20f/segments?dimension=geograph
 {
   "data": [
     {
-      "company_id": "cmp_014081",
-      "ticker": "TSM",
-      "accession": "0001193125-26-045123",
-      "fiscal_year": 2025,
+      "company_id": "cmp_008395",
+      "id": "1537",
+      "cik": "1046179",
+      "accession": "0001628280-26-025362",
       "dimension": "geographic",
-      "member": "United States",
+      "segment_path": [
+        "TW"
+      ],
+      "segment_name": "TW",
+      "depth": 1,
+      "consolidation": null,
+      "is_elimination": false,
       "metric": "revenue",
-      "value": 2410000000000,
-      "currency": "TWD",
-      "accounting_standard": "ifrs"
+      "tag": "ifrs-full:RevenueFromContractsWithCustomers",
+      "period_end": "2024-12-31",
+      "fiscal_year": 2024,
+      "value": "270413500000",
+      "currency": "TWD"
     }
   ],
-  "next_cursor": null,
-  "coverage": { "available_from": "2014-12", "update_frequency": "annual" }
+  "next_cursor": "1537",
+  "coverage": {
+    "available_from": "2014-12",
+    "available_to": null,
+    "update_frequency": "annual",
+    "history_status": "complete_for_covered_filers"
+  }
 }
 ```
 

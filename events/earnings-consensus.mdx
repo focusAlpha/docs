@@ -93,20 +93,28 @@ curl "https://api.focusalpha.ai/v1/companies/TSLA/earnings-markets?basis=nongaap
 {
   "data": [
     {
+      "market_id": "pmk_80b6de60ffc3c7ea",
       "ticker": "TSLA",
-      "quarter_label": "Q2 2026",
-      "estimated_report_date": "2026-07-23",
+      "company_id": "cmp_008544",
       "basis": "nongaap",
-      "eps_threshold": 0.62,
+      "estimated_report_date": "2026-04-22",
+      "eps_threshold": "0.39",
+      "settled": true,
       "cleared": true,
-      "cleared_confirmed": true,
-      "reported_eps": 0.71,
-      "reported_source_url": "https://www.sec.gov/Archives/edgar/data/1318605/...",
-      "check_status": "checked"
+      "reported_eps": null,
+      "reported_period": null,
+      "reported_source_url": null,
+      "cleared_confirmed": null,
+      "check_status": "no_actual_in_window"
     }
   ],
   "next_cursor": null,
-  "coverage": { "update_frequency": "daily" }
+  "coverage": {
+    "available_from": "2025-09",
+    "available_to": null,
+    "update_frequency": "twice daily",
+    "history_status": "complete for the companies that have a listed contract; a company with none has no row"
+  }
 }
 ```
 

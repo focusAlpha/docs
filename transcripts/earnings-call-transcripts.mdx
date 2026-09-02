@@ -79,19 +79,23 @@ curl "https://api.focusalpha.ai/v1/documents/by-ticker/NVDA?limit=3" \
 {
   "documents": [
     {
-      "document_id": "doc_9f3a21",
+      "id": "56eaec3c-c65e-4014-94b0-5aed74314f1c",
+      "documentTitle": "NVDA Q2 2027 Earnings Call",
+      "documentType": "earnings_call",
       "ticker": "NVDA",
-      "year": 2026,
+      "year": 2027,
       "quarter": "Q2",
-      "document_type": "earnings_call_transcript",
-      "title": "NVIDIA Corporation Q2 2026 Earnings Call",
-      "source_url": "https://example.com/nvda-q2-2026-call",
-      "segment_count": 184
+      "filingType": null,
+      "sourceUrl": null,
+      "status": "indexed"
     }
   ],
-  "total": 42,
-  "limit": 3,
-  "offset": 0
+  "meta": {
+    "total": 14,
+    "limit": 1,
+    "offset": 0,
+    "latencyMs": 250
+  }
 }
 ```
 

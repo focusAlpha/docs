@@ -105,23 +105,35 @@ curl "https://api.focusalpha.ai/v1/companies/005930.KS/kr/financials?year=2026&r
 {
   "data": [
     {
-      "company_id": "cmp_003104",
       "corp_code": "00126380",
-      "year": 2026,
-      "report_period": "half",
-      "basis": "consolidated",
-      "statement": "income",
+      "company_id": "cmp_007386",
+      "bsns_year": 2026,
+      "reprt_code": "11013",
+      "fs_div": "CFS",
+      "sj_div": "IS",
+      "ord": 6,
       "account_id": "dart_OperatingIncomeLoss",
       "account_nm": "영업이익",
-      "amount": 18420000000000,
-      "amount_prior_period": 11240000000000,
-      "amount_two_periods_prior": 6680000000000,
+      "account_detail": "-",
+      "sj_nm": "손익계산서",
+      "amount": "57232797000000.0",
+      "amount_prior_period": null,
+      "amount_two_periods_prior": null,
       "currency": "KRW",
-      "filing_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=..."
+      "rcept_no": "20260515002181",
+      "filing_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260515002181",
+      "report_period": "q1",
+      "basis": "consolidated",
+      "statement": "income"
     }
   ],
   "next_cursor": null,
-  "coverage": { "available_from": "2022-01-01", "history_status": "backfill in progress" }
+  "coverage": {
+    "available_from": "2022",
+    "available_to": null,
+    "update_frequency": "daily",
+    "history_status": "backfill_in_progress"
+  }
 }
 ```
 

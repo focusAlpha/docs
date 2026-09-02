@@ -83,7 +83,7 @@ See also [Daily Prices](/market-data/prices) for a company's own series, [Daily 
 <RequestExample>
 
 ```bash cURL
-curl "https://api.focusalpha.ai/v1/benchmarks?q=gold&kind=commodity" \
+curl "https://api.focusalpha.ai/v1/benchmarks?search=gold&kind=commodity" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 ```
 
@@ -91,27 +91,44 @@ curl "https://api.focusalpha.ai/v1/benchmarks?q=gold&kind=commodity" \
 
 <ResponseExample>
 
-```json Response
+```json Search: /v1/benchmarks?search=gold&kind=commodity
 {
   "data": [
     {
       "symbol": "GCUSD",
+      "kind": "commodity",
       "name": "Gold Futures",
-      "kind": "commodity",
-      "currency": "USD",
-      "currency_major": "USD"
-    },
+      "exchange": "",
+      "currency": "USD"
+    }
+  ]
+}
+```
+
+```json Prices: /v1/benchmarks?symbol=GCUSD&limit=1
+{
+  "data": [
     {
-      "symbol": "ZCUSX",
-      "name": "Corn Futures",
+      "symbol": "GCUSD",
       "kind": "commodity",
-      "currency": "USX",
+      "name": "Gold Futures",
+      "date": "2026-08-31",
+      "open": 4483.2,
+      "high": 4521.5,
+      "low": 4445.6,
+      "close": 4481.5,
+      "volume": "149223",
+      "currency": "USD",
+      "close_major": 4481.5,
       "currency_major": "USD"
     }
   ],
+  "next_cursor": "WyIyMDI2LTA4LTI4Il0",
   "coverage": {
     "available_from": "2015-01-01",
-    "update_frequency": "daily"
+    "available_to": null,
+    "update_frequency": "daily",
+    "history_status": "from_2015"
   }
 }
 ```

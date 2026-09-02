@@ -47,7 +47,7 @@ A taxonomy filter selects funds whose book **concentrates** in that node under t
 <RequestExample>
 
 ```bash cURL
-curl "https://api.focusalpha.ai/v1/etfs/screen?segment=fixed_income.corporate.high_yield&sort=aum" \
+curl "https://api.focusalpha.ai/v1/etfs/screen?segment=equity.sector.health_care&sort=aum" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 ```
 
@@ -55,22 +55,24 @@ curl "https://api.focusalpha.ai/v1/etfs/screen?segment=fixed_income.corporate.hi
 
 <ResponseExample>
 
-```json Response (excerpt)
+```json Response (XLV, fields trimmed)
 {
   "data": [
     {
-      "ticker": "HYG",
-      "name": "iShares iBoxx $ High Yield Corporate Bond ETF",
+      "ticker": "XLV",
+      "name": "State Street Health Care Select Sector SPDR ETF",
       "tier": "plain_beta",
-      "asset_class": "fixed_income",
-      "category": "fixed_income.corporate",
-      "segment": "fixed_income.corporate.high_yield",
-      "aum": 16800000000,
-      "net_expense_ratio": 0.0049,
-      "duration": 3.1
+      "asset_class": "equity",
+      "category": "equity.sector",
+      "segment": "equity.sector.health_care",
+      "specializations": [
+        "equity.sector.geo_us",
+        "equity.sector.health_care.drug_manufacturers_general"
+      ],
+      "aum": 43909783508.08,
+      "net_expense_ratio": 0.0008
     }
-  ],
-  "next_cursor": "…"
+  ]
 }
 ```
 

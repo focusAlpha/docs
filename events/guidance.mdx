@@ -56,13 +56,13 @@ The parsed `value_low`, `value_high` and `value_unit` are a convenience over the
 
 `value_is_band` means FocusAlpha converted a verbal band by convention — "mid-single digits" to 4–6% — and **the company never said those numbers**. `value_bound` marks an open-ended range: "over $3 billion" has only a floor, so the parsed high is not a company number.
 
-`source_url` is where the sentence came from, so the quote can be checked. On the release side it is the SEC address of the exhibit the figure was read out of. On the call side it is the vendor's company page, not that specific call — `transcript_id` pins the call.
+On the document-level views, `source_url` is where the sentence came from, so the quote can be checked. On the release side it is the SEC address of the exhibit the figure was read out of. On the call side it is the vendor's company page, not that specific call — `transcript_id` pins the call.
 
 ## Two Fields That Say What the Number Is Not
 
-`value_not_level` means the figure is **not the level of the money quantity its `metric_key` names**. Apple files "between nine and 11%" under `revenue`, which is a growth rate. Render it as growth, never as dollars. `value_not_level_reason` says which shape: `name_says_growth`, `share_of_another_metric`, or `percent_under_money_key`.
+On the event and document views, `value_not_level` means the figure is **not the level of the money quantity its `metric_key` names**. Apple files "between nine and 11%" under `revenue`, which is a growth rate. Render it as growth, never as dollars. `value_not_level_reason` says which shape: `name_says_growth`, `share_of_another_metric`, or `percent_under_money_key`.
 
-`horizon=multi_year_target` means management framed the figure as a multi-year goal, not a figure for one fiscal period. "Reach $20 billion by 2030" carries period FY30 and reads exactly like FY30 guidance; "long-term", "per annum" and "over time" carry no period at all. Do not present a multi-year target as this year's outlook.
+On the same views, `horizon=multi_year_target` means management framed the figure as a multi-year goal, not a figure for one fiscal period. "Reach $20 billion by 2030" carries period FY30 and reads exactly like FY30 guidance; "long-term", "per annum" and "over time" carry no period at all. Do not present a multi-year target as this year's outlook.
 
 ## Management Guidance Date Convention
 
@@ -129,37 +129,43 @@ curl "https://api.focusalpha.ai/v1/companies/AAPL/guidance-latest" \
 
 <ResponseExample>
 
-```json Response
+```json Response (latest view, one metric)
 {
   "data": [
     {
       "ticker": "AAPL",
-      "metric_key": "revenue",
-      "period": "FY26Q4",
+      "year": 2026,
+      "quarter": 3,
+      "conference_date": "2026-07-30T21:00:00Z",
+      "transcript_id": "AAPL_2026q3",
+      "source_kind": "transcript",
+      "metric_key": "gross_margin",
+      "basis": "",
+      "period": "Q3-FY26",
+      "label": "gross margin",
       "direction": "new",
-      "new_value": "9% to 11%",
+      "claimed": null,
+      "new_value": "between 47% and 48%",
       "prior_value": null,
-      "value_low": 9,
-      "value_high": 11,
-      "value_unit": "percent",
+      "value_low": "47.0",
+      "value_high": "48.0",
+      "value_unit": "pct",
       "value_is_band": false,
-      "value_bound": null,
-      "value_not_level": true,
-      "value_not_level_reason": "percent_under_money_key",
-      "horizon": "quarter",
-      "conference_date": "2026-07-31",
-      "has_release": true,
+      "value_bound": "closed",
+      "quote": "We expect gross margin to be between 47% and 48%.",
       "has_call": true,
-      "n_docs": 2,
-      "restated_identically": false,
-      "quote": "We expect revenue to grow between nine and 11% year over year.",
-      "source_kind": "press_release",
-      "source_url": "https://www.sec.gov/Archives/edgar/data/320193/...",
-      "transcript_id": "tr_88213"
+      "has_release": false,
+      "n_docs": "1",
+      "restated_identically": false
     }
   ],
   "next_cursor": null,
-  "coverage": { "available_from": "2025-01-29", "update_frequency": "daily" }
+  "coverage": {
+    "available_from": "2025-01-02",
+    "available_to": null,
+    "update_frequency": "daily",
+    "history_status": "starts_2025_01_02"
+  }
 }
 ```
 

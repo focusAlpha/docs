@@ -52,8 +52,13 @@ Every filter on this page reads the fund's holdings profile, computed from the n
 
 <RequestExample>
 
-```bash cURL
-curl "https://api.focusalpha.ai/v1/etfs/screen?segment=fixed_income.government.investment_grade&max_duration=2&min_treasury_share=0.9&max_expense_ratio=0.001" \
+```bash Concentrated sector books
+curl "https://api.focusalpha.ai/v1/etfs/screen?segment=equity.sector.health_care&min_top10_share=0.5" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```bash Short-duration treasuries
+curl "https://api.focusalpha.ai/v1/etfs/screen?max_duration=1&min_treasury_share=0.9" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 ```
 
@@ -61,17 +66,20 @@ curl "https://api.focusalpha.ai/v1/etfs/screen?segment=fixed_income.government.i
 
 <ResponseExample>
 
-```json Response (excerpt)
+```json Response (XLV, fields trimmed)
 {
   "data": [
     {
-      "ticker": "SGOV",
-      "name": "iShares 0-3 Month Treasury Bond ETF",
-      "segment": "fixed_income.government.investment_grade",
-      "duration": 0.1,
-      "treasury_share": 1.0,
-      "n_holdings": 22,
-      "net_expense_ratio": 0.0009
+      "ticker": "XLV",
+      "name": "State Street Health Care Select Sector SPDR ETF",
+      "n_holdings": "62",
+      "top1_share": "0.1507",
+      "top10_share": "0.6082",
+      "large_share": "0.8534",
+      "mid_share": "0.1466",
+      "small_share": "0.0000",
+      "duration": null,
+      "treasury_share": "0.0000"
     }
   ]
 }

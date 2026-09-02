@@ -83,22 +83,41 @@ curl "https://api.focusalpha.ai/v1/companies/TSLA/proxy-ownership?owner_kind=maj
 {
   "data": [
     {
-      "id": "po_0007",
-      "company_id": "cmp_001318605",
+      "id": "130397",
+      "company_id": "cmp_008544",
       "ticker": "TSLA",
-      "owner_name": "The Vanguard Group, Inc.",
-      "owner_role": null,
+      "owner_name": "The Vanguard Group",
+      "owner_role": "major_shareholder",
       "owner_kind": "major_holder",
       "security_class": "Common Stock",
-      "shares_owned": 239000000,
-      "percent": 7.4,
-      "percent_source": "disclosed",
+      "shares_owned": "229805491",
+      "percent": "6.9",
+      "percent_source": "reported",
+      "is_group": false,
+      "confidence": "high"
+    },
+    {
+      "id": "130398",
+      "company_id": "cmp_008544",
+      "ticker": "TSLA",
+      "owner_name": "Blackrock, Inc.",
+      "owner_role": "major_shareholder",
+      "owner_kind": "major_holder",
+      "security_class": "Common Stock",
+      "shares_owned": "188797465",
+      "percent": "5.7",
+      "percent_source": "reported",
       "is_group": false,
       "confidence": "high"
     }
   ],
   "next_cursor": null,
-  "coverage": { "update_frequency": "with filings" }
+  "coverage": {
+    "available_from": null,
+    "available_to": null,
+    "update_frequency": "annual",
+    "history_status": "current_snapshot"
+  }
 }
 ```
 

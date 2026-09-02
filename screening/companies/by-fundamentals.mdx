@@ -49,7 +49,7 @@ Valuation and fundamentals cover a tracked cohort, not every listed company — 
 <RequestExample>
 
 ```bash cURL
-curl "https://api.focusalpha.ai/v1/screen?sector=Technology&market_cap_usd_gte=1000000000&pe_ttm_lte=20&net_margin_gte=0.1&sort=pe_ttm&order=asc" \
+curl "https://api.focusalpha.ai/v1/screen?sector=Technology&market_cap_usd_gte=1000000000&pe_ttm_lte=20&net_margin_gte=0.1&sort=pe_ttm&order=asc&limit=1" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 ```
 
@@ -57,20 +57,33 @@ curl "https://api.focusalpha.ai/v1/screen?sector=Technology&market_cap_usd_gte=1
 
 <ResponseExample>
 
-```json Response (excerpt)
+```json Response (fields trimmed)
 {
   "data": [
     {
-      "company_id": "cmp_014081",
-      "name": "Taiwan Semiconductor Manufacturing Company Limited",
-      "primary_ticker": "2330.TW",
-      "market_cap_usd": 892000000000,
-      "market_cap_local": 28950000000000,
-      "market_cap_currency": "TWD",
-      "pe_ttm": 18.4,
-      "net_margin": 0.401,
-      "fundamentals_grain": "ttm",
-      "ret_3m": 12.7
+      "company_id": "cmp_009325",
+      "company_name": "Vistance Networks, Inc.",
+      "primary_ticker": "VISN",
+      "market_cap_usd": 1423344372,
+      "market_cap_local": "1423344372",
+      "market_cap_currency": "USD",
+      "pe_ttm": 0.623262412751237,
+      "pb": null,
+      "ps_ttm": 0.736873251190723,
+      "fcf_yield": 0.177469349631152,
+      "gross_margin": 0.494874715261959,
+      "operating_margin": 0.0246427831849244,
+      "net_margin": 1.18228411679437,
+      "return_on_equity": -1.02403479664589,
+      "debt_to_equity": -7.23055472562494,
+      "revenue_growth_yoy": 0.39707796904383,
+      "eps_growth_yoy": 6.6685393258427,
+      "is_lossmaking": false,
+      "equity_negative": true,
+      "fundamentals_grain": "annual",
+      "fundamentals_filed_at": "2026-02-26",
+      "ret_3m": -49.4391025641026,
+      "return_suspect": true
     }
   ]
 }

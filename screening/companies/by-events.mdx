@@ -53,16 +53,49 @@ curl "https://api.focusalpha.ai/v1/screen?event_source=korea_dart&event_family=b
 
 <ResponseExample>
 
-```json Response (excerpt)
+```json Response (fields trimmed; family lists shortened)
 {
   "data": [
     {
-      "company_id": "cmp_021447",
-      "name": "Example Korea Co., Ltd.",
+      "company_id": "cmp_007386",
+      "company_name": "Samsung Electronics Co., Ltd.",
       "primary_ticker": "005930.KS",
-      "matched_events": [
-        { "event_family": "buyback", "event_source": "korea_dart", "event_date": "2026-08-24" }
-      ]
+      "event_sources_90d": [
+        "korea_dart",
+        "news"
+      ],
+      "event_families_90d": [
+        "buyback",
+        "dividend",
+        "earnings_flash",
+        "insider_ownership",
+        "major_holding",
+        "periodic_report",
+        "related_party"
+      ],
+      "news_event_types_90d": [
+        "analyst",
+        "capital_return",
+        "earnings",
+        "guidance",
+        "merger_acquisition",
+        "product",
+        "strategy"
+      ],
+      "rollup_families_90d": [
+        "analyst",
+        "capital",
+        "capital_return",
+        "earnings",
+        "filing",
+        "guidance",
+        "merger_acquisition",
+        "ownership",
+        "product"
+      ],
+      "event_filings_90d": 838,
+      "news_events_90d": 159,
+      "event_last_at": "2026-09-01T21:22:53Z"
     }
   ]
 }

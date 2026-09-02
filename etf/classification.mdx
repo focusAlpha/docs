@@ -61,15 +61,55 @@ curl "https://api.focusalpha.ai/v1/etfs/XBI" \
 ```json labels block (XBI)
 {
   "labels": {
-    "tier": "plain_beta",
-    "exposure_hidden": false,
-    "asset_class": "equity",
-    "category": "equity.sector",
-    "segment": "equity.sector.health_care",
-    "specializations": ["equity.sector.health_care.biotechnology"],
-    "labels_as_of": { "holdings_as_of": "2026-08-03", "label_since": "2026-08-05" },
-    "history": [],
-    "declared": { "is_index": true, "multi_inverse": false }
+    "wrapper": {
+      "tier": "plain_beta",
+      "exposure_hidden": false
+    },
+    "asset_class": {
+      "code": "equity",
+      "label": "Equity",
+      "semantic": "What the fund holds: equity exposure >= l1_dominant_exposure_min of non-cash weight"
+    },
+    "category": {
+      "code": "equity.sector",
+      "label": "Sector",
+      "semantic": "Top GICS sector >= l2_sector_min"
+    },
+    "segment": {
+      "code": "equity.sector.health_care",
+      "label": "Health Care",
+      "semantic": "Segment: top sector of linked equity weight >= l2_sector_min. Industries (level 4) registered on demand under this node"
+    },
+    "specializations": [
+      {
+        "code": "equity.sector.geo_us",
+        "label": "U.S."
+      },
+      {
+        "code": "equity.sector.health_care.biotechnology",
+        "label": "Biotechnology"
+      }
+    ],
+    "measured_tags": [],
+    "declared": {
+      "name": "State Street SPDR S&P Biotech ETF",
+      "multi_inverse_index": null,
+      "is_index": true,
+      "is_fund_of_fund": null
+    },
+    "labels_as_of": {
+      "holdings_as_of": "2026-08-28T00:00:00.000Z",
+      "label_since": "2026-09-01T00:00:00.000Z"
+    },
+    "history": [
+      {
+        "level": "segment",
+        "from_code": null,
+        "to_code": "equity.sector.health_care",
+        "changed_on": "2026-09-01T00:00:00.000Z"
+      }
+    ],
+    "status": "available"
   }
 }
 ```

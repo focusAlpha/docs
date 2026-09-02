@@ -82,25 +82,25 @@ curl "https://api.focusalpha.ai/v1/etfs/SPY/history?series=flow&date_gte=2026-08
   "series": "flow",
   "data": [
     {
-      "valuation_date": "2026-08-29",
-      "previous_valuation_date": "2026-08-28",
-      "shares_change": -1200000,
-      "flow": -768900000.0,
-      "flow_status": "computed"
+      "valuation_date": "2026-08-31T00:00:00.000Z",
+      "previous_valuation_date": "2026-08-28T00:00:00.000Z",
+      "shares_change": "250000.0",
+      "flow": "192344105.00000000000000000",
+      "flow_status": "ok"
     },
     {
-      "valuation_date": "2026-08-28",
-      "previous_valuation_date": "2026-08-27",
-      "shares_change": null,
-      "flow": null,
-      "flow_status": "no_flow"
+      "valuation_date": "2026-08-28T00:00:00.000Z",
+      "previous_valuation_date": "2026-08-27T00:00:00.000Z",
+      "shares_change": "350000.0",
+      "flow": "269945611.25000000000000000",
+      "flow_status": "ok"
     }
   ],
-  "next_cursor": "MjAyNi0wOC0yNw",
+  "next_cursor": "Fri Aug 28 2026 00:00:00 GMT+0000 (Coordinated Universal Time)",
   "coverage": {
-    "available_from": "1993-02-01",
-    "available_to": "2026-08-29",
-    "update_frequency": "daily"
+    "available_from": "1993-01-29",
+    "available_to": "2026-08-31",
+    "note": "One merged daily series; each value carries its own date and basis status."
   }
 }
 ```

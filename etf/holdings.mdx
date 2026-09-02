@@ -91,7 +91,7 @@ See also [ETF NAV and Shares Outstanding](/etf/nav) for the fund-level daily ser
 <RequestExample>
 
 ```bash cURL
-curl "https://api.focusalpha.ai/v1/etfs/SPY/holdings?row_kind=equity&limit=3" \
+curl "https://api.focusalpha.ai/v1/etfs/XBI/holdings?row_kind=equity&limit=1" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 ```
 
@@ -101,38 +101,51 @@ curl "https://api.focusalpha.ai/v1/etfs/SPY/holdings?row_kind=equity&limit=3" \
 
 ```json Response
 {
-  "etf_id": "E000011",
-  "ticker": "SPY",
-  "portfolio_id": "P000011",
-  "valuation_date": "2026-08-29",
+  "etf_id": "E000074",
+  "ticker": "XBI",
+  "portfolio_id": "P000423",
+  "valuation_date": "2026-08-31",
   "data": [
     {
-      "valuation_date": "2026-08-29",
-      "position_date": "2026-09-01",
-      "issuer_date": "2026-08-29",
+      "valuation_date": "2026-08-31T00:00:00.000Z",
+      "position_date": "2026-09-01T00:00:00.000Z",
+      "issuer_date": "2026-08-31T00:00:00.000Z",
       "line_no": 1,
-      "name": "APPLE INC",
-      "ticker_as_filed": "AAPL",
-      "cusip": "037833100",
-      "isin": "US0378331005",
+      "name": "MODERNA INC",
+      "ticker_as_filed": "MRNA",
+      "cusip": "60770K107",
+      "isin": null,
+      "sedol": "BGSXTS3",
+      "figi": null,
       "row_kind": "equity",
-      "weight_pct": 7.12,
-      "quantity": 178234567,
-      "market_value": 41234567890.12,
+      "underlying_exposure": "equity",
+      "derivative_kind": null,
+      "counterparty": null,
+      "weight_pct": "2.806364",
+      "quantity": "2281374",
+      "par_value": null,
+      "market_value": null,
       "notional_value": null,
-      "price": 231.4,
+      "price": null,
       "currency": "USD",
-      "exchange": "XNAS",
-      "country": "US",
-      "sector": "Information Technology",
-      "company_id": "cmp_000320193"
+      "fx_rate": null,
+      "exchange": null,
+      "country": null,
+      "sector": null,
+      "maturity": null,
+      "coupon_pct": null,
+      "duration": null,
+      "ytm_pct": null,
+      "bond_issuer_type": null,
+      "company_id": "cmp_005766"
     }
   ],
-  "next_cursor": "eyJsaW5lX25vIjozfQ",
+  "next_cursor": "1",
   "coverage": {
-    "n_rows": 503,
-    "weight_sum": 100.02,
-    "classified": 1.0
+    "n_rows": 157,
+    "weight_sum": "100.01",
+    "classified": "1.000",
+    "note": "Holdings are the pool's: share classes on one pool share them. classified < 1 means the newest lines have not been through row classification yet; company_id can lag a day for the same reason. exposure_hidden funds: market_value on a swap or option line is margin or premium, not the exposure — read notional_value."
   }
 }
 ```

@@ -63,19 +63,34 @@ curl "https://api.focusalpha.ai/v1/companies/005930.KS/disclosures?market=korea&
 
 <ResponseExample>
 
-```json Response (excerpt)
+```json Response
 {
-  "markets_searched": ["korea"],
   "data": [
     {
       "market": "korea",
-      "disclosed_at": "2026-08-27",
-      "title": "주요사항보고서(자기주식취득결정)",
-      "filer": "삼성전자",
-      "filing_url": "https://dart.fss.or.kr/…"
+      "source_id": "20260831000066",
+      "date": "2026-08-31",
+      "company_id": "cmp_007386",
+      "local_code": "00126380",
+      "title": "임원ㆍ주요주주특정증권등소유상황보고서",
+      "filing_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260831000066",
+      "filer": "김은용",
+      "rcept_no": "20260831000066",
+      "corp_class": "Y"
     }
   ],
-  "coverage": { "korea": { "available_from": "…", "update_frequency": "daily, Korea business days" } }
+  "next_cursor": null,
+  "markets_searched": [
+    "korea"
+  ],
+  "coverage": {
+    "korea": {
+      "available_from": "2026-07-28",
+      "available_to": null,
+      "update_frequency": "daily",
+      "history_status": "recent_only_started_2026_07_28"
+    }
+  }
 }
 ```
 

@@ -109,7 +109,7 @@ See also [ETF Classification](/etf/classification) for the vocabulary these filt
 <RequestExample>
 
 ```bash cURL
-curl "https://api.focusalpha.ai/v1/etfs/screen?segment=equity.sector.health_care&min_large_share=0.5&max_expense_ratio=0.006&sort=aum" \
+curl "https://api.focusalpha.ai/v1/etfs/screen?segment=equity.sector.health_care&min_large_share=0.5&sort=aum" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 ```
 
@@ -117,30 +117,67 @@ curl "https://api.focusalpha.ai/v1/etfs/screen?segment=equity.sector.health_care
 
 <ResponseExample>
 
-```json Response
+```json Response (one row; coverage omitted)
 {
   "data": [
     {
-      "etf_id": "E000318",
+      "etf_id": "E000168",
+      "portfolio_id": "P000388",
       "ticker": "XLV",
-      "name": "Health Care Select Sector SPDR Fund",
+      "name": "State Street Health Care Select Sector SPDR ETF",
+      "exchange": "AMEX",
+      "currency": "USD",
+      "series_class_count": 1,
+      "is_sole_class": true,
+      "active": true,
       "tier": "plain_beta",
+      "exposure_hidden": false,
+      "asset_class": "equity",
+      "category": "equity.sector",
       "segment": "equity.sector.health_care",
-      "specializations": [],
-      "aum": 38210000000,
+      "specializations": [
+        "equity.sector.geo_us",
+        "equity.sector.health_care.drug_manufacturers_general"
+      ],
+      "measured_tags": [],
+      "labels_holdings_as_of": "2026-08-28T00:00:00.000Z",
+      "is_index": true,
+      "is_fund_of_fund": null,
+      "is_multi_inverse_index": null,
+      "turnover": 0.02,
+      "aum": 43909783508.08,
       "aum_is_derived": false,
+      "net_assets": 43909783508.08,
+      "net_assets_level": "portfolio",
+      "net_assets_as_of": "2026-08-31",
+      "valuation_date": "2026-08-31",
+      "nav": 170.480183,
+      "nav_status": "published",
+      "shares_outstanding": 257565324,
+      "shares_status": "published",
+      "premium_discount": 0.03802,
+      "gross_expense_ratio": 0.0008,
       "net_expense_ratio": 0.0008,
-      "n_holdings": 61,
-      "top10_share": 0.512,
-      "us_share": 0.98,
-      "large_share": 0.91,
-      "flow_20d": -412000000,
-      "premium_discount": 0.0002
+      "net_is_filed": false,
+      "holdings_as_of": "2026-08-28",
+      "n_holdings": "62",
+      "top1_share": "0.1507",
+      "top10_share": "0.6082",
+      "us_share": "0.9773",
+      "em_share": "0.0000",
+      "large_share": "0.8534",
+      "mid_share": "0.1466",
+      "small_share": "0.0000",
+      "duration": null,
+      "maturity_years": null,
+      "treasury_share": "0.0000",
+      "corporate_share": "0.0000",
+      "flow_1d": -102719020.2,
+      "flow_5d": 277949692.4,
+      "flow_20d": 69739330.85
     }
   ],
-  "next_cursor": "eyJhdW0iOjM4MjEwMDAwMDAwfQ",
-  "unranked": { "count": 14, "reason": "no class-level aum" },
-  "coverage": { "update_frequency": "daily" }
+  "next_cursor": "WyIxOTMwMzc5NTc1My43NiIsIkUwMDAxODEiXQ"
 }
 ```
 

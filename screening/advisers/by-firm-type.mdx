@@ -51,7 +51,7 @@ Screening advisers by firm type selects firms by **what they are**, read from ea
 <RequestExample>
 
 ```bash cURL
-curl "https://api.focusalpha.ai/v1/institutions/screen?primary_type=asset_manager&subtype=quant_systematic&role_flags=acts_as_subadviser" \
+curl "https://api.focusalpha.ai/v1/institutions/screen?primary_type=asset_manager&subtype=public_markets&has_brochure=true&limit=1" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 ```
 
@@ -59,18 +59,20 @@ curl "https://api.focusalpha.ai/v1/institutions/screen?primary_type=asset_manage
 
 <ResponseExample>
 
-```json Response (excerpt)
+```json Response (fields trimmed)
 {
   "data": [
     {
-      "crd": "105247",
-      "legal_name": "EXAMPLE QUANT MANAGEMENT LP",
-      "primary_type": "asset_manager",
-      "subtype": "quant_systematic",
-      "brochure_scope": "entity",
-      "firm_type": "Hedge-Fund",
+      "crd": "142463",
+      "legal_name": "METLIFE INVESTMENT MANAGEMENT, LLC",
+      "firm_type": "PE / VC",
       "sec_registration_type": "Registered",
-      "role_flags": ["acts_as_subadviser"]
+      "primary_type": "asset_manager",
+      "subtype": "public_markets",
+      "brochure_scope": "business_line",
+      "business_line_name": "MIM Equity",
+      "role_flags": [],
+      "services_offered": []
     }
   ]
 }

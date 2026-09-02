@@ -45,7 +45,7 @@ Guidance covers companies whose releases, calls or IR announcements FocusAlpha i
 <RequestExample>
 
 ```bash cURL
-curl "https://api.focusalpha.ai/v1/screen?guidance_worse_since=2026-08-20&market_cap_usd_gte=10000000000&sort=market_cap_usd" \
+curl "https://api.focusalpha.ai/v1/screen?guidance_worse_since=2026-08-01&sort=market_cap_usd" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 ```
 
@@ -53,17 +53,21 @@ curl "https://api.focusalpha.ai/v1/screen?guidance_worse_since=2026-08-20&market
 
 <ResponseExample>
 
-```json Response (excerpt)
+```json Response (fields trimmed)
 {
   "data": [
     {
-      "company_id": "cmp_000972",
-      "name": "Example Corp",
-      "primary_ticker": "EXMP",
-      "guidance_worse_90d": 2,
+      "company_id": "cmp_009325",
+      "company_name": "Vistance Networks, Inc.",
+      "primary_ticker": "VISN",
+      "market_cap_usd": 1423344372,
+      "guidance_raises_90d": 0,
       "guidance_cuts_90d": 1,
-      "guidance_last_worse_at": "2026-08-27",
-      "market_cap_usd": 41200000000
+      "guidance_better_90d": 0,
+      "guidance_worse_90d": 1,
+      "guidance_last_at": "2026-08-06T11:07:44Z",
+      "guidance_last_better_at": null,
+      "guidance_last_worse_at": "2026-08-06T11:07:44Z"
     }
   ]
 }

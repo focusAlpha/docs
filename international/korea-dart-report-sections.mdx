@@ -95,18 +95,32 @@ curl "https://api.focusalpha.ai/v1/companies/005930.KS/kr/ownership?kind=major_5
 {
   "data": [
     {
-      "company_id": "cmp_003104",
-      "section": "ownership",
+      "company_id": "cmp_007386",
+      "corp_code": "00126380",
       "kind": "major_5pct",
-      "report_date": "2026-03-14",
-      "holder_name": "국민연금공단",
-      "shares": 468120000,
-      "percent": 7.84,
-      "filing_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=..."
+      "seq": 38,
+      "corp_name": "삼성전자",
+      "rcept_no": "20260724000625",
+      "reporter": "삼성물산",
+      "report_dt": "2026-07-24",
+      "report_type": "일반",
+      "report_reason": "- 보유주식수 변동\n- 보유주식등에 관한 계약의 변경",
+      "shares": "1151375445",
+      "ownership_pct": "19.69",
+      "shares_change": "-34587",
+      "ownership_pct_change": "0.00",
+      "contract_shares": "41914000",
+      "contract_ownership_pct": "0.72",
+      "filing_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260724000625"
     }
   ],
-  "next_cursor": null,
-  "coverage": { "available_from": "2022-01-01" }
+  "next_cursor": "20260724000625:38",
+  "coverage": {
+    "available_from": "2022",
+    "available_to": null,
+    "update_frequency": "daily",
+    "history_status": "backfill_in_progress"
+  }
 }
 ```
 

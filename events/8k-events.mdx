@@ -129,30 +129,48 @@ curl "https://api.focusalpha.ai/v1/8k-events?family=officer_director_change&attr
 {
   "data": [
     {
-      "event_id": "0001437749-26-024904:5.02",
-      "accession": "0001437749-26-024904",
-      "ticker": "EXMP",
+      "detail_id": "0000202058-26-000066:5.02:2",
+      "event_id": "0000202058-26-000066:5.02",
+      "accession": "0000202058-26-000066",
+      "company_id": "cmp_005080",
+      "cik": "202058",
+      "ticker": "LHX",
+      "company_name": "L3HARRIS TECHNOLOGIES, INC. /DE/",
+      "item_code": "5.02",
       "family": "officer_director_change",
-      "item": "5.02",
-      "seq": 1,
-      "announced_at": "2026-08-12T21:30:00Z",
-      "occurred_on": "2026-08-08",
-      "is_amendment": false,
-      "gate": "item",
+      "seq": 2,
       "attrs": {
-        "person_name": "John Fraser",
+        "role": "Chairman and Chief Executive Officer",
+        "person": "Christopher Kubasik",
+        "reason": "other",
+        "direction": "out",
         "role_group": "ceo",
-        "effective_date": "September 1, 2026",
-        "predecessor": "Maria Lopez"
+        "counterpart": "Sam Mehta",
+        "is_board_seat": "yes",
+        "effective_date": "immediately",
+        "stays_on_board": "no"
       },
-      "quote": "On August 8, 2026, the Board appointed John Fraser as Chief Executive Officer, effective September 1, 2026.",
+      "quote": "On August 17, 2026, the Company announced that the Company and Christopher Kubasik, its Chairman and Chief Executive Officer (the “Executive”), mutually agreed to end the Executive’s employment with the Company effective immediately…",
       "quote_check": "verbatim",
       "numbers_unverified": [],
-      "derived_fields": []
+      "derived_fields": [],
+      "fully_verified": true,
+      "gate": "item",
+      "form": "8-K",
+      "is_amendment": false,
+      "announced_at": "2026-08-17T11:30:40Z",
+      "occurred_on": "2026-08-16",
+      "filing_date": "2026-08-17",
+      "source_ref": "https://www.sec.gov/Archives/edgar/data/202058/000020205826000066/0000202058-26-000066-index.htm"
     }
   ],
   "next_cursor": null,
-  "coverage": { "update_frequency": "minutes" }
+  "coverage": {
+    "available_from": "2026-01-02",
+    "available_to": null,
+    "update_frequency": "minutes",
+    "history_status": "starts_2026_01_02"
+  }
 }
 ```
 

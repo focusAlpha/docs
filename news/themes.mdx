@@ -107,7 +107,7 @@ See also [Company News Events](/news/news-events) for the company-scoped event f
 <RequestExample>
 
 ```bash cURL
-curl "https://api.focusalpha.ai/v1/news/themes/rates?track=macro&stance=decided&min_score=40" \
+curl "https://api.focusalpha.ai/v1/news/themes/rates?track=macro&min_score=40&limit=1" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 ```
 
@@ -115,38 +115,40 @@ curl "https://api.focusalpha.ai/v1/news/themes/rates?track=macro&stance=decided&
 
 <ResponseExample>
 
-```json Response
+```json Response (one row; company_ids trimmed)
 {
   "data": [
     {
-      "news_id": "nws_5518899",
+      "news_id": "dbd14da92c0cef05dcb0bc3cbbc52d540b569798",
       "theme": "rates",
       "track": "macro",
       "stance": "decided",
       "global_reach": true,
-      "score": 82,
-      "impact_score": 74,
-      "why": "A 25bp cut against a market pricing no change.",
-      "human_reviewed": false,
-      "symbols": [],
-      "company_ids": [],
-      "title": "Federal Reserve cuts rates by 25 basis points",
-      "summary": "The FOMC lowered the target range ...",
-      "summary_withheld": false,
-      "link": "https://example.com/article",
-      "channel": "wire",
-      "publisher": "Reuters",
+      "score": 90,
       "region": "us",
-      "event_at": "2026-08-26T18:00:00Z",
-      "time_basis": "publish_time",
+      "title": "Gold Holds Drop as Higher Oil, Bond Selloff Raise Rate-Hike Bets",
+      "link": "https://www.bloomberg.com/news/articles/2026-09-01/gold-holds-drop-as-higher-oil-bond-selloff-raise-rate-hike-bets",
+      "channel": "wire",
+      "publisher": "Bloomberg Markets",
+      "summary": "Gold held a decline as attacks in the Middle East and a global bond selloff ratcheted up bets the Federal Reserve may need to raise interest rates to rein in inflation.",
+      "summary_withheld": false,
+      "symbols": [],
+      "company_ids": [
+        "cmp_000238",
+        "cmp_000534"
+      ],
+      "event_at": "2026-09-01T23:40:28.000Z",
+      "time_basis": "published",
       "time_precision": "minute",
       "is_scheduled": false,
-      "event_type": "monetary_policy",
-      "subject": "FOMC"
+      "event_id": null,
+      "event_type": null,
+      "impact_score": null,
+      "why": null,
+      "human_reviewed": null
     }
   ],
-  "next_cursor": null,
-  "coverage": { "available_from": "2026-07-26", "update_frequency": "minutes" }
+  "next_cursor": "2026-09-01T23:40:28.000Z|dbd14da92c0cef05dcb0bc3cbbc52d540b569798"
 }
 ```
 

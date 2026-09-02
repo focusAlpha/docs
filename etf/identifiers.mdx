@@ -92,28 +92,38 @@ curl "https://api.focusalpha.ai/v1/etfs?ticker=SPY" \
   "data": [
     {
       "etf_id": "E000011",
-      "portfolio_id": "P000011",
-      "name": "SPDR S&P 500 ETF Trust",
+      "portfolio_id": "P004758",
+      "name": "State Street SPDR S&P 500 ETF",
       "ticker": "SPY",
-      "exchange": "ARCX",
+      "exchange": "AMEX",
       "currency": "USD",
-      "listings": [{ "ticker": "SPY", "exchange": "ARCX", "currency": "USD" }],
+      "listings": [
+        {
+          "symbol": "SPY",
+          "currency": "USD",
+          "exchange": "AMEX"
+        },
+        {
+          "symbol": "1557.T",
+          "currency": "JPY",
+          "exchange": "JPX"
+        }
+      ],
       "isin": "US78462F1030",
       "cusip": "78462F103",
       "cik": "0000884394",
-      "sec_series_id": "S000006392",
-      "sec_class_id": "C000017575",
-      "series_class_count": 1,
+      "sec_series_id": null,
+      "sec_class_id": null,
+      "series_class_count": null,
       "is_sole_class": true,
-      "former_tickers": [],
-      "former_names": [],
+      "former_tickers": null,
       "active": true,
       "tier": "plain_beta",
-      "asset_class": "equity"
+      "asset_class": "equity",
+      "segment": "equity.size_style.us"
     }
   ],
-  "next_cursor": null,
-  "coverage": { "update_frequency": "daily" }
+  "next_cursor": null
 }
 ```
 

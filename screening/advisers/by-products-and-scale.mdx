@@ -55,7 +55,7 @@ An exempt reporting adviser files an abbreviated ADV that reports **no AUM, no a
 <RequestExample>
 
 ```bash cURL
-curl "https://api.focusalpha.ai/v1/institutions/screen?product_types=etf&asset_classes=fixed_income&min_aum=10000000000&sort=aum_total" \
+curl "https://api.focusalpha.ai/v1/institutions/screen?product_types=etf&asset_classes=equity&min_aum=100000000000&sort=aum_total" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 ```
 
@@ -63,21 +63,32 @@ curl "https://api.focusalpha.ai/v1/institutions/screen?product_types=etf&asset_c
 
 <ResponseExample>
 
-```json Response (excerpt)
+```json Response (fields trimmed)
 {
   "data": [
     {
-      "crd": "110537",
-      "legal_name": "EXAMPLE FIXED INCOME ADVISORS LLC",
+      "crd": "142463",
+      "legal_name": "METLIFE INVESTMENT MANAGEMENT, LLC",
       "primary_type": "asset_manager",
-      "product_types": ["etf", "mutual_fund", "separately_managed_account"],
-      "asset_classes": ["fixed_income", "structured_credit"],
-      "geographic_coverage": ["global"],
-      "aum_total": 87400000000,
-      "sec_registration_type": "Registered"
+      "sec_registration_type": "Registered",
+      "product_types": [
+        "separately_managed_account",
+        "collective_investment_trust",
+        "other",
+        "etf"
+      ],
+      "asset_classes": [
+        "equity"
+      ],
+      "geographic_coverage": [
+        "us"
+      ],
+      "aum_total": 563779494417,
+      "aum_discretionary": 560911238227,
+      "accounts_total": "805",
+      "employee_count": "956"
     }
-  ],
-  "unranked": { "count": 0 }
+  ]
 }
 ```
 

@@ -49,7 +49,7 @@ See also [Company Registry](/companies/registry) to resolve an identifier to a `
 <RequestExample>
 
 ```bash cURL
-curl "https://api.focusalpha.ai/v1/companies/cmp_014081/identifiers" \
+curl "https://api.focusalpha.ai/v1/companies/cmp_008395/identifiers" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 ```
 
@@ -60,12 +60,42 @@ curl "https://api.focusalpha.ai/v1/companies/cmp_014081/identifiers" \
 ```json Response
 {
   "data": [
-    { "id_type": "TICKER", "value": "2330.TW" },
-    { "id_type": "TICKER", "value": "TSM" },
-    { "id_type": "ISIN", "value": "TW0002330008" },
-    { "id_type": "CIK", "value": "0001046179" }
+    {
+      "id_type": "CIK",
+      "id_value": "0001046179",
+      "source": "fmp+sec",
+      "confidence": "high"
+    },
+    {
+      "id_type": "ISIN",
+      "id_value": "TW0002330008",
+      "source": "fmp_company_list",
+      "confidence": "high"
+    },
+    {
+      "id_type": "TICKER",
+      "id_value": "2330.TW",
+      "source": "fmp_company_list",
+      "confidence": "high"
+    },
+    {
+      "id_type": "TICKER",
+      "id_value": "TSM",
+      "source": "fmp_company_list",
+      "confidence": "high"
+    },
+    {
+      "id_type": "TW_UBN",
+      "id_value": "22099131",
+      "source": "twse_mops_company",
+      "confidence": "high"
+    }
   ],
-  "next_cursor": null
+  "next_cursor": null,
+  "coverage": {
+    "update_frequency": "weekly",
+    "history_status": "current_snapshot"
+  }
 }
 ```
 

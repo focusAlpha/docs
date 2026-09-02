@@ -77,30 +77,32 @@ curl "https://api.focusalpha.ai/v1/companies/GME/short-interest?limit=2" \
 {
   "data": [
     {
-      "company_id": "cmp_001326380",
+      "company_id": "cmp_003385",
       "ticker": "GME",
-      "issue_name": "GAMESTOP CORP CL A",
-      "category": "NYSE",
-      "market_class_code": "N",
-      "settlement_date": "2026-08-15",
-      "current_short_position": 51230000,
-      "previous_short_position": 48910000,
-      "change_previous": 2320000,
-      "change_percent": 4.74,
-      "average_daily_volume": 9120000,
-      "days_to_cover": 5.62,
-      "float_shares": 421000000,
-      "float_as_of": "2026-08-01",
-      "short_percent_float": 12.17,
-      "short_percent_outstanding": 11.42,
-      "revision_flag": false,
-      "stock_split_flag": false
+      "issue_name": "GameStop Corp. Class A",
+      "category": "matched",
+      "market_class_code": "NYSE",
+      "settlement_date": "2026-08-14",
+      "current_short_position": "54036583",
+      "previous_short_position": "53736062",
+      "change_previous": "300521",
+      "change_percent": "0.56",
+      "average_daily_volume": "10171317",
+      "days_to_cover": "5.31",
+      "float_shares": "409140234",
+      "float_as_of": "2026-08-05",
+      "short_percent_float": "13.21",
+      "short_percent_outstanding": "12.04",
+      "revision_flag": null,
+      "stock_split_flag": null
     }
   ],
-  "next_cursor": "MjAyNi0wNy0zMQ",
+  "next_cursor": null,
   "coverage": {
     "available_from": "2017-12-29",
-    "update_frequency": "semi-monthly"
+    "available_to": null,
+    "update_frequency": "semi_monthly",
+    "history_status": "complete"
   }
 }
 ```

@@ -41,7 +41,7 @@ Premium and discount are as published in the fund's own daily file. Persistent d
 <RequestExample>
 
 ```bash cURL
-curl "https://api.focusalpha.ai/v1/etfs/screen?min_aum=500000000&sort=flow_20d&order=asc&limit=25" \
+curl "https://api.focusalpha.ai/v1/etfs/screen?min_aum=500000000&sort=flow_20d&order=desc&limit=25" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 ```
 
@@ -49,17 +49,17 @@ curl "https://api.focusalpha.ai/v1/etfs/screen?min_aum=500000000&sort=flow_20d&o
 
 <ResponseExample>
 
-```json Response (excerpt)
+```json Response (XLV, fields trimmed)
 {
   "data": [
     {
-      "ticker": "XLY",
-      "name": "Consumer Discretionary Select Sector SPDR Fund",
-      "aum": 21400000000,
-      "flow_1d": -80000000,
-      "flow_5d": -240000000,
-      "flow_20d": -612000000,
-      "premium_discount": -0.0001
+      "ticker": "XLV",
+      "name": "State Street Health Care Select Sector SPDR ETF",
+      "aum": 43909783508.08,
+      "flow_1d": -102719020.2,
+      "flow_5d": 277949692.4,
+      "flow_20d": 69739330.85,
+      "premium_discount": 0.03802
     }
   ]
 }
