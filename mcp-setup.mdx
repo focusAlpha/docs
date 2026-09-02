@@ -68,19 +68,6 @@ Custom connectors are available on every Claude plan, including Free (limited to
 
 Every FocusAlpha tool is read-only, so plans that OpenAI restricts to read/fetch actions can still use all of them.
 
-## Claude Code
-
-```bash
-claude mcp add --transport http focusalpha https://mcp.focusalpha.ai/mcp
-```
-
-Then run `/mcp` inside Claude Code and choose **Authenticate** — the sign-in opens in your browser. To pin a specific key instead, attach it as a header:
-
-```bash
-claude mcp add --transport http focusalpha https://mcp.focusalpha.ai/mcp \
-  --header "Authorization: Bearer fa_live_your_key_here"
-```
-
 ## Cursor
 
 One click — Cursor opens its MCP settings with the server pre-filled; click **Connect** (or **Needs login**) to sign in:
@@ -122,6 +109,19 @@ Or add it by hand: run **MCP: Add Server** from the Command Palette, or create `
 ```
 
 VS Code handles the sign-in flow for remote servers; add a `"headers"` object with the `Authorization` header if you prefer a pinned key.
+
+## Claude Code
+
+```bash
+claude mcp add --transport http focusalpha https://mcp.focusalpha.ai/mcp
+```
+
+Then run `/mcp` inside Claude Code and choose **Authenticate** — the sign-in opens in your browser. To pin a specific key instead, attach it as a header:
+
+```bash
+claude mcp add --transport http focusalpha https://mcp.focusalpha.ai/mcp \
+  --header "Authorization: Bearer fa_live_your_key_here"
+```
 
 ## Workbuddy (Tencent)
 

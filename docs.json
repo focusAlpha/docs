@@ -300,37 +300,15 @@
       "view",
       {
         "title": "Connect in Claude",
-        "description": "Opens Claude with a prompt to walk you through connecting",
+        "description": "Add the FocusAlpha MCP server as a custom connector",
         "icon": "message",
-        "href": {
-          "base": "https://claude.ai/new",
-          "query": [
-            {
-              "key": "q",
-              "value": "Help me connect the FocusAlpha MCP server to this client. Server URL: https://mcp.focusalpha.ai/mcp (streamable HTTP; sign in with my FocusAlpha account when prompted). Setup guide: https://docs.focusalpha.ai/mcp-setup"
-            }
-          ]
-        }
+        "href": "https://docs.focusalpha.ai/mcp-setup#claude"
       },
       {
         "title": "Connect in ChatGPT",
-        "description": "Opens ChatGPT with a prompt to walk you through connecting",
+        "description": "Add the FocusAlpha MCP server in the app or on the web",
         "icon": "comment",
-        "href": {
-          "base": "https://chatgpt.com/",
-          "query": [
-            {
-              "key": "q",
-              "value": "Help me connect the FocusAlpha MCP server to this client. Server URL: https://mcp.focusalpha.ai/mcp (streamable HTTP; sign in with my FocusAlpha account when prompted). Setup guide: https://docs.focusalpha.ai/mcp-setup"
-            }
-          ]
-        }
-      },
-      {
-        "title": "Connect in Claude Code",
-        "description": "One command adds the FocusAlpha MCP server",
-        "icon": "terminal",
-        "href": "https://docs.focusalpha.ai/mcp-setup#claude-code"
+        "href": "https://docs.focusalpha.ai/mcp-setup#chatgpt"
       },
       {
         "title": "Connect in Cursor",
@@ -343,6 +321,40 @@
         "description": "One-click install of the FocusAlpha MCP server",
         "icon": "code",
         "href": "https://docs.focusalpha.ai/mcp-setup#vs-code"
+      },
+      {
+        "title": "Connect in Claude Code",
+        "description": "One command adds the FocusAlpha MCP server",
+        "icon": "terminal",
+        "href": "https://docs.focusalpha.ai/mcp-setup#claude-code"
+      },
+      {
+        "title": "Ask a question in Claude",
+        "description": "Opens Claude with this page as context",
+        "icon": "circle-question",
+        "href": {
+          "base": "https://claude.ai/new",
+          "query": [
+            {
+              "key": "q",
+              "value": "Read $page.md so I can ask questions about it."
+            }
+          ]
+        }
+      },
+      {
+        "title": "Ask a question in ChatGPT",
+        "description": "Opens ChatGPT with this page as context",
+        "icon": "circle-question",
+        "href": {
+          "base": "https://chatgpt.com/",
+          "query": [
+            {
+              "key": "q",
+              "value": "Read $page.md so I can ask questions about it."
+            }
+          ]
+        }
       }
     ]
   },
