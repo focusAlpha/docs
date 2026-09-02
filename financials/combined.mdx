@@ -1,0 +1,110 @@
+---
+title: "Combined Financial Statements"
+sidebarTitle: "Combined statements"
+description: "All three as-reported financial statements — income, balance sheet and cash flow — for one company and period range, in a single response."
+---
+
+Combined Financial Statements returns the income statement, balance sheet and cash flow statement for a company in one response. Each observation is one fiscal period, carrying all three statements as the company filed them, in its own reporting currency and under its own accounting standard. Rows are returned newest first.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Combined Financial Statements For
+
+Pull a complete period in one call instead of three. Build a three-statement model for a company. Reconcile net income to operating cash flow and to the balance-sheet movement without stitching separate responses together.
+
+## Combined Financial Statements Coverage
+
+Coverage is SEC filers, read from each company's own XBRL data as filed. Non-US issuers that do not file with the SEC are served by [Taiwan Financials](/international/taiwan-financials), [Korea DART Financials](/international/korea-dart-financials) and [Form 20-F](/international/form-20f) instead.
+
+## Currency and Accounting Standard
+
+Every row carries `currency`, the currency the company reported in, and `accounting_standard`, either `us_gaap` or `ifrs`. Values are never converted to US dollars. Check both fields before comparing or summing across companies.
+
+## Combined Financial Statements Date Convention
+
+`report_period` is the end of the fiscal period the figures cover, and it is what the report-period filters apply to. `period` says what kind of period a row is: `annual`, `quarterly`, or `ttm` for a trailing-twelve-month rolling window ending at `report_period`.
+
+## Combined Financial Statements Sources
+
+Figures are read from the company's own XBRL exhibits in its SEC filings, as reported — no restatement, no normalisation, no currency conversion.
+
+## Query Combined Financial Statements
+
+Use the financials endpoint. One of `ticker` or `cik` is required, and `period` is required.
+
+<ParamField query="ticker" type="string">
+  Trading symbol. One of `ticker` or `cik` is required.
+</ParamField>
+
+<ParamField query="cik" type="string">
+  SEC Central Index Key. One of `ticker` or `cik` is required.
+</ParamField>
+
+<ParamField query="period" type="string" required>
+  `annual`, `quarterly` or `ttm`.
+</ParamField>
+
+<ParamField query="report_period" type="string">
+  Exact period end, `YYYY-MM-DD`. `report_period_gte`, `report_period_lte`, `report_period_gt` and `report_period_lt` bound a range.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="4">
+  Number of period rows to return, newest first.
+</ParamField>
+
+## Related Datasets
+
+See also [Income Statements](/financials/income-statements), [Balance Sheets](/financials/balance-sheets) and [Cash Flow Statements](/financials/cash-flow-statements) for the individual statements, [Financial Metrics](/financials/metrics) for computed ratios, and [Segmented Financials](/financials/segments) for as-reported segment breakdowns.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/financials?ticker=AAPL&period=annual&limit=2" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response (one period per statement, trimmed)
+{
+  "financials": {
+    "income_statements": [
+      {
+        "ticker": "AAPL",
+        "report_period": "2025-09-27",
+        "fiscal_period": "FY",
+        "revenue": 416161000000,
+        "operating_income": 133050000000,
+        "net_income": 112010000000,
+        "earnings_per_share_diluted": 7.46
+      }
+    ],
+    "balance_sheets": [
+      {
+        "ticker": "AAPL",
+        "report_period": "2025-09-27",
+        "fiscal_period": "FY",
+        "total_assets": 359241000000,
+        "total_debt": 98657000000,
+        "shareholders_equity": 73733000000
+      }
+    ],
+    "cash_flow_statements": [
+      {
+        "ticker": "AAPL",
+        "report_period": "2025-09-27",
+        "fiscal_period": "FY",
+        "net_cash_flow_from_operations": 111482000000,
+        "capital_expenditure": 12715000000,
+        "free_cash_flow": 98767000000
+      }
+    ]
+  }
+}
+```
+
+</ResponseExample>

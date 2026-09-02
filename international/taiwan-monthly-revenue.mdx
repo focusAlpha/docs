@@ -1,0 +1,109 @@
+---
+title: "Taiwan Monthly Revenue"
+sidebarTitle: "Taiwan monthly revenue"
+description: "Monthly revenue filed by every Taiwan-listed company about ten days after month end, with month-on-month, year-on-year and year-to-date figures."
+---
+
+Taiwan Monthly Revenue provides the monthly revenue every Taiwan-listed company files. Each observation is one month for one company, in TWD thousands, with month-on-month and year-on-year percentages and the year-to-date cumulative. History runs from 2013-01.
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call
+</Info>
+
+This is Taiwan's distinctive disclosure: every listed company files revenue every month, roughly ten days after month end — years before the equivalent is known in most other markets.
+
+## What You Can Use Taiwan Monthly Revenue For
+
+Read a semiconductor or hardware supply chain at monthly rather than quarterly resolution. Nowcast a quarter before the quarterly statements are filed. Detect an inflection in a supplier months before it shows up in a customer's results. Build a monthly demand series for an industry.
+
+## Why Monthly Revenue Does Not Reconcile to the Quarterly Statements
+
+<Warning>
+Monthly revenue is the **parent-company** filing, while [Taiwan Financials](/international/taiwan-financials) are **consolidated**.
+
+The two therefore do not reconcile exactly, and a difference between them is the reporting basis rather than an error in either.
+</Warning>
+
+## Key Taiwan Monthly Revenue Fields
+
+`revenue` is the month's revenue. The month-on-month and year-on-year percentages are on a **0-to-100 scale**, not as fractions. The year-to-date field is the cumulative figure for the fiscal year so far.
+
+## Taiwan Monthly Revenue Date Convention
+
+Rows are keyed by month and returned newest month first. `month_gte` and `month_lte` take `YYYY-MM`.
+
+Filing lands roughly ten days after month end, so the newest available month is the previous calendar month once that window has passed.
+
+## Taiwan Monthly Revenue Units
+
+Amounts are **TWD thousands**.
+
+## Taiwan Monthly Revenue Sources
+
+Figures are filed by the companies themselves under the Taiwan monthly revenue disclosure requirement. The percentages are as filed alongside the revenue figure.
+
+## Query Taiwan Monthly Revenue
+
+Use the Taiwan monthly revenue endpoint. It accepts a Taiwan security code, a suffixed ticker, an ISIN or a `company_id` directly.
+
+<ParamField path="company_id" type="string" required>
+  A Taiwan security code such as `2330`, a suffixed ticker, an ISIN or a `company_id`.
+</ParamField>
+
+<ParamField query="month_gte" type="string">
+  Earliest month, `YYYY-MM`. `month_lte` sets the ceiling.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Rows per page, between 1 and 1000. Page through with `cursor`.
+</ParamField>
+
+## Related Datasets
+
+See also [Taiwan Financials](/international/taiwan-financials) for the consolidated quarterly statements, [Taiwan Foreign Ownership](/international/taiwan-foreign-ownership), and [Company Screening](/companies/screening), which carries `tw_revenue_yoy_pct` as a cross-company filter.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/2330/tw/monthly-revenue?month_gte=2026-01" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "company_id": "cmp_008395",
+      "local_security_code": "2330",
+      "data_ym": "2026-07",
+      "market": "twse",
+      "company_name": "台積電",
+      "industry": "半導體業",
+      "revenue": "467580548.0",
+      "revenue_previous_month": "442679969.0",
+      "revenue_year_ago": "323165707.0",
+      "mom_pct": "5.624961765550318",
+      "yoy_pct": "44.68755126916978",
+      "revenue_ytd": "2872064238.0",
+      "revenue_ytd_year_ago": "2096211240.0",
+      "revenue_ytd_yoy_pct": "37.01215713355301",
+      "note": "-"
+    }
+  ],
+  "next_cursor": null,
+  "currency": "TWD",
+  "unit": "thousands",
+  "coverage": {
+    "available_from": "2013-01",
+    "available_to": null,
+    "update_frequency": "monthly",
+    "history_status": "complete"
+  }
+}
+```
+
+</ResponseExample>

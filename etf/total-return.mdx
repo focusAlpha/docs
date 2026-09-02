@@ -1,0 +1,102 @@
+---
+title: "ETF Total Return"
+sidebarTitle: "ETF total return"
+description: "A distribution-reinvested ETF NAV series, published separately from price-basis NAV and never mixed with it."
+---
+
+ETF Total Return is a daily series in which a fund's distributions are reinvested back into the fund. Each observation is associated with an `etf_id` and a valuation date. It is a different quantity from [ETF NAV](/etf/nav), which is price-basis, and the two series must never be compared or spliced.
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use ETF Total Return For
+
+Measure what an investor actually earned holding a fund, including its income. Compare a high-yielding fund against a low-yielding one without the income difference showing up as underperformance. Build a benchmark series for a strategy that assumes reinvested distributions.
+
+## How ETF Total Return Differs From NAV
+
+A price-basis NAV steps down on every ex-dividend date by the amount distributed, because that cash has left the fund. It is never reinvested in that series. A total-return series adds the distribution back, as if it had been used to buy more of the fund on the ex date.
+
+Over a decade, the gap between the two is the fund's entire cumulative income. Charting them on one axis, or joining one to the other, produces a number that describes neither.
+
+## ETF Total Return Coverage
+
+Only funds that publish a total-return series have rows here. FocusAlpha does not synthesise a total-return series for funds that do not publish one, because doing so requires assumptions about reinvestment timing and tax treatment that would then be indistinguishable from reported data.
+
+Coverage bounds are measured on the way out. Read the `coverage` block on the response for the fund you queried rather than assuming a start date.
+
+## Key ETF Total Return Fields
+
+`valuation_date` is the date the value is struck. `total_return_nav` is the distribution-reinvested net asset value per share on that date.
+
+## ETF Total Return Date Convention
+
+`valuation_date` aligns with the NAV series' valuation date, so the two can be placed on a common date axis for inspection — but they still measure different things and should be plotted as separate series, not merged.
+
+## ETF Total Return Sources
+
+The series is published by the fund's issuer. Where a total-return figure appears in FocusAlpha for a fund whose issuer does not publish one, it is calculated by FocusAlpha from the NAV series and declared distributions, and the record says so.
+
+## Query ETF Total Return
+
+Use the ETF history endpoint with `series=total_return` to retrieve the series for one fund.
+
+<ParamField path="id" type="string" required>
+  `etf_id` (`E000011`), a ticker (`SPY`), an ISIN, or a CUSIP.
+</ParamField>
+
+<ParamField query="series" type="string" required>
+  Set to `total_return` for this dataset.
+</ParamField>
+
+<ParamField query="date_gte" type="string">
+  Earliest valuation date to return, `YYYY-MM-DD`. `date_lte` sets the ceiling.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="250">
+  Rows per page, between 1 and 1000. Pages run newest to oldest via `cursor`.
+</ParamField>
+
+An empty response means the fund does not publish a total-return series, not that the fund had no return.
+
+## Related Datasets
+
+See also [ETF NAV and Shares Outstanding](/etf/nav) for the price-basis series, and [ETF Distributions](/etf/distributions) for the events that separate the two.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/etfs/SPXL/history?series=total_return&limit=2" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "etf_id": "E000266",
+  "ticker": "SPXL",
+  "series": "total_return",
+  "data": [
+    {
+      "valuation_date": "2026-08-28T00:00:00.000Z",
+      "total_return_nav": "290.14"
+    },
+    {
+      "valuation_date": "2026-08-27T00:00:00.000Z",
+      "total_return_nav": "292.25"
+    }
+  ],
+  "next_cursor": "Thu Aug 27 2026 00:00:00 GMT+0000 (Coordinated Universal Time)",
+  "coverage": {
+    "available_from": "2008-11-05",
+    "available_to": "2026-08-28",
+    "note": "A total-return series folds distributions back in: it is a DIFFERENT QUANTITY from the nav series and must not be compared with it. Only funds that publish one have rows here."
+  }
+}
+```
+
+</ResponseExample>

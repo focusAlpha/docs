@@ -1,0 +1,102 @@
+---
+title: "Company Identifiers"
+sidebarTitle: "Company identifiers"
+description: "Every identifier a company is known by — CIK, ticker, ISIN, Korean DART code and more — each tagged with its type."
+---
+
+Company Identifiers returns every identifier one company is known by, each tagged with its `id_type`. Each observation is one identifier for one company. It is the endpoint for cross-walking between identifier systems, and for confirming that two identifiers refer to the same company.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Company Identifiers For
+
+Cross-walk a ticker to a CIK, an ISIN to a Korean DART corp code, or any pair of identifier systems. Confirm that two identifiers you hold refer to the same company. Check whether a company has a CIK at all, which decides whether the SEC datasets can serve it.
+
+## Key Company Identifier Fields
+
+Each row carries the identifier value and its `id_type`. Types include `CIK`, `TICKER`, `ISIN`, `DART_CORP` and others, one per identifier system.
+
+A company can carry several identifiers of the same type — several tickers, for instance, when it lists in more than one place. [Company Listings](/companies/listings) is where those carry validity dates.
+
+## Why a Missing CIK Matters
+
+A company with no `CIK` identifier files nothing with the SEC. Every SEC-scoped dataset — [filings](/filings/index), [financial statements](/financials/combined), [13F](/ownership/13f), [insider trades](/ownership/insider-trades), [proxy ownership](/ownership/proxy-ownership) — will be empty for it regardless of how it is queried.
+
+That is a fact about the company, not a gap in coverage, and it is worth saying so when reporting an empty result.
+
+## Company Identifiers Date Convention
+
+Identifiers are a current snapshot. A company's earlier identifiers still resolve to it, but this endpoint returns the set it is known by today. For dated symbol history, use [Company Listings](/companies/listings).
+
+## Company Identifiers Sources
+
+Identifiers come from the registries that issue them — exchange listing registries, the SEC, national regulators and ISIN issuers — and are maintained as an append-only ledger, so an identifier is never silently dropped when a company renames or re-lists.
+
+## Query Company Identifiers
+
+Use the company identifiers endpoint with a canonical `company_id`.
+
+<ParamField path="company_id" type="string" required>
+  Canonical company id, for example `cmp_014081`. Get one from [the company registry](/companies/registry).
+</ParamField>
+
+## Related Datasets
+
+See also [Company Registry](/companies/registry) to resolve an identifier to a `company_id`, [Company Listings](/companies/listings) for dated symbol history, and [Company Identifier Conventions](/concepts/company-identifiers) for how identifiers are accepted across the rest of the API.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/cmp_008395/identifiers" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "id_type": "CIK",
+      "id_value": "0001046179",
+      "source": "fmp+sec",
+      "confidence": "high"
+    },
+    {
+      "id_type": "ISIN",
+      "id_value": "TW0002330008",
+      "source": "fmp_company_list",
+      "confidence": "high"
+    },
+    {
+      "id_type": "TICKER",
+      "id_value": "2330.TW",
+      "source": "fmp_company_list",
+      "confidence": "high"
+    },
+    {
+      "id_type": "TICKER",
+      "id_value": "TSM",
+      "source": "fmp_company_list",
+      "confidence": "high"
+    },
+    {
+      "id_type": "TW_UBN",
+      "id_value": "22099131",
+      "source": "twse_mops_company",
+      "confidence": "high"
+    }
+  ],
+  "next_cursor": null,
+  "coverage": {
+    "update_frequency": "weekly",
+    "history_status": "current_snapshot"
+  }
+}
+```
+
+</ResponseExample>

@@ -1,0 +1,113 @@
+---
+title: "Executive Compensation"
+sidebarTitle: "Executive compensation"
+description: "Named-executive pay from US proxy statements (DEF 14A): salary, bonus, stock and option awards, incentives and pension, per person per fiscal year."
+---
+
+Executive Compensation provides named-executive pay as disclosed in a US company's proxy statement, Form DEF 14A. Each observation is one executive for one fiscal year, in US dollars, broken into the components the summary compensation table reports. Fiscal years from 2000 onward are covered.
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Executive Compensation For
+
+Track a chief executive's pay over time, and separate cash from equity. Compare pay mix across a peer group. Measure the gap between disclosed pay and realised pay. Cross compensation against [proxy ownership](/ownership/proxy-ownership), which comes from the same filing.
+
+## Executive Compensation Coverage
+
+Coverage is US companies that file a DEF 14A proxy statement, for fiscal years from 2000.
+
+A company absent from this dataset filed no DEF 14A that FocusAlpha holds. Foreign private issuers file Form 20-F instead of a proxy statement and are therefore not in this dataset — see [Form 20-F](/international/form-20f) for those.
+
+## Key Executive Compensation Fields
+
+`person_name`, `position` and `is_ceo` identify the executive. `fiscal_year` is the year the pay relates to. `company_id` and `ticker` identify the filer.
+
+The components are `salary`, `bonus`, `stock_award`, `option_award`, `non_equity_incentive`, `pension` and `other`.
+
+## The Two Executive Compensation Totals
+
+Two totals travel with every row and they are not interchangeable.
+
+`total_disclosed` is the figure the company printed in its proxy statement. `total_computed` is the sum of the components as extracted.
+
+`component_gap` is true when the two disagree, which means a component failed to extract. When it is true, cite `total_disclosed` and treat the component breakdown as incomplete.
+
+## Executive Compensation Date Convention
+
+`fiscal_year` is the company's fiscal year that the compensation relates to, not the calendar year the proxy was filed. A proxy filed in spring 2026 typically reports fiscal 2025 pay.
+
+## Executive Compensation Sources
+
+Figures are read from the summary compensation table of the company's own DEF 14A filing on SEC EDGAR. Nothing is estimated. `total_computed` is the only calculated field, and it exists to check the extraction against the filing.
+
+## Query Executive Compensation
+
+Use the executive compensation endpoint for one company, newest fiscal year first.
+
+<ParamField path="company_id" type="string" required>
+  A ticker, CIK, ISIN, or canonical `cmp_` id.
+</ParamField>
+
+<ParamField query="fiscal_year" type="integer">
+  One fiscal year. `fiscal_year_gte` and `fiscal_year_lte` bound a range.
+</ParamField>
+
+<ParamField query="ceo_only" type="boolean">
+  Return only the chief executive's rows.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Rows per page, between 1 and 1000. Page through with `cursor`.
+</ParamField>
+
+## Related Datasets
+
+See also [Proxy Ownership](/ownership/proxy-ownership) for beneficial ownership from the same proxy statement, [Insider Trades](/ownership/insider-trades) for what these executives actually bought and sold, and [SEC Filings Index](/filings/index) for the underlying DEF 14A.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/AAPL/executive-compensation?ceo_only=true&fiscal_year_gte=2023" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "id": "90065",
+      "company_id": "cmp_000584",
+      "ticker": "AAPL",
+      "person_name": "Tim Cook",
+      "position": "Chief Executive Officer",
+      "is_ceo": true,
+      "fiscal_year": 2025,
+      "salary": "3000000",
+      "bonus": null,
+      "stock_award": "57535293",
+      "option_award": null,
+      "non_equity_incentive": "12000000",
+      "pension": null,
+      "other": "1759518",
+      "total_disclosed": "74294811",
+      "total_computed": "74294811",
+      "component_gap": false
+    }
+  ],
+  "next_cursor": null,
+  "coverage": {
+    "available_from": "2000",
+    "available_to": null,
+    "update_frequency": "annual",
+    "history_status": "complete"
+  }
+}
+```
+
+</ResponseExample>

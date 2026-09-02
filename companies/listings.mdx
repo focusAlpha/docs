@@ -1,0 +1,94 @@
+---
+title: "Company Listings"
+sidebarTitle: "Company listings"
+description: "Each symbol a company has traded under, with the exchange and the dates the symbol was valid for."
+---
+
+Company Listings returns each symbol a company has traded under, with its exchange and the dates that symbol was valid for. Each observation is one listing. This is where a company's symbol history lives — the [company registry](/companies/registry) itself is a current snapshot and shows only today's values.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Company Listings For
+
+Map a historical ticker in an old dataset to the company that carries it today. Find every market a company trades on. Determine which symbol was valid on a given date, which matters when joining against any dataset keyed by ticker.
+
+## Why Symbol History Matters
+
+A ticker is not a stable key. Companies rename, re-list, move exchange and are acquired, and a symbol released by one company can be reissued to another.
+
+Joining a historical series by ticker therefore silently mixes companies. Join by `company_id`, and use this endpoint when you need to establish which symbol was in force on a given date.
+
+## Key Company Listing Fields
+
+Each row carries the `symbol`, the `exchange` it trades on, whether that venue is a `US` or `non-US` market, its `status`, and the validity dates where recorded. A null `valid_to` means the listing is current.
+
+## Company Listings Date Convention
+
+The validity dates describe when the **symbol** was in force on that exchange, not when the company existed. A company can have overlapping listings across exchanges at the same time.
+
+## Company Listings Sources
+
+Listings come from exchange listing registries, kept as an append-only history so a symbol that has been superseded remains addressable.
+
+## Query Company Listings
+
+Use the company listings endpoint with a canonical `company_id`.
+
+<ParamField path="company_id" type="string" required>
+  Canonical company id, for example `cmp_014081`.
+</ParamField>
+
+## Related Datasets
+
+See also [Company Registry](/companies/registry) for the current record, [Company Identifiers](/companies/identifiers) for the full identifier set, and [Corporate Events](/companies/corporate-events) for the splits, mergers and ticker changes behind a listing change.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/cmp_008395/listings" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "symbol": "2330.TW",
+      "exchange": "TAI",
+      "market": "non-US",
+      "status": "active",
+      "valid_from": null,
+      "valid_to": null
+    },
+    {
+      "symbol": "TSM",
+      "exchange": "NYSE",
+      "market": "US",
+      "status": "active",
+      "valid_from": null,
+      "valid_to": null
+    },
+    {
+      "symbol": "TSMWF",
+      "exchange": "OTC",
+      "market": "non-US",
+      "status": "active",
+      "valid_from": null,
+      "valid_to": null
+    }
+  ],
+  "next_cursor": null,
+  "coverage": {
+    "update_frequency": "weekly",
+    "history_status": "current_snapshot"
+  }
+}
+```
+
+</ResponseExample>

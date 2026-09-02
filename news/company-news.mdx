@@ -1,0 +1,176 @@
+---
+title: "Company News Articles"
+sidebarTitle: "Company news articles"
+description: "The raw news feed by company ticker: individual articles with the model's direction, impact score and one-line reason for that name, plus a link to the original."
+---
+
+Company News Articles is the raw news feed for a company: the individual articles that mention or affect it, newest event first. Each observation is one article as it relates to one company, carrying the model's read for that name — direction, an impact score from 0 to 100, a one-line reason, the event type, the publisher, and a link to the original.
+
+<Info>
+  **Plan:** Fund · **Credits:** 1 per call
+</Info>
+
+Use [Company News Events](/news/news-events) first unless you specifically want the separate write-ups.
+
+## What You Can Use Company News Articles For
+
+See every write-up behind an event rather than the strongest one. Compare how different outlets covered the same story. Find the article that carried a particular claim. Reach the events that reprice a position without naming it.
+
+## The Article Text Is Not Here
+
+<Warning>
+Article text is **not stored and not returned**. You get the title, the publisher's own blurb where it may be republished, the one-line `why`, and the link. To read the article, follow the link.
+
+`summary_withheld` set to true means a blurb exists that FocusAlpha may not pass on.
+</Warning>
+
+## The Feed Arrives in Two Strengths
+
+This is the whole stream for a company, and it comes in two strengths.
+
+Only items scoring 40 or above on the rule scorer are read by a model — roughly a fifth of the stream. The rest are returned too, with `read_by_model` false and `impact_score`, `direction`, `why` and `event_type` all null.
+
+<Warning>
+Those nulls exist because **nothing produced them**, never because a model read the article and had no view.
+
+Do not describe an unread row as unimportant: it was never assessed. On the day after NVIDIA reported, 107 of the 166 articles carrying NVDA sat below the bar.
+</Warning>
+
+`score`, the rule pass on a 0 to 100 scale, is present on **every** row and is what to rank on when you want everything. `min_impact` filters to the read half.
+
+## Ticker Is What the Model Wrote
+
+<Warning>
+`ticker` on a row is what the model wrote, **not a resolved identifier**. About 20% are not independently confirmed by the entity layer — `ticker_confirmed` is false — and a few name private companies with no symbol at all.
+
+Never present an unconfirmed value as a tradable security.
+</Warning>
+
+## Direction and Impact Are This System's Reading
+
+`direction` and `impact_score` are the model's judgment of what the article means for that name. They are not a price move, not a forecast and not a recommendation. `human_reviewed` marks rows a person has checked.
+
+## Key Company News Article Fields
+
+`channel` says what kind of source it is: `wire`, `sec_filing`, `exchange_filing`, `company_ir`, `earnings_call` or `primary_source`. `publisher` names the outlet. `event_type` is one of the 34 coarse families, matched with normalisation on both sides so a canonical name and a legacy spelling of the same family — `m&a`, `fda`, `litigation` — reach the same rows across the whole history.
+
+`relation` is `direct` when the article names the company, or `knock_on` when the company is reached through a filed relationship, which makes the row an inference.
+
+## Company News Articles Date Convention
+
+`since` and `until` take ISO timestamps and filter the feed. Rows are ordered newest event first. As with the event feed, timestamps are on the article's own clock and their precision varies.
+
+## Company News Articles Coverage
+
+Coverage starts 2026-07-26. There is no history before it.
+
+## Company News Articles Sources
+
+Articles come from news wires, SEC filings, Asian exchange filings, company IR pages and earnings calls. Direction, impact score and the one-line reason are FocusAlpha's reading of the article, not the publisher's.
+
+## Query Company News Articles
+
+Use the company news endpoint for one company.
+
+<ParamField path="company_id" type="string" required>
+  A `company_id`, ticker, CIK or ISIN.
+</ParamField>
+
+<ParamField query="relation" type="string" default="direct">
+  `direct`, `knock_on`, or `both` to get each kind labelled. Ask for `knock_on` to answer what is repricing a position that nobody is writing about.
+</ParamField>
+
+<ParamField query="direction" type="string">
+  `bullish`, `bearish` or `neutral`.
+</ParamField>
+
+<ParamField query="event_type" type="string">
+  One of the 34 coarse families.
+</ParamField>
+
+<ParamField query="min_impact" type="integer">
+  Minimum impact score, 0 to 100. Direct rows only, and it restricts results to the model-read half of the feed.
+</ParamField>
+
+<ParamField query="min_magnitude" type="integer">
+  Minimum knock-on magnitude, 0 to 100. Knock-on rows only, on a different scale.
+</ParamField>
+
+<ParamField query="since" type="string">
+  ISO timestamp lower bound. `until` sets the ceiling.
+</ParamField>
+
+<ParamField query="limit" type="integer">
+  Rows per page, up to 200. Page through with `cursor`.
+</ParamField>
+
+## Related Datasets
+
+See also [Company News Events](/news/news-events) for the deduplicated event view, [Macro and Policy News](/news/themes) for stories that name no company, and [Structured 8-K Events](/events/8k-events) for the filing facts behind a headline.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/NVDA/news?min_impact=60&limit=1" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response (one row; reaches trimmed)
+{
+  "data": [
+    {
+      "news_id": "1538d77b885c4f76c41c3662bfdb901d980fe6c3",
+      "event_id": "NVDA:results:20260901",
+      "relation": "direct",
+      "ticker": "NVDA",
+      "direction": "bullish",
+      "impact_score": 70,
+      "ticker_confirmed": true,
+      "title": "Nvidia: Betting Against AI's Landlord Is A Widow-Maker Trade",
+      "event_type": "analyst",
+      "event_subtype": "analyst_opinion,analyst_price_target",
+      "subject": "NVIDIA Corporation",
+      "why": "An analyst is initiating coverage with a strong buy rating, highlighting revenue sharing, AI integration, and private equity backing as key drivers for NVDA.",
+      "human_reviewed": false,
+      "score": 57,
+      "read_by_model": true,
+      "link": "https://seekingalpha.com/article/4942244-nvidia-betting-against-ai-landlord-is-a-widow-maker-trade",
+      "channel": "wire",
+      "publisher": "seekingalpha.com",
+      "summary": null,
+      "summary_withheld": true,
+      "event_at": "2026-09-01T23:06:54.000Z",
+      "time_basis": "published",
+      "time_precision": "minute",
+      "is_scheduled": false,
+      "reaches": [
+        {
+          "via": "competition",
+          "why": "Nvidia's AI dominance and recurring revenue model intensify competition for AMD's AI accelerator products.",
+          "ticker": "AMD",
+          "direction": "bearish",
+          "magnitude": 60
+        },
+        {
+          "via": "product",
+          "why": "Private equity firms like BX benefit from the massive AI compute demand Nvidia is underwriting.",
+          "ticker": "BX",
+          "direction": "bullish",
+          "magnitude": 30
+        }
+      ]
+    }
+  ],
+  "next_cursor": "2026-09-01T23:06:54.000Z|1538d77b885c4f76c41c3662bfdb901d980fe6c3",
+  "symbols_searched": [
+    "NVDA",
+    "NVD.DE"
+  ]
+}
+```
+
+</ResponseExample>

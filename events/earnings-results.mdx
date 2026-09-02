@@ -1,0 +1,140 @@
+---
+title: "Reported Earnings Figures"
+sidebarTitle: "Earnings results"
+description: "Figures a US company reported in its earnings release — including the non-GAAP lines XBRL does not carry — on the same metric vocabulary as guidance."
+---
+
+Reported Earnings Figures are the numbers a company printed in its earnings release: what the quarter delivered. Each observation is one reported metric for one period, carrying the value, the year-over-year change if the release printed one, and the verbatim quote it was read from. It shares its `metric_key` vocabulary with [Management Guidance](/events/guidance), so "what did they guide revenue to" and "what did revenue come in at" are one key and two calls.
+
+<Info>
+  **Plan:** Fund · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Reported Earnings Figures For
+
+Compare a guided figure against the delivered one on the same key. Read the non-GAAP lines companies actually guide on — adjusted EBITDA, organic growth, segment KPIs, subscriber counts. Build a KPI history that XBRL cannot supply. Pair a number with [management's explanation of it](/transcripts/semantic-retrieval).
+
+## Why This Is Not a Substitute for the Financial Statements
+
+<Warning>
+[Financial Statements](/financials/combined) come from the filing's own XBRL and are the audited, comparable record. This dataset is what the **press release printed**.
+
+The release is where the non-GAAP lines live — the ones companies guide on and XBRL does not carry. Use the statements for the audited record; use this for the KPIs and adjusted measures.
+</Warning>
+
+## Every Figure Keeps Its Quote
+
+Every row keeps the `quote` it was read from, and a figure that could not be found verbatim in the filed text is **dropped rather than stored**.
+
+A reader treats "revenue was $190.2 million" as a fact, so a guessed one is worse here than a missing one.
+
+## Why Year-Over-Year Can Be Null
+
+`yoy` is the change the release **printed**, and it is null when the release printed none. It is never computed.
+
+The basis of a year-over-year figure — adjusted, constant-currency, pro forma — is the filer's to state. A number FocusAlpha divided would look identical on the page while carrying none of that meaning.
+
+## Do Not Sum a Page Without Setting level
+
+<Warning>
+A release that breaks a line out by segment emits **one row per segment beside the consolidated row**. Both are on the same page.
+
+Pass `level` — `consolidated` or `segment` — before summing anything. Omitting it returns both, and adding them double-counts.
+</Warning>
+
+`basis` separates a GAAP from a non-GAAP reading of the same metric, which a release routinely prints side by side.
+
+## Reported Earnings Figures Date Convention
+
+`observed_at` is when the document went out. `occurred_on` is the filing's own Period of Report.
+
+`year` and `quarter` are the fiscal year and quarter of the **release**. `period` is the period the figure is **for**, as the release printed it — for example `Q2 2026`.
+
+## Reported Earnings Figures Coverage
+
+Read the `coverage` block in the response. The floor moves as the backfill proceeds, so no date written on this page would stay true.
+
+## Reported Earnings Figures Sources
+
+Figures are read from the company's own 8-K earnings release. They are as printed: not restated, not recomputed, and dropped rather than guessed when they could not be verified in the filed text.
+
+## Query Reported Earnings Figures
+
+Use the earnings results endpoint for one company.
+
+<ParamField path="company_id" type="string" required>
+  A `company_id`, ticker, CIK or ISIN.
+</ParamField>
+
+<ParamField query="metric_key" type="string">
+  Normalised metric, for example `revenue`, `adjusted_ebitda`, `eps`.
+</ParamField>
+
+<ParamField query="period" type="string">
+  The period the figure is for, as printed, for example `Q2 2026`.
+</ParamField>
+
+<ParamField query="year" type="integer">
+  Fiscal year of the release. `quarter` narrows to one fiscal quarter, 1 to 4.
+</ParamField>
+
+<ParamField query="level" type="string">
+  `consolidated` or `segment`. Omit for both — but choose one before summing.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Rows per page, between 1 and 1000. Page through with `cursor`.
+</ParamField>
+
+## Related Datasets
+
+See also [Management Guidance](/events/guidance) for the other half of the same vocabulary, [8-K Exhibits](/events/8k-exhibits) for the release itself, [Income Statements](/financials/income-statements) for the audited record, and [Semantic Retrieval](/transcripts/semantic-retrieval) for management's words about a result.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/AAPL/earnings-results?metric_key=revenue&level=consolidated" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "ticker": "AAPL",
+      "year": 2026,
+      "quarter": 3,
+      "observed_at": "2026-07-30T20:30:28Z",
+      "occurred_on": "2026-07-30",
+      "doc_id": "0000320193-26-000018:EX-99.1",
+      "source_ref": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+      "source_feed": "edgar_8k",
+      "metric_key": "revenue",
+      "basis": "",
+      "period": "Q3-FY26",
+      "label": "Quarterly revenue",
+      "segment": null,
+      "value_text": "$109.4 billion",
+      "value_low": "109400000000.0",
+      "value_high": "109400000000.0",
+      "value_unit": "usd",
+      "yoy": "up 16 percent year over year",
+      "value_is_band": false,
+      "quote": "The Company posted quarterly revenue of $109.4 billion, up 16 percent year over year."
+    }
+  ],
+  "next_cursor": null,
+  "coverage": {
+    "available_from": "2025-01-02",
+    "available_to": null,
+    "update_frequency": "daily",
+    "history_status": "starts_2025_01_02"
+  }
+}
+```
+
+</ResponseExample>

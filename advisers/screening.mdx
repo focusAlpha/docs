@@ -1,0 +1,215 @@
+---
+title: "Adviser Screening"
+sidebarTitle: "Adviser screening"
+description: "Find SEC investment advisers by what they are and how they invest, screening the Form ADV Part 2A brochure axes crossed with revealed 13F style."
+---
+
+Adviser Screening selects investment advisers by description rather than by name. It ranks the SEC Form ADV roster on the axes read from each firm's Part 2A brochure, crossed with the value or growth tier revealed by the firm's own 13F book. One row is returned per firm, keyed by CRD.
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call; screen facets are free
+</Info>
+
+"Quantitative asset managers running long/short who issue ETFs" is one call here, and is unanswerable from the directory or from a single firm's profile.
+
+## Which Adviser Endpoint to Use
+
+## Detailed Adviser Filter Pages
+
+<CardGroup cols={3}>
+  <Card title="By firm type" href="/screening/advisers/by-firm-type">Ten primary types, subtypes, services, role flags.</Card>
+  <Card title="By strategy & style" href="/screening/advisers/by-strategy-and-style">What it runs and how it invests, declared vs revealed.</Card>
+  <Card title="By products & scale" href="/screening/advisers/by-products-and-scale">Vehicles, asset classes, geography, AUM.</Card>
+</CardGroup>
+
+
+If you hold a name, a CRD or a CIK, use the [Form ADV Adviser Directory](/advisers/form-adv) for directory rows, or the [adviser profile](/advisers/adv-brochure) for everything about that one firm.
+
+If you hold a **description** of a firm rather than its identity, use this screen.
+
+## Start With Adviser Screen Facets
+
+Call the adviser screen facets endpoint first. It is free, and it returns every filterable value with the number of firms carrying it, plus a `totals` block.
+
+Filter values are exact slugs. A guessed spelling returns an empty page rather than an error, so the facets response is what tells you whether a value exists. The 13F style tiers are the only Title Case vocabulary in this dataset: `Deep Growth`, `Growth-Biased`, `Blend / Core`, `Value-Biased`, `Deep Value`.
+
+## Five Adviser Screening Axes
+
+**What the firm is** — `primary_type` and `subtype`, read from the brochure text. A subtype is always a child of a primary type, so filtering on a subtype already implies its parent, and three primary types have no children at all. `services_offered` (what it sells) and `role_flags` (facts that hold at the same time as the primary type) sit on this axis.
+
+**What it runs** — `investment_strategy`.
+
+**How it invests** — `management_approach`, `analysis_basis`, `implementation_style`, `equity_styles`, `declared_vg_bucket`, `market_cap_focus`, `investment_horizon`, and the flags `uses_short_selling`, `uses_leverage`, `uses_derivatives`, `uses_options` and `uses_esg`.
+
+**What it sells** — `product_types` is what the firm **issues** (mutual fund, ETF, private fund, wrap program, separately managed account, model portfolio); `asset_classes` is what the money **buys** (equity, fixed income, real estate, private credit). Two vocabularies, never interchangeable: an ETF issuer that buys bonds is `etf` plus `fixed_income`.
+
+**What its book shows** — `style_tier`, computed from the firm's 13F holdings.
+
+`firm_type` is an independent sixth label derived from ADV Part 1 numbers for 13F filers only. When it and `primary_type` disagree, that is two classifications disagreeing; report both with their sources.
+
+## The Screen Nothing Else Can Do
+
+Cross `declared_vg_bucket`, which is what the brochure **says**, with `style_tier`, which is what the 13F book **holds**, to find managers whose portfolio contradicts their own marketing — for example `declared_vg_bucket=value_biased` with `style_tier=Growth-Biased,Deep Growth`.
+
+The facets response's `totals.with_both` is how many firms that screen can reach at all. Report that number alongside the hits.
+
+## Every Brochure Filter Is Also a Coverage Filter
+
+The brochure layer covers part of the roster and is still being ingested. Every brochure filter silently drops firms whose brochure is not in the store.
+
+`has_brochure=true` makes that narrowing explicit. The facets response reports `totals.with_brochure` against `totals.firms`.
+
+<Warning>
+Never report "only N firms do X" without both of those totals. Without them, a coverage gap reads as a finding about the industry.
+</Warning>
+
+## Empty Is Not No
+
+The brochure tags are conservative — set only where the brochure states the thing in so many words — so silence is common and is counted separately in the facets response as `brochure_silent_on_*`.
+
+Roughly five brochures in six name no market-cap focus, three in four name no equity style, and three in four name no geographic coverage. `market_cap_focus=large_cap` therefore returns the firms that **wrote it down**, not the large-cap managers, and `geographic_coverage=emerging_markets` is not the list of emerging-market managers.
+
+<Warning>
+Two axes are almost always silent and cannot carry a conclusion. `implementation_style` is `unclear` on roughly 98% of brochures, and `management_approach` on roughly 87%. Filtering `implementation_style=discretionary` returns the few dozen brochures that used that word, not the discretionary managers.
+</Warning>
+
+## How Adviser Screen Sorting Handles Unknowns
+
+<Warning>
+Four of the five sorts drop every exempt reporting adviser. `aum_total`, `aum_discretionary`, `accounts_total` and `employee_count` are populated for registered firms and for no ERA at all, because an ERA files an abbreviated Form ADV that does not report them. Ranking on any of the four therefore removes that entire registration class silently.
+
+`crd` is the only sort that keeps every firm. When rows are dropped, the response carries an `unranked` block saying how many matched but could not be ranked.
+</Warning>
+
+## Query the Adviser Screen
+
+Use the institutions screen endpoint. Filters are combined with AND; a comma-separated value inside one filter matches ANY of the listed values. No filter is required.
+
+<ParamField query="primary_type" type="string">
+  Comma-separated list of the ten primary types.
+</ParamField>
+
+<ParamField query="subtype" type="string">
+  Comma-separated list of subtypes. Implies the parent primary type.
+</ParamField>
+
+<ParamField query="investment_strategy" type="string">
+  Comma-separated strategy tags.
+</ParamField>
+
+<ParamField query="declared_vg_bucket" type="string">
+  The brochure's own value/growth bucket: `deep_growth`, `growth_biased`, `blend`, `value_biased`, `deep_value`, `unclear`, `not_applicable`.
+</ParamField>
+
+<ParamField query="style_tier" type="string">
+  The 13F-revealed tier, Title Case and spelled exactly.
+</ParamField>
+
+<ParamField query="product_types" type="string">
+  What the firm issues.
+</ParamField>
+
+<ParamField query="asset_classes" type="string">
+  What the money buys.
+</ParamField>
+
+<ParamField query="has_brochure" type="boolean">
+  Restrict to firms whose Part 2A brochure is in the store. Set it before drawing any conclusion from a brochure filter.
+</ParamField>
+
+<ParamField query="min_aum" type="number">
+  Total regulatory AUM floor in USD. `max_aum` sets the ceiling. This family uses `min_`/`max_` rather than `_gte`/`_lte`, and an unknown parameter returns a `400` rather than being ignored.
+</ParamField>
+
+<ParamField query="sort" type="string" default="aum_total">
+  `aum_total`, `aum_discretionary`, `accounts_total`, `employee_count` or `crd`. `order` is `asc` or `desc`.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Rows per page, between 1 and 1000. Page through with `cursor`.
+</ParamField>
+
+The full filter set also covers `q`, `sec_registration_type`, `firm_type`, `state`, `country`, the private-fund flags, `brochure_scope`, `services_offered`, `role_flags`, `management_approach`, `analysis_basis`, `implementation_style`, `equity_styles`, `market_cap_focus`, `investment_horizon`, the five brochure usage flags, `geographic_coverage` and `has_style`.
+
+## Related Datasets
+
+See also [Form ADV Part 2A Brochure Data](/advisers/adv-brochure) for the axes this screen filters on, [13F Institutional Holdings](/ownership/13f) for the book behind `style_tier`, and [ETF Screening](/etf/screening) and [Company Screening](/companies/screening) for the same pattern on other datasets.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/institutions/screen?primary_type=asset_manager&declared_vg_bucket=value_biased&style_tier=Growth-Biased,Deep%20Growth&has_brochure=true" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response (one row; coverage omitted)
+{
+  "data": [
+    {
+      "crd": "142463",
+      "cik": "0001529735",
+      "legal_name": "METLIFE INVESTMENT MANAGEMENT, LLC",
+      "firm_type": "PE / VC",
+      "sec_registration_type": "Registered",
+      "main_office_state": "NJ",
+      "main_office_country": "United States",
+      "aum_total": 563779494417,
+      "aum_discretionary": 560911238227,
+      "accounts_total": "805",
+      "employee_count": "956",
+      "has_brochure": true,
+      "brochure_scope": "business_line",
+      "business_line_name": "MIM Equity",
+      "brochure_date": "2026-03-31",
+      "primary_type": "asset_manager",
+      "subtype": "public_markets",
+      "role_flags": [],
+      "services_offered": [],
+      "investment_strategy": [
+        "long_only"
+      ],
+      "management_approach": "unclear",
+      "analysis_basis": "fundamental",
+      "implementation_style": "unclear",
+      "equity_styles": [
+        "value",
+        "growth"
+      ],
+      "declared_vg_bucket": "value_biased",
+      "market_cap_focus": [
+        "small_cap"
+      ],
+      "investment_horizon": "long",
+      "uses_short_selling": null,
+      "uses_leverage": null,
+      "uses_derivatives": null,
+      "uses_options": null,
+      "uses_esg": null,
+      "declared_style_summary": "MIM Equity is the equity investment management unit of MetLife Investment Management, offering discretionary U.S. equity strategies (Small Cap Value, SMID Cap Value, Small Cap Core) through separately managed accounts, RICs, and CITs.",
+      "product_types": [
+        "separately_managed_account",
+        "collective_investment_trust",
+        "other",
+        "etf"
+      ],
+      "asset_classes": [
+        "equity"
+      ],
+      "geographic_coverage": [
+        "us"
+      ],
+      "vg_score": 0.78,
+      "style_tier": "Growth-Biased",
+      "style_report_period": "2026-03-31",
+      "adv_as_of": "2026-08-03"
+    }
+  ],
+  "next_cursor": "WyI1NjM3Nzk0OTQ0MTcuMCIsIjE0MjQ2MyJd"
+}
+```
+
+</ResponseExample>

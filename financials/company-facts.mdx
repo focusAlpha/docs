@@ -1,0 +1,80 @@
+---
+title: "Company Facts"
+sidebarTitle: "Company facts"
+description: "Basic issuer information as filed with the SEC: name, identifiers and related filing metadata."
+---
+
+Company Facts provides basic information about an SEC issuer as filed: its name, its identifiers and related metadata. Each observation is one issuer, addressed by ticker or CIK. It is the lightweight lookup for confirming who a filer is before querying its filings or financials.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call; the two coverage endpoints are free
+</Info>
+
+## What You Can Use Company Facts For
+
+Confirm that a ticker resolves to the issuer you expect before running a larger query. Map a ticker to a CIK for the SEC-scoped endpoints. Check that a company is present in the SEC datasets at all.
+
+## Company Facts Coverage
+
+Coverage is SEC filers. Two free discovery endpoints enumerate it: one lists every covered ticker, the other every covered CIK, zero-padded to ten characters. Both cost no credits.
+
+A company absent from these lists files nothing with the SEC that FocusAlpha holds, so every SEC-scoped dataset will be empty for it regardless of how it is queried. That is a different fact from the company not existing — see [the company registry](/companies/registry), which covers roughly 25,000 companies across 82 countries, most of which are not SEC filers.
+
+## Key Company Facts Fields
+
+Rows carry the issuer's name, its ticker, its CIK and the related filing metadata the SEC publishes for it.
+
+## Company Facts Sources
+
+Facts are as filed with the SEC. Nothing is enriched from another source, and nothing is inferred.
+
+## Query Company Facts
+
+Use the company facts endpoint. One of `ticker` or `cik` is required.
+
+<ParamField query="ticker" type="string">
+  Trading symbol. One of `ticker` or `cik` is required.
+</ParamField>
+
+<ParamField query="cik" type="string">
+  SEC Central Index Key. One of `ticker` or `cik` is required.
+</ParamField>
+
+The two coverage endpoints take no parameters and cost no credits.
+
+## Related Datasets
+
+See also [Company Registry](/companies/registry) for the global company record, which is broader than the SEC filer universe, [Company Identifiers](/concepts/company-identifiers) for how identifiers resolve across the API, and [SEC Filings Index](/filings/index) for what the issuer has filed.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/company/facts?ticker=AAPL" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "company_facts": {
+    "ticker": "AAPL",
+    "name": "Apple Inc.",
+    "cik": "0000320193",
+    "industry": "Industrial And Commercial Machinery And Computer Equipment",
+    "sector": "Manufacturing",
+    "category": "Large accelerated filer",
+    "exchange": "Nasdaq",
+    "is_active": true,
+    "location": "CUPERTINO, CA",
+    "sec_filings_url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=&dateb=&owner=include&count=40",
+    "sic_code": "3571",
+    "sic_industry": "Industrial And Commercial Machinery And Computer Equipment",
+    "sic_sector": "Manufacturing"
+  }
+}
+```
+
+</ResponseExample>

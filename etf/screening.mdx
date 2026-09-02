@@ -1,0 +1,184 @@
+---
+title: "ETF Screening"
+sidebarTitle: "ETF screening"
+description: "Select ETFs by wrapper tier, holdings-derived classification, assets, expense ratio, concentration, geography, duration, flows and premium."
+---
+
+ETF Screening selects exchange-traded funds by conditions rather than by name. A screen returns one row per US-listed share class, filtered on what the fund is labelled as and on what its book measures. It answers questions that start from a condition — the cheapest large-cap biotech funds by size, leveraged funds bleeding assets, short-duration treasury funds under ten basis points.
+
+<Info>
+  **Plan:** Fund · **Credits:** 1 per call; screen facets are free
+</Info>
+
+## What You Can Use ETF Screening For
+
+## Detailed ETF Filter Pages
+
+<CardGroup cols={3}>
+  <Card title="By asset class" href="/screening/etf/by-asset-class">The four-level taxonomy filters.</Card>
+  <Card title="By geography" href="/screening/etf/by-geography">Measured US/EM shares and region/country segments.</Card>
+  <Card title="By wrapper & structure" href="/screening/etf/by-wrapper">The nine tiers and filed flags.</Card>
+  <Card title="By size & fees" href="/screening/etf/by-size-and-fees">Class-level AUM and expense ratios.</Card>
+  <Card title="By portfolio shape" href="/screening/etf/by-portfolio-shape">Concentration, cap bands, duration.</Card>
+  <Card title="By flows & premium" href="/screening/etf/by-flows-and-premium">20-day flows and premium/discount.</Card>
+</CardGroup>
+
+
+Build a peer group from scratch. Find funds whose measured portfolio contradicts their name. Rank a segment by fee, size, concentration or twenty-day flow. Locate the funds most exposed to a region or a cap band without relying on the fund's own marketing label.
+
+## Start With ETF Screen Facets
+
+Call the ETF screen facets endpoint first. It is free and returns the label vocabulary **as it is actually carried by funds**, with a count for each value, plus measured coverage totals.
+
+This matters for two reasons. It is the only place ETF coverage is a number rather than prose. And an empty result from a label filter almost always means the code was misspelled rather than that no such funds exist — the facets response settles which.
+
+## Two ETF Label Axes That Are Not the Same Question
+
+`tier` filters on the **wrapper** — what kind of instrument the fund is. It takes a comma-separated list of the nine values: `leveraged_inverse`, `structured_outcome`, `option_income`, `physical_commodity`, `futures_commodity`, `crypto`, `currency`, `alternative`, `plain_beta`.
+
+`asset_class`, `category`, `segment` and `specializations` filter on the **holdings-derived taxonomy** — what the fund actually holds. `taxonomy_prefix` matches a dotted-path prefix at any level, so `equity.sector` finds every sector fund in one filter.
+
+A fund can be a leveraged wrapper around a health-care segment. Filtering on one axis says nothing about the other.
+
+## Measured Filters Versus Label Filters
+
+Some filters read a label; others read a measurement taken from the fund's holdings. The distinction decides how a question must be phrased.
+
+Sector funds carry no cap-band label, because cap bands are a separate facet. "Large-cap biotech" is therefore not one label but a segment plus a specialization plus a measured floor: `segment=equity.sector.health_care`, `specializations=equity.sector.health_care.biotechnology`, `min_large_share=0.5`. The cap share is measured from holdings.
+
+The measured filters are `min_n_holdings`, `min_top10_share` and `max_top10_share` for concentration; `min_us_share` and `min_em_share` for geography; `min_large_share`, `max_large_share` and `min_small_share` for cap bands; `min_duration`, `max_duration` and `min_treasury_share` for bond books; `min_flow_20d` and `max_flow_20d` for flows; `min_premium` and `max_premium` for premium and discount.
+
+## How ETF Screen Sorting Handles Unknowns
+
+Sorting drops rows whose sort key is null, and on this dataset that is a large and non-random group.
+
+Ranking by expense ratio drops every trust that files no fee table, SPY and GLD included. Ranking by assets drops multi-class portfolios with no derivable class-level size.
+
+When that happens the response carries an `unranked` block saying how many funds matched the filters but could not be ranked. An apparently empty first page with a large `unranked` count means the filters worked and the sort did not — re-run with `sort=ticker` to see the matches.
+
+## Two Cadences in One ETF Screen Row
+
+Labels are recomputed monthly; the measured columns — assets, flows, premium, expense coverage — refresh daily. A newly launched fund can therefore carry a complete set of labels while every measured column is still null. A label filter finds it; any numeric sort moves it into the `unranked` count.
+
+## How ETF Assets Are Measured in a Screen
+
+`aum` is the class-level figure. It is either filed by the fund or derived as published NAV multiplied by published shares on multi-class portfolios, and `aum_is_derived` says which. A portfolio-level number is never served as a share class's size.
+
+## Query the ETF Screen
+
+Use the ETF screen endpoint to select funds. Every filter is combined with AND; a comma-separated value inside one filter means ANY of the listed values. No filter is required.
+
+<ParamField query="tier" type="string">
+  Comma-separated wrapper tiers.
+</ParamField>
+
+<ParamField query="segment" type="string">
+  Comma-separated level-3 taxonomy codes — the peer-group key.
+</ParamField>
+
+<ParamField query="taxonomy_prefix" type="string">
+  A dotted-path prefix matching any taxonomy level, e.g. `equity.sector`.
+</ParamField>
+
+<ParamField query="min_aum" type="number">
+  Class-level assets floor in USD. `max_aum` sets the ceiling.
+</ParamField>
+
+<ParamField query="max_expense_ratio" type="number">
+  Net expense ratio ceiling as a decimal — `0.001` is ten basis points. `min_expense_ratio` sets the floor.
+</ParamField>
+
+<ParamField query="min_flow_20d" type="number">
+  Twenty-day net flow floor in USD; a negative value finds outflows. `max_flow_20d` sets the ceiling.
+</ParamField>
+
+<ParamField query="sort" type="string" default="aum">
+  `aum`, `net_expense_ratio`, `flow_20d`, `top10_share`, `premium_discount`, or `ticker`. `aum` defaults to descending; `net_expense_ratio` and `ticker` default to ascending. `order` overrides the direction.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Rows per page, between 1 and 1000. Page through with `cursor`.
+</ParamField>
+
+The full filter set also covers `q`, `exchange`, `active`, `exposure_hidden`, `asset_class`, `category`, `specializations`, `is_index`, `is_fund_of_fund`, `multi_inverse`, and the measured filters listed above.
+
+## Related Datasets
+
+See also [ETF Classification](/etf/classification) for the vocabulary these filters use, [ETF Holdings](/etf/holdings) for the data the measured filters are computed from, [ETF Fees](/etf/fees) for why fee sorting drops funds, and [Company Screening](/companies/screening) and [Adviser Screening](/advisers/screening) for the same pattern on other datasets.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/etfs/screen?segment=equity.sector.health_care&min_large_share=0.5&sort=aum" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response (one row; coverage omitted)
+{
+  "data": [
+    {
+      "etf_id": "E000168",
+      "portfolio_id": "P000388",
+      "ticker": "XLV",
+      "name": "State Street Health Care Select Sector SPDR ETF",
+      "exchange": "AMEX",
+      "currency": "USD",
+      "series_class_count": 1,
+      "is_sole_class": true,
+      "active": true,
+      "tier": "plain_beta",
+      "exposure_hidden": false,
+      "asset_class": "equity",
+      "category": "equity.sector",
+      "segment": "equity.sector.health_care",
+      "specializations": [
+        "equity.sector.geo_us",
+        "equity.sector.health_care.drug_manufacturers_general"
+      ],
+      "measured_tags": [],
+      "labels_holdings_as_of": "2026-08-28T00:00:00.000Z",
+      "is_index": true,
+      "is_fund_of_fund": null,
+      "is_multi_inverse_index": null,
+      "turnover": 0.02,
+      "aum": 43909783508.08,
+      "aum_is_derived": false,
+      "net_assets": 43909783508.08,
+      "net_assets_level": "portfolio",
+      "net_assets_as_of": "2026-08-31",
+      "valuation_date": "2026-08-31",
+      "nav": 170.480183,
+      "nav_status": "published",
+      "shares_outstanding": 257565324,
+      "shares_status": "published",
+      "premium_discount": 0.03802,
+      "gross_expense_ratio": 0.0008,
+      "net_expense_ratio": 0.0008,
+      "net_is_filed": false,
+      "holdings_as_of": "2026-08-28",
+      "n_holdings": "62",
+      "top1_share": "0.1507",
+      "top10_share": "0.6082",
+      "us_share": "0.9773",
+      "em_share": "0.0000",
+      "large_share": "0.8534",
+      "mid_share": "0.1466",
+      "small_share": "0.0000",
+      "duration": null,
+      "maturity_years": null,
+      "treasury_share": "0.0000",
+      "corporate_share": "0.0000",
+      "flow_1d": -102719020.2,
+      "flow_5d": 277949692.4,
+      "flow_20d": 69739330.85
+    }
+  ],
+  "next_cursor": "WyIxOTMwMzc5NTc1My43NiIsIkUwMDAxODEiXQ"
+}
+```
+
+</ResponseExample>

@@ -1,0 +1,95 @@
+---
+title: "Taiwan Foreign Ownership"
+sidebarTitle: "Taiwan foreign ownership"
+description: "Daily foreign-investor shareholding in Taiwan-listed companies: shares held, percentage held, and the regulatory ceiling for that security."
+---
+
+Taiwan Foreign Ownership provides daily foreign-investor shareholding in a Taiwan-listed company. Each observation is one trading day, carrying shares issued, shares held by foreign investors, the percentage held, and the regulatory ceiling for that security. One row per trading day from 2024-01-02.
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Taiwan Foreign Ownership For
+
+Track foreign flows into a Taiwan name at daily resolution. See how close a security sits to its foreign-ownership ceiling. Cross a foreign-ownership build against [monthly revenue](/international/taiwan-monthly-revenue) or a price move.
+
+## The Ceiling Is Not the Holding
+
+<Warning>
+`foreign_limit_pct` is the **regulatory ceiling** for that security, not the amount held. It is usually 100 and lower for the restricted industries.
+
+`foreign_held_pct` is the amount actually held. The two are different facts and are routinely confused.
+</Warning>
+
+## Key Taiwan Foreign Ownership Fields
+
+Shares issued and shares held by foreign investors give the raw counts. `foreign_held_pct` is the percentage held and `foreign_limit_pct` is the ceiling. Both percentages are on a **0-to-100 scale**, not fractions.
+
+## Taiwan Foreign Ownership Date Convention
+
+One row per **trading day**, newest first, from 2024-01-02. Non-trading days have no row.
+
+Pass a date range rather than paging blind: the series is daily and a full history is thousands of rows.
+
+## Taiwan Foreign Ownership Sources
+
+Holdings and ceilings are published by the Taiwan exchanges. Nothing is computed.
+
+## Query Taiwan Foreign Ownership
+
+Use the Taiwan foreign ownership endpoint. It accepts a Taiwan security code, a suffixed ticker, an ISIN or a `company_id` directly.
+
+<ParamField path="company_id" type="string" required>
+  A Taiwan security code such as `2330`, a suffixed ticker, an ISIN or a `company_id`.
+</ParamField>
+
+<ParamField query="date_gte" type="string">
+  Earliest date, `YYYY-MM-DD`. `date_lte` sets the ceiling.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Rows per page, between 1 and 1000. Page through with `cursor`.
+</ParamField>
+
+## Related Datasets
+
+See also [Taiwan Financials](/international/taiwan-financials), [Taiwan Monthly Revenue](/international/taiwan-monthly-revenue), and [Company Screening](/companies/screening), which carries `tw_foreign_held_pct` as a cross-company filter.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/2330/tw/foreign-ownership?date_gte=2026-08-01" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "company_id": "cmp_008395",
+      "local_security_code": "2330",
+      "snapshot_date": "2026-09-01",
+      "market": "twse",
+      "company_name": "台積電",
+      "issued_shares": "25932370067.0",
+      "foreign_held_shares": "17953125952.0",
+      "foreign_held_pct": "69.23",
+      "foreign_limit_pct": "100.0"
+    }
+  ],
+  "next_cursor": null,
+  "coverage": {
+    "available_from": "2024-01-02",
+    "available_to": null,
+    "update_frequency": "daily",
+    "history_status": "complete"
+  }
+}
+```
+
+</ResponseExample>

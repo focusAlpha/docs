@@ -1,0 +1,87 @@
+---
+title: "ETF Fees and Expense Ratios"
+sidebarTitle: "ETF fees"
+description: "ETF gross and net expense ratios, management fees, 12b-1 fees, acquired fund fees and waivers, read from the prospectus fee table."
+---
+
+ETF Fees carries the fee table an ETF filed in its prospectus: the gross expense ratio, the net expense ratio, the components that make them up, and any waiver in force. Each observation is associated with an `etf_id` and the date of the filing it was read from. Fees are a share-class fact, so two share classes on one portfolio can charge different amounts.
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use ETF Fee Data For
+
+Rank a peer group by what an investor actually pays. Distinguish a headline gross ratio from the net ratio after a contractual waiver, and see when that waiver expires. Identify fund-of-fund structures where acquired fund fees sit on top of the manager's own fee. Estimate the drag a fee imposes on a long holding period.
+
+## ETF Fee Coverage
+
+Fee data exists for share classes whose sponsor files a prospectus fee table. Not every exchange-traded product does.
+
+<Warning>
+No fee row is not a zero fee. Unit investment trusts and grantor trusts — SPY and GLD among them — file no prospectus fee table at all, so they carry no fee record. Reading that absence as "free" is wrong, and ranking a universe by expense ratio silently drops every one of these funds.
+</Warning>
+
+## Key ETF Fee Fields
+
+`gross_expense_ratio` is the total annual operating expense before any waiver, as a decimal — `0.0009` is nine basis points. `net_expense_ratio` is what the investor pays after waivers.
+
+`net_is_filed` says whether the net figure was printed in the filing. When it is `false`, the filing printed no separate waiver line, which usually means gross and net are the same.
+
+`management_fee` is the manager's own fee. `fee_12b1` is the distribution fee. `acquired_fund_fees` is the expense of underlying funds held by a fund-of-fund structure, which is a real cost to the investor but is not charged by this manager.
+
+`waiver` and `waiver_expiry` describe a contractual fee reduction and the date it lapses. `fee_as_of` is the date of the filing the table was read from.
+
+## ETF Fee Date Convention
+
+`fee_as_of` is the effective date of the prospectus the fee table came from, not the date FocusAlpha read it. Fee tables change at most annually, so this date is typically months old and that is expected.
+
+## ETF Fee Sources
+
+Fees are read from the fund's own SEC prospectus fee table. They are not vendor estimates and are not computed from expenses paid.
+
+## Query ETF Fees
+
+Fees are returned in the `fees` block of the ETF profile endpoint. There is no separate fee route.
+
+<ParamField path="id" type="string" required>
+  `etf_id` (`E000011`), a ticker (`SPY`), an ISIN, or a CUSIP.
+</ParamField>
+
+When no fee filing exists for a share class, the block carries a `status` of `not_covered` and a note explaining that trusts of this kind file none — the absence is reported rather than represented as a zero.
+
+To compare fees across many funds at once, use the `min_expense_ratio` and `max_expense_ratio` filters on [ETF Screening](/etf/screening). Sorting a screen by expense ratio drops every fund with no fee table; the response's `unranked` block says how many were dropped.
+
+## Related Datasets
+
+See also [ETF Screening](/etf/screening) for cross-fund fee filters, and [ETF Data](/etf/overview) for the other blocks returned by the same profile call.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/etfs/VOO" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json fees block (VOO)
+{
+  "fees": {
+    "status": "available",
+    "gross_expense_ratio": 0.0003,
+    "net_expense_ratio": 0.0003,
+    "net_is_filed": false,
+    "management_fee": 0.0002,
+    "fee_12b1": 0,
+    "acquired_fund_fees": null,
+    "waiver": 0,
+    "waiver_expiry": null,
+    "fee_as_of": "2025-12-31T00:00:00.000Z"
+  }
+}
+```
+
+</ResponseExample>

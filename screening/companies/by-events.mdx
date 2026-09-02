@@ -1,0 +1,104 @@
+---
+title: "Screen Companies by Events"
+sidebarTitle: "By events"
+description: "Find companies by corporate events across five sources — SEC 8-K, Japan TDnet, Korea DART, HKEX and the news layer — each with its own vocabulary, plus the rollup_family filter that spans all markets."
+---
+
+Screening companies by events finds who had something happen in the last 90 days — an earnings release, a buyback, a profit warning, a bankruptcy filing — across five sources: `sec_8k`, `japan_tdnet`, `korea_dart`, `hkex` and `news`. Each source keeps its own regulator's vocabulary, and one filter — `rollup_family` — spans them all.
+
+<Info>
+  **Plan:** Fund · **Credits:** 1 per call; screen facets are free
+</Info>
+
+## The Event Filters
+
+<ParamField query="event_family" type="string">
+  One or more **filed** event families, comma-separated; matches ANY. Each source keeps its own words: `earnings_release` is 8-K, `earnings_flash` is TDnet and DART, and HKEX families are the exchange's own Title Case headline categories (`Profit Warning`, `Interim Results`, `Monthly Returns`). The free facets endpoint prints every value **with the source it belongs to** — copy spellings from there, never guess.
+</ParamField>
+
+<ParamField query="event_source" type="string">
+  One or more of `sec_8k`, `japan_tdnet`, `korea_dart`, `hkex`, `news`; matches ANY. The market is in the name — `korea_dart` is the only way to reach Korea.
+</ParamField>
+
+<ParamField query="news_event_type" type="string">
+  A **separate** vocabulary from `event_family`: what FocusAlpha's news model read in an article about the company, not something the company filed. Values include `earnings`, `guidance`, `merger_acquisition`, `analyst`, `fda_clinical`, `management`, `contract`, `legal` — the facets endpoint lists all of them. A story attaches only when it names or tags the company and the impact score is at least 40.
+</ParamField>
+
+<ParamField query="rollup_family" type="string">
+  **The only event filter that spans markets.** Each regulator's word rolls up to one of the news layer's families — `earnings`, `capital_return`, `merger_acquisition`, `guidance`, `ownership`, `management`, `corporate_action` and the rest — so `rollup_family=earnings` answers across SEC, TDnet, DART, HKEX and news at once, where any single spelling reaches one market. A filing whose code does not say what happened (an 8-K `material_agreement`, HKEX's catch-all categories) carries **no** rollup on purpose and never matches it.
+</ParamField>
+
+## Every Tag Has Its Own Clock
+
+`event_family` alone means "carried the tag at some point in the last 90 days". The `_since` forms put the date **on the tag itself**: `event_family_since`, `news_event_type_since`, `rollup_family_since` — "M&A news in the past week" is `news_event_type=merger_acquisition` plus `news_event_type_since`.
+
+`event_since` is a different clock: the company's newest event of **any** source. Good for "anything happened lately"; useless for narrowing a tag — for a busy large cap, tag + `event_since` filters nothing.
+
+## Sources Are Not Interchangeable
+
+"Earnings in both markets" is two names, not one: 8-K `earnings_release` and TDnet `earnings_flash`. Korean receipts carry their own families (`periodic_report`, `major_holding`, `buyback`, `supply_contract`); "Korean buybacks" is `event_source=korea_dart` + `event_family=buyback`. Filters are ANDed, so "M&A from either the news layer or a filing" is **two calls** unioned by the caller.
+
+## Related Screens
+
+[By guidance](/screening/companies/by-guidance) · [8-K events](/events/8k-events) · [News events](/news/news-events) · [Global disclosures](/international/exchange-disclosures) · [Company screening overview](/companies/screening)
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/screen?event_source=korea_dart&event_family=buyback&event_family_since=2026-08-01" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response (fields trimmed; family lists shortened)
+{
+  "data": [
+    {
+      "company_id": "cmp_007386",
+      "company_name": "Samsung Electronics Co., Ltd.",
+      "primary_ticker": "005930.KS",
+      "event_sources_90d": [
+        "korea_dart",
+        "news"
+      ],
+      "event_families_90d": [
+        "buyback",
+        "dividend",
+        "earnings_flash",
+        "insider_ownership",
+        "major_holding",
+        "periodic_report",
+        "related_party"
+      ],
+      "news_event_types_90d": [
+        "analyst",
+        "capital_return",
+        "earnings",
+        "guidance",
+        "merger_acquisition",
+        "product",
+        "strategy"
+      ],
+      "rollup_families_90d": [
+        "analyst",
+        "capital",
+        "capital_return",
+        "earnings",
+        "filing",
+        "guidance",
+        "merger_acquisition",
+        "ownership",
+        "product"
+      ],
+      "event_filings_90d": 838,
+      "news_events_90d": 159,
+      "event_last_at": "2026-09-01T21:22:53Z"
+    }
+  ]
+}
+```
+
+</ResponseExample>

@@ -1,0 +1,136 @@
+---
+title: "Index and Commodity Benchmarks"
+sidebarTitle: "Benchmarks"
+description: "Daily prices for 425 equity indices and 40 commodities, with ten years of history from 2015."
+---
+
+Index and Commodity Benchmarks provides daily prices for 425 equity indices and 40 commodities — the S&P 500, the Nikkei, the Hang Seng, gold, WTI, copper. Each observation is one benchmark symbol on one date. History runs from 2015, ten years, which is far longer than the one-year window on [company prices](/market-data/prices).
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Benchmarks For
+
+Compute a stock's return relative to the market it trades in. Measure a company's exposure to a commodity it buys or sells. Build a long backtest baseline, which company prices cannot support at one year of history. Compare regional markets over a decade.
+
+## Benchmarks Cover Indices and Commodities, Not Companies
+
+No company identifier works on this endpoint. It serves benchmark symbols only. For a company's own price series, use [Daily Prices](/market-data/prices).
+
+## Look Up the Benchmark Symbol First
+
+<Warning>
+Benchmark symbols are vendor spellings and are **not guessable**. The S&P 500 is `^GSPC` and gold is `GCUSD`, but 37 indices carry no caret at all: `XIN9.FGI` is the FTSE China A50, `DX-Y.NYB` is the dollar index, and `000001.SS` is the Shanghai Composite despite looking exactly like a listed share.
+</Warning>
+
+Pass `search` with a name — `gold`, `Nikkei`, `DAX` — to get the registry back, optionally narrowed with `kind` to `index` or `commodity`. Search takes precedence when both `search` and `symbol` are supplied.
+
+## Read close_major for a Commodity
+
+<Warning>
+Twelve agricultural contracts quote in **US cents**, with a `currency` of `USX`. Corn's close of `508.5` is $5.085 a bushel, not $508.50.
+
+Read `close_major` and `currency_major`, which are the same figure folded into the major unit. For every other benchmark they equal `close` and `currency`, so reading them is always safe.
+</Warning>
+
+## Weekend Rows Are Real
+
+A benchmark row on a Saturday or Sunday is not an error. The Saudi and Egyptian markets trade on Sunday, CBOT grains run a Sunday-evening session, and a few calculated indices restate Friday's value on Saturday.
+
+Do not filter weekend rows out as bad data.
+
+## Key Benchmark Fields
+
+Each row carries the benchmark `symbol`, the `date`, the open, high, low and close, `currency`, and the `close_major` and `currency_major` pair described above. The registry rows returned by `search` carry the symbol, its name and its `kind`.
+
+## Benchmarks Date Convention
+
+Each row is the session on that date on the benchmark's own calendar, which as noted is not always a weekday. History runs from 2015 and rows are returned newest first.
+
+## Benchmarks Sources
+
+Index and commodity prices come from market data vendors, in the vendor's own symbol space — which is why the symbols must be looked up rather than constructed.
+
+## Query Benchmarks
+
+Use the benchmarks endpoint to look a symbol up, then to fetch its series.
+
+<ParamField query="search" type="string">
+  A name or symbol to look up instead of fetching a series, for example `gold` or `Nikkei`. Returns the registry.
+</ParamField>
+
+<ParamField query="kind" type="string">
+  Restrict a search to `index` or `commodity`.
+</ParamField>
+
+<ParamField path="symbol" type="string">
+  The benchmark symbol whose series to fetch, for example `^GSPC`, `^N225`, `GCUSD`, `CLUSD`.
+</ParamField>
+
+<ParamField query="date_gte" type="string">
+  Earliest date, `YYYY-MM-DD`. `date_lte` sets the ceiling.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Rows per page, between 1 and 1000. Page through with `cursor`.
+</ParamField>
+
+## Related Datasets
+
+See also [Daily Prices](/market-data/prices) for a company's own series, [Daily Market Cap](/market-data/market-cap), and [Company Screening](/companies/screening) for momentum filters across the company universe.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/benchmarks?search=gold&kind=commodity" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Search: /v1/benchmarks?search=gold&kind=commodity
+{
+  "data": [
+    {
+      "symbol": "GCUSD",
+      "kind": "commodity",
+      "name": "Gold Futures",
+      "exchange": "",
+      "currency": "USD"
+    }
+  ]
+}
+```
+
+```json Prices: /v1/benchmarks?symbol=GCUSD&limit=1
+{
+  "data": [
+    {
+      "symbol": "GCUSD",
+      "kind": "commodity",
+      "name": "Gold Futures",
+      "date": "2026-08-31",
+      "open": 4483.2,
+      "high": 4521.5,
+      "low": 4445.6,
+      "close": 4481.5,
+      "volume": "149223",
+      "currency": "USD",
+      "close_major": 4481.5,
+      "currency_major": "USD"
+    }
+  ],
+  "next_cursor": "WyIyMDI2LTA4LTI4Il0",
+  "coverage": {
+    "available_from": "2015-01-01",
+    "available_to": null,
+    "update_frequency": "daily",
+    "history_status": "from_2015"
+  }
+}
+```
+
+</ResponseExample>

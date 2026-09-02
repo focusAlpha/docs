@@ -1,0 +1,120 @@
+---
+title: "8-K Exhibits"
+sidebarTitle: "8-K exhibits"
+description: "The exhibits attached to a company's SEC 8-K filings — the press release itself, where an earnings announcement or a management change is actually written."
+---
+
+8-K Exhibits provides the exhibits attached to a US company's 8-K filings, newest first. Each observation is one exhibit. This is where the text lives: an 8-K cover page only lists item codes, and the press release that actually says what happened is an exhibit to it.
+
+<Info>
+  **Plan:** Fund · **Credits:** 1 per call
+</Info>
+
+## What You Can Use 8-K Exhibits For
+
+Read the press release behind an earnings announcement or a management change in the company's own words. Retrieve the exact prose behind a [structured 8-K event](/events/8k-events). Feed a full release into a model for summarisation or extraction.
+
+For the filing's facts as fields — who was appointed, how much was borrowed at what rate — use [Structured 8-K Events](/events/8k-events) instead. Same filings, structured.
+
+## 8-K Exhibit Full Text Is Opt-In
+
+`include_body` is false by default. Set it to true to get the exhibit text, and expect a smaller page: bodies run to tens of thousands of characters, and the default page size drops from 50 rows to 10 when bodies are included.
+
+`chars` is always returned, so you can see how much text sits behind a row before asking for it.
+
+## 8-K Exhibits Coverage
+
+<Warning>
+Coverage is **backfilled backwards**, so the start date moves as older filings load. Read `coverage.available_from` on the response rather than trusting a date written on this page.
+
+An empty result for a filing older than the current floor is the feed's start, not a company that filed no exhibits.
+</Warning>
+
+## 8-K Exhibits Date Convention
+
+`date_gte` and `date_lte` filter on the **filing date** — when the 8-K reached the SEC. Rows are returned newest first.
+
+## Key 8-K Exhibit Fields
+
+Each row carries the `accession` number of the filing, the 8-K `item` code the exhibit was filed under, the filing date, `chars` giving the body length, and the body itself when `include_body` is set.
+
+Common item codes are `2.02` for results of operations and `5.02` for a director or officer change.
+
+## 8-K Exhibits Sources
+
+Exhibits come from the 8-K filings themselves on SEC EDGAR. Text is stored as filed and is not summarised or rewritten.
+
+## Query 8-K Exhibits
+
+Use the 8-K exhibits endpoint for one company.
+
+<ParamField path="company_id" type="string" required>
+  A `company_id`, ticker, CIK or ISIN.
+</ParamField>
+
+<ParamField query="item" type="string">
+  8-K item code, for example `2.02`.
+</ParamField>
+
+<ParamField query="accession" type="string">
+  One filing, for example `0001437749-26-024904`.
+</ParamField>
+
+<ParamField query="date_gte" type="string">
+  Earliest filing date, `YYYY-MM-DD`. `date_lte` sets the ceiling.
+</ParamField>
+
+<ParamField query="include_body" type="boolean" default="false">
+  Return the exhibit text.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="50">
+  Rows per page, between 1 and 1000 — but 10 by default when `include_body` is set. Page through with `cursor`.
+</ParamField>
+
+## Related Datasets
+
+See also [Structured 8-K Events](/events/8k-events) for the same filings as fields, [Reported Earnings Figures](/events/earnings-results) for the numbers inside an Item 2.02 release, [Management Guidance](/events/guidance) for the forward-looking statements inside it, and [SEC Filing Items](/filings/items) for the sections of a 10-K or 10-Q.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/AAPL/8k-exhibits?item=2.02&limit=1" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "company_id": "cmp_000584",
+      "cik": "320193",
+      "ticker": "AAPL",
+      "company_name": "Apple Inc.",
+      "accession": "0000320193-26-000018",
+      "form": "8-K",
+      "filing_date": "2026-07-30",
+      "acceptance_ts": "2026-07-30T20:30:28.000Z",
+      "items": "2.02,9.01",
+      "exhibit_type": "EX-99.1",
+      "description": "EX-99.1",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+      "format": "htm",
+      "chars": 10888
+    }
+  ],
+  "next_cursor": null,
+  "coverage": {
+    "available_from": "2024-12-31",
+    "available_to": null,
+    "update_frequency": "daily",
+    "history_status": "starts_2024_12_31"
+  }
+}
+```
+
+</ResponseExample>

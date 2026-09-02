@@ -1,0 +1,153 @@
+---
+title: "Segmented Financials"
+sidebarTitle: "Segmented financials"
+description: "As-reported business and geographic segment breakdowns — revenue and related line items by the axes the company itself disclosed."
+---
+
+Segmented Financials provides business and geographic segment breakdowns exactly as a company reported them. Each observation is one segment member for one fiscal period, carrying revenue and the related line items the company disclosed for that segment. The axes are the company's own; nothing is mapped to a common taxonomy.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Segmented Financials For
+
+Track a company's revenue mix by business line or geography over time. See which segment drove a change in consolidated results. Detect a segment redefinition, which shows up as an axis changing between periods. Compare a company against itself before attempting any cross-company comparison.
+
+## Segmented Financials Coverage
+
+Coverage is SEC filers that disclose segment data in their XBRL exhibits. Income-statement segmentation is the most widely reported; balance-sheet and cash-flow segmentation are much sparser, so an empty response on those is common and is not an error.
+
+## Why Segment Axes Are Not Comparable Across Companies
+
+Segment axes are defined by the filer, not by a standard. Two companies in the same industry rarely cut revenue the same way, and a single company can change its own axes between years after a reorganisation.
+
+Compare a company against itself first. Cross-company segment comparison requires deciding, case by case, that two differently named axes describe the same thing — a judgement this dataset deliberately does not make on your behalf.
+
+## Key Segmented Financials Fields
+
+Rows carry the segment axis and member as the company named them, the line-item values disclosed for that member, `report_period`, `period`, `currency` and `accounting_standard`.
+
+## The Four Segment Endpoints
+
+The combined segments endpoint returns segmentation across statements and is the usual entry point. Three statement-specific endpoints return the same structure narrowed to one statement: income-statement segments, balance-sheet segments and cash-flow segments. The wrapper keys are `income_statement_segments`, `balance_sheet_segments` and `cash_flow_statement_segments` respectively.
+
+## Segmented Financials Date Convention
+
+`report_period` is the end of the fiscal period the segment figures cover. `period` defaults to `annual` on these endpoints and also accepts `quarterly`.
+
+## Segmented Financials Sources
+
+Segment figures are read from the company's own XBRL segment axes in its SEC filings, as reported. No axis is renamed, merged or mapped.
+
+## Query Segmented Financials
+
+Use the segments endpoint. One of `ticker` or `cik` is required; `period` is optional here and defaults to `annual`.
+
+<ParamField query="ticker" type="string">
+  Trading symbol. One of `ticker` or `cik` is required.
+</ParamField>
+
+<ParamField query="cik" type="string">
+  SEC Central Index Key. One of `ticker` or `cik` is required.
+</ParamField>
+
+<ParamField query="period" type="string" default="annual">
+  `annual` or `quarterly`.
+</ParamField>
+
+<ParamField query="report_period" type="string">
+  Exact period end, `YYYY-MM-DD`. The `_gte`, `_lte`, `_gt` and `_lt` variants bound a range.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="4">
+  Number of period rows to return, newest first.
+</ParamField>
+
+## Related Datasets
+
+See also [Income Statements](/financials/income-statements) for the consolidated figures these break down, [Combined Financial Statements](/financials/combined) for all three statements at once, and [Form 20-F Segments](/international/form-20f) for the equivalent disclosure by foreign private issuers.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/financials/segments?ticker=AAPL&period=annual&limit=1" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response (trimmed)
+{
+  "segmented_financials": [
+    {
+      "ticker": "AAPL",
+      "report_period": "2025-09-27",
+      "fiscal_period": "FY2025",
+      "period": "annual",
+      "currency": "USD",
+      "accession_number": "0000320193-25-000079",
+      "income_statement": {
+        "revenue": {
+          "product": [
+            {
+              "label": "iPhone",
+              "value": 209586000000
+            },
+            {
+              "label": "Mac",
+              "value": 33708000000
+            },
+            {
+              "label": "iPad",
+              "value": 28023000000
+            }
+          ],
+          "segment": [
+            {
+              "label": "Americas",
+              "value": 178353000000
+            },
+            {
+              "label": "Europe",
+              "value": 111032000000
+            },
+            {
+              "label": "Greater China",
+              "value": 64377000000
+            }
+          ],
+          "geography": [
+            {
+              "label": "U.S.",
+              "value": 151790000000
+            },
+            {
+              "label": "China",
+              "value": 64377000000
+            }
+          ]
+        },
+        "operating_income": {
+          "segment": [
+            {
+              "label": "Americas",
+              "value": 72480000000
+            },
+            {
+              "label": "Europe",
+              "value": 47739000000
+            }
+          ]
+        }
+      },
+      "balance_sheet": null,
+      "cash_flow_statement": null
+    }
+  ]
+}
+```
+
+</ResponseExample>

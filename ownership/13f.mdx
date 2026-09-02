@@ -1,0 +1,140 @@
+---
+title: "13F Institutional Holdings"
+sidebarTitle: "13F holdings"
+description: "Quarterly 13F positions reported by US institutional investment managers, readable by manager or by held security."
+---
+
+13F Institutional Holdings provides quarterly equity positions reported by US institutional investment managers on SEC Form 13F. Each observation is associated with a filing manager, a held security, and a report period ending on a calendar quarter end. Holdings are available by manager and by security through the FocusAlpha API and MCP.
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use 13F Holdings For
+
+Reconstruct a manager's disclosed equity portfolio for a quarter, and difference two quarters to see what it bought and sold. List every institution holding a given company, ranked by position value. Measure how concentrated a manager's book is. Compare what a manager says it does in its [Form ADV brochure](/advisers/adv-brochure) against what its 13F book actually holds.
+
+## 13F Holdings Coverage
+
+Coverage is US Form 13F filers: institutional investment managers exercising discretion over more than $100 million in 13F-reportable US-listed equities. Managers below that threshold do not file and are absent.
+
+Up to eight quarters of history are served per manager.
+
+<Warning>
+A 13F is a partial picture of a manager by law, not by omission. It reports long positions in 13F-reportable securities only. Short positions, bonds, cash, commodities, non-US listings and most derivatives are not reportable and therefore never appear. A portfolio reconstructed from 13F data is the reportable slice, not the fund.
+</Warning>
+
+## Two Ways to Read 13F Holdings
+
+The dataset is queried in one of two mutually exclusive modes, and exactly one identifier must be supplied.
+
+Passing `filer_cik` returns **one manager's whole portfolio**. This is the mode for "what does this manager own".
+
+Passing `ticker` returns **every institution holding that security**, largest position first. This is the mode for "who owns this company".
+
+Passing both, or neither, returns a `400`.
+
+<Warning>
+Querying by `filer_cik` with no report period returns **only the most recent quarter**, not the manager's history. To read history, pass `report_period` for one quarter or `report_period_gte` and `report_period_lte` for a range. The same applies to ticker mode: bounds are what produce a holder history across quarters.
+</Warning>
+
+## Key 13F Holdings Fields
+
+`ticker`, `name_of_issuer` and `cusip` identify the held security as the manager reported it. `title_of_class` is the share class. `put_call` is populated on option positions and null on ordinary long stock.
+
+`report_period` is the quarter end the position is as of. `filing_date` is when the manager filed. `form_type` distinguishes an original `13F-HR` from an amendment. `accession_number` identifies the filing on EDGAR.
+
+## 13F Holdings Date Convention
+
+`report_period` is the quarter end the positions are stated as of — always a calendar quarter end such as `2026-03-31`. It is the date to filter and group on.
+
+`filing_date` is when the manager submitted the form, and it is typically about 45 days after the report period. The gap matters: a position dated 31 March only becomes public in mid-May, so 13F data is never a current picture of a portfolio.
+
+## 13F Holdings Sources
+
+Positions are read from the managers' own Form 13F filings on SEC EDGAR. Nothing is estimated, and an amendment is kept as its own filing rather than overwriting the original.
+
+## Query 13F Holdings
+
+Use the institutional holdings endpoint to retrieve 13F positions. Supply exactly one of `filer_cik` or `ticker` to choose the mode.
+
+<ParamField query="filer_cik" type="string">
+  The manager's SEC CIK. Returns that manager's portfolio. Exactly one of `filer_cik` or `ticker` is required.
+</ParamField>
+
+<ParamField query="ticker" type="string">
+  The held security's ticker. Returns every institution holding it. Exactly one of `filer_cik` or `ticker` is required.
+</ParamField>
+
+<ParamField query="report_period" type="string">
+  Exact quarter end, `YYYY-MM-DD`, for example `2026-03-31`. Required to read anything other than the most recent quarter.
+</ParamField>
+
+<ParamField query="report_period_gte" type="string">
+  Quarter-end lower bound, inclusive. `report_period_lte`, `report_period_gt` and `report_period_lt` work the same way.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="1000">
+  Maximum rows in the response. There is no hard cap. This bounds the **whole response**, not the rows per quarter, so a multi-quarter request needs a much larger value than a single-quarter one — around 5,000 for a complete eight-quarter holder history on a mega-cap. Leaving it at the default silently truncates such a request to the most recent quarters.
+</ParamField>
+
+These routes return a bare wrapper key rather than the standard envelope, use `limit`-only paging, and return the flat `{ error, message }` error body. See [Pagination](/concepts/pagination) and [Errors](/concepts/errors).
+
+## Related Datasets
+
+See also [Form ADV Adviser Directory](/advisers/form-adv) for who these managers are, [Form ADV Part 2A Brochure Data](/advisers/adv-brochure) for what they say they do, [Adviser Screening](/advisers/screening) to find managers whose declared style disagrees with their book, [Insider Trades](/ownership/insider-trades) for transactions by company officers, and [Proxy Ownership](/ownership/proxy-ownership) for beneficial ownership as the company reports it.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/institutional-holdings?filer_cik=1067983&limit=3" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "filer_cik": "0001067983",
+  "institutional_holdings": [
+    {
+      "cusip": "02079K305",
+      "shares": 78791167,
+      "ticker": "GOOGL",
+      "put_call": null,
+      "filer_cik": "0001067983",
+      "form_type": "13F-HR",
+      "value_usd": 28157599351,
+      "filer_name": "Berkshire Hathaway Inc",
+      "share_type": "SH",
+      "filing_date": "2026-08-14",
+      "report_period": "2026-06-30",
+      "name_of_issuer": "ALPHABET INC",
+      "reported_price": 357.37,
+      "title_of_class": "CAP STK CL A",
+      "accession_number": "0001193125-26-352200"
+    },
+    {
+      "cusip": "02005N100",
+      "shares": 27000000,
+      "ticker": "ALLY",
+      "put_call": null,
+      "filer_cik": "0001067983",
+      "form_type": "13F-HR",
+      "value_usd": 1240650000,
+      "filer_name": "Berkshire Hathaway Inc",
+      "share_type": "SH",
+      "filing_date": "2026-08-14",
+      "report_period": "2026-06-30",
+      "name_of_issuer": "ALLY FINL INC",
+      "reported_price": 45.95,
+      "title_of_class": "COM",
+      "accession_number": "0001193125-26-352200"
+    }
+  ]
+}
+```
+
+</ResponseExample>

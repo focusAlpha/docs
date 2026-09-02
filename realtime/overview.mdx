@@ -1,0 +1,76 @@
+---
+title: "Real-Time Events"
+sidebarTitle: "Real-time events overview"
+description: "FocusAlpha's live event layer — SEC 8-K extraction, the aggregated news event feed, Asian exchange disclosures and macro themes — and what each one's latency and history actually are."
+---
+
+Real-Time Events is the group of FocusAlpha datasets that answer "what just happened". They read SEC filings, news wires, Asian exchange filings, company IR pages and earnings calls as those arrive, and they are built for monitoring rather than for historical research.
+
+Every dataset in this group is a **recency product**. They carry weeks or months of history, not archives, and each one's start date is stated below and returned in its response.
+
+## The Real-Time Event Datasets
+
+<CardGroup cols={2}>
+  <Card title="Company News Events" icon="bolt" href="/news/news-events">
+    Filings, wires and IR posts aggregated into one labelled event per story.
+  </Card>
+  <Card title="Company News Articles" icon="newspaper" href="/news/company-news">
+    The individual write-ups behind an event.
+  </Card>
+  <Card title="Structured 8-K Events" icon="file-lines" href="/events/8k-events">
+    What an 8-K said, as fields, minutes after it hits EDGAR.
+  </Card>
+  <Card title="Exchange Disclosures" icon="globe" href="/international/exchange-disclosures">
+    Taiwan, Korea and Japan announcements from the local markets.
+  </Card>
+  <Card title="Macro News Themes" icon="landmark" href="/news/themes">
+    Policy and macro events that name no company.
+  </Card>
+  <Card title="Prediction Market Prices" icon="scale-balanced" href="/events/prediction-markets">
+    What money is betting on a company, as hourly snapshots.
+  </Card>
+</CardGroup>
+
+## What Each One's Latency Actually Is
+
+Structured 8-K events run at a **median of 12 minutes** from SEC acceptance to extraction, with 94% inside 30 minutes. A filing accepted in the last few minutes may not have rows yet.
+
+The news feeds poll continuously and update within minutes.
+
+Exchange disclosures update daily.
+
+Prediction market prices are **hourly snapshots between 12:00 and 24:00 UTC**, with a roughly 12.5-hour gap overnight. A price fetched at 08:00 UTC is eight hours old, and `as_of_age_minutes` says exactly how old.
+
+## What Each One's History Actually Is
+
+The news event feed and news articles start **2026-07-26**.
+
+Exchange disclosures start **2026-06-15** for Japan, **2026-07-22** for Taiwan and **2026-07-28** for Korea.
+
+Structured 8-K events and 8-K exhibits are backfilled **backwards**, so their floor moves. Read `coverage.available_from` on the response.
+
+<Warning>
+Do not build historical studies on these feeds. Use [SEC filings](/filings/index), [financial statements](/financials/combined) and [guidance](/events/guidance) for history.
+</Warning>
+
+## An Empty Result Rarely Means Nothing Happened
+
+On the news feeds, an empty result means nothing about that name cleared the scoring bar — not that nothing was published.
+
+On 8-K events, an empty result for a very recent filing is the extraction gap, not an absence of events.
+
+On exchange disclosures, an empty `markets_searched` means the company lists in none of the three markets, which is different from listing in one and announcing nothing.
+
+## Scores and Directions Are This System's Reading
+
+`direction` and `impact_score` on the news layer are the model's judgment of an article, not a price move and not a forecast. Knock-on rows are inferences drawn from filed relationships, never reporting, and they carry `peak_magnitude` on a different scale from `peak_impact`.
+
+Attribute them that way whenever you present them.
+
+## Real-Time Event Plans
+
+Every dataset in this group is **Fund** plan, except where noted on its own page.
+
+## Related Datasets
+
+See also [Coverage and freshness](/concepts/coverage) for how each dataset reports its own window, and [Company Screening](/companies/screening), whose event axis exposes the same event families as a cross-company filter.

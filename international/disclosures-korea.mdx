@@ -1,0 +1,97 @@
+---
+title: "Korea DART Disclosures"
+sidebarTitle: "Korea disclosures"
+description: "Company disclosures filed to Korea's DART system, with a link to the original document and the filer named on every row — who is often not the company itself."
+---
+
+Korea DART Disclosures is the feed of company filings received by DART, Korea's regulatory disclosure system — the authoritative record of what was filed about a Korean listed company. Every row links the original DART document and names the **filer**, which matters because in Korea the filer is often not the company: a large-holdings report about Samsung Electronics is filed by the holder.
+
+<Info>
+  **Plan:** Fund · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Korea Disclosures For
+
+See what was filed about a Korean company today — periodic reports, major-holding changes, insider ownership reports, buybacks, supply contracts, dividends, equity offerings. Follow the link to the original DART document. Combine with the [company screen's](/screening/companies/by-events) `event_source=korea_dart` axis, whose event families are classified from these regulated report names.
+
+## Korea Disclosure Coverage
+
+The feed is a **rolling recent window, not an archive**; the per-market start date is measured in the response's `coverage` block. The ingest schedule collects on Korea's own disclosure calendar — DART receipt numbers do not always encode the receipt date, so the served date is the authoritative one.
+
+## Key Korea Disclosure Fields
+
+Each row carries the disclosure date, the report title as filed, the **filer name**, and the URL of the original DART document. Titles are in Korean and are not translated. Korea publishes no per-row category through this feed — the classified event families (`periodic_report`, `major_holding`, `buyback`, `supply_contract`, and the rest) live on the [company screen's event axis](/screening/companies/by-events), classified from the regulated report names.
+
+For the **sections** of a Korean periodic report — ownership tables, debt, shareholder structure — use [Korea DART Report Sections](/international/korea-dart-report-sections); this feed is the filing index.
+
+## Korea Disclosure Date Convention
+
+The disclosure date is DART's receipt date, Seoul time. The feed collects with the market's own lag, so the newest rows are normally from the prior Korean business day.
+
+## Korea Disclosure Sources
+
+Rows come from DART, the Financial Supervisory Service's disclosure system. This is the regulatory record itself, not coverage of it.
+
+## Query Korea Disclosures
+
+Use the company disclosures endpoint with `market=korea`, passing a Korean ticker (`005930.KS`), `company_id`, CIK or ISIN.
+
+<ParamField path="company" type="string" required>
+  Ticker (`005930.KS`), `company_id`, CIK or ISIN.
+</ParamField>
+
+<ParamField query="market" type="string">
+  `korea` to restrict to this market; omit to search every listed market.
+</ParamField>
+
+<ParamField query="date_gte" type="string">
+  Earliest disclosure date, `YYYY-MM-DD`; `date_lte` sets the ceiling. `limit` (default 50, max 200) and `cursor` page newest-first.
+</ParamField>
+
+## Related Datasets
+
+See also [Global Exchange Disclosures](/international/exchange-disclosures) for the cross-market view, [Korea DART Financials](/international/korea-dart-financials) for the structured statements, and [Korea DART Report Sections](/international/korea-dart-report-sections) for inside the periodic reports.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/005930.KS/disclosures?market=korea&limit=2" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "market": "korea",
+      "source_id": "20260831000066",
+      "date": "2026-08-31",
+      "company_id": "cmp_007386",
+      "local_code": "00126380",
+      "title": "임원ㆍ주요주주특정증권등소유상황보고서",
+      "filing_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260831000066",
+      "filer": "김은용",
+      "rcept_no": "20260831000066",
+      "corp_class": "Y"
+    }
+  ],
+  "next_cursor": null,
+  "markets_searched": [
+    "korea"
+  ],
+  "coverage": {
+    "korea": {
+      "available_from": "2026-07-28",
+      "available_to": null,
+      "update_frequency": "daily",
+      "history_status": "recent_only_started_2026_07_28"
+    }
+  }
+}
+```
+
+</ResponseExample>

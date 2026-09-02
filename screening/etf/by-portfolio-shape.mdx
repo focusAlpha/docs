@@ -1,0 +1,88 @@
+---
+title: "Screen ETFs by Portfolio Shape"
+sidebarTitle: "By portfolio shape"
+description: "Filter ETFs by measured holdings characteristics — number of holdings, top-10 concentration, large- and small-cap share, bond duration and treasury share."
+---
+
+Screening ETFs by portfolio shape filters on measurements taken directly from each fund's newest holdings day: how many positions it holds, how concentrated the top of the book is, how its equity weight splits across cap bands, and — for bond funds — its duration and treasury share. These are measured numbers, not labels, so they work on any fund with a holdings feed regardless of how it is classified.
+
+<Info>
+  **Plan:** Fund · **Credits:** 1 per call; screen facets are free
+</Info>
+
+## The Concentration Filters
+
+<ParamField query="min_n_holdings" type="number">
+  Floor on the number of holdings lines.
+</ParamField>
+
+<ParamField query="min_top10_share" type="number">
+  Floor on the share of the book in the ten largest positions, `0..1`. `max_top10_share` sets the ceiling — the way to require diversification.
+</ParamField>
+
+## The Cap-Band Filters
+
+<ParamField query="min_large_share" type="number">
+  Floor on the large-cap share of linked equity weight, `0..1`. `max_large_share` sets the ceiling.
+</ParamField>
+
+<ParamField query="min_small_share" type="number">
+  Floor on the small-cap share of linked equity weight, `0..1`.
+</ParamField>
+
+Cap bands are **measured**, not labels: sector and thematic funds carry no cap-band label at all, so "large-cap biotech" is a segment plus specialization plus `min_large_share` — see [Screen ETFs by Asset Class](/screening/etf/by-asset-class).
+
+## The Bond-Book Filters
+
+<ParamField query="min_duration" type="number">
+  Floor on weighted bond duration, in years. `max_duration` sets the ceiling — `max_duration=1` is the ultra-short bucket.
+</ParamField>
+
+<ParamField query="min_treasury_share" type="number">
+  Floor on the treasury share of the bond book, `0..1`.
+</ParamField>
+
+## Where These Numbers Come From
+
+Every filter on this page reads the fund's holdings profile, computed from the newest holdings day of its portfolio — the same measurement layer served in the `portfolio` block of the [ETF profile](/etf/overview). Funds without a holdings feed have nulls here and silently drop out of these filters; the free facets endpoint reports how many funds carry a holdings profile. On exposure-hidden funds the profile is computed on notional exposure, not raw market values.
+
+## Related Screens
+
+[By geography](/screening/etf/by-geography) · [By asset class](/screening/etf/by-asset-class) · [ETF holdings](/etf/holdings) · [ETF screening overview](/etf/screening)
+
+<RequestExample>
+
+```bash Concentrated sector books
+curl "https://api.focusalpha.ai/v1/etfs/screen?segment=equity.sector.health_care&min_top10_share=0.5" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```bash Short-duration treasuries
+curl "https://api.focusalpha.ai/v1/etfs/screen?max_duration=1&min_treasury_share=0.9" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response (XLV, fields trimmed)
+{
+  "data": [
+    {
+      "ticker": "XLV",
+      "name": "State Street Health Care Select Sector SPDR ETF",
+      "n_holdings": "62",
+      "top1_share": "0.1507",
+      "top10_share": "0.6082",
+      "large_share": "0.8534",
+      "mid_share": "0.1466",
+      "small_share": "0.0000",
+      "duration": null,
+      "treasury_share": "0.0000"
+    }
+  ]
+}
+```
+
+</ResponseExample>

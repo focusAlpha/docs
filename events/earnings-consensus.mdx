@@ -1,0 +1,121 @@
+---
+title: "Earnings Consensus from Prediction Markets"
+sidebarTitle: "Earnings consensus"
+description: "The EPS level a prediction-market contract settles against for a company's quarter, and whether the company cleared it."
+---
+
+Earnings Consensus from Prediction Markets reports where the market set the bar for a US company's quarterly EPS, and whether the company cleared it. Each observation is one contract for one quarter, carrying the EPS threshold it settles against, the basis it is written on, and the settlement outcome.
+
+<Info>
+  **Plan:** Fund · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Earnings Consensus For
+
+Read the bar a quarter was judged against, struck at a date you can point to. Compare that bar with [what management guided](/events/guidance) and with [what the release printed](/events/earnings-results). Build a beat-and-miss history that does not depend on a running estimate.
+
+## Why the Threshold Does Not Drift
+
+`eps_threshold` is a property **of the contract**: the EPS level that decides how it settles, struck where expectations sat when the contract was written.
+
+It is fixed at listing and never revised afterwards, so it does not drift with later news the way a running consensus estimate does. That makes it a stable historical bar, and a different thing from a sell-side consensus number.
+
+## GAAP and Non-GAAP Are Different Contracts
+
+<Warning>
+`basis` separates GAAP from non-GAAP. They are **different contracts written against different levels**, so pooling them compares an adjusted figure with a GAAP one.
+
+Omit `basis` to see both, but do not aggregate across it.
+</Warning>
+
+## Two Separate Settlement Claims
+
+`cleared` is the **exchange's own settlement** of its contract.
+
+`cleared_confirmed` is an **independent reading** of the same question against the EPS the company printed in its earnings release, with `reported_eps` and `reported_source_url` beside it so it can be checked. `check_status` says why the check could not run, rather than leaving a bare null.
+
+They stay separate columns because they are separate claims. Where both could be computed they agreed on 421 of 422 cases, and the single exception traced to the release data, not to the settlement.
+
+<Warning>
+The independent check runs on about a **third** of settled contracts — 422 of 1,251 — which is a limit of the release data rather than a verdict. Most of the rest are `basis_unknown`, where the release printed an EPS without saying whether it was GAAP or adjusted.
+
+A null `cleared_confirmed` therefore means **not checked**, never that `cleared` is wrong.
+</Warning>
+
+## Earnings Consensus Coverage
+
+Contracts exist for a few hundred companies, not a universe. An empty result means no contract was listed on that company's quarter, never that nothing is expected of it.
+
+## Earnings Consensus Date Convention
+
+`date_gte` and `date_lte` filter on the **estimated report date** of the quarter, not on the contract's listing date and not on the settlement date.
+
+## Earnings Consensus Sources
+
+Thresholds and settlements come from the prediction-market exchange. `reported_eps` and `reported_source_url` come from the company's own earnings release, and the confirmation column is computed by FocusAlpha against it.
+
+## Query Earnings Consensus
+
+Use the earnings markets endpoint for one company.
+
+<ParamField path="company_id" type="string" required>
+  A `company_id`, ticker, CIK or ISIN.
+</ParamField>
+
+<ParamField query="basis" type="string">
+  `gaap` or `nongaap`. Omit for both, but do not pool them.
+</ParamField>
+
+<ParamField query="date_gte" type="string">
+  Estimated report date on or after this `YYYY-MM-DD` date. `date_lte` sets the ceiling.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Rows per page, between 1 and 1000. Page through with `cursor`.
+</ParamField>
+
+## Related Datasets
+
+See also [Prediction Market Prices](/events/prediction-markets) for the live price on these same contracts, [Management Guidance](/events/guidance) for what management said it expects, and [Reported Earnings Figures](/events/earnings-results) for every metric the quarter delivered.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/TSLA/earnings-markets?basis=nongaap" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "market_id": "pmk_80b6de60ffc3c7ea",
+      "ticker": "TSLA",
+      "company_id": "cmp_008544",
+      "basis": "nongaap",
+      "estimated_report_date": "2026-04-22",
+      "eps_threshold": "0.39",
+      "settled": true,
+      "cleared": true,
+      "reported_eps": null,
+      "reported_period": null,
+      "reported_source_url": null,
+      "cleared_confirmed": null,
+      "check_status": "no_actual_in_window"
+    }
+  ],
+  "next_cursor": null,
+  "coverage": {
+    "available_from": "2025-09",
+    "available_to": null,
+    "update_frequency": "twice daily",
+    "history_status": "complete for the companies that have a listed contract; a company with none has no row"
+  }
+}
+```
+
+</ResponseExample>

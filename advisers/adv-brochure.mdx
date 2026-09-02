@@ -1,0 +1,216 @@
+---
+title: "Form ADV Part 2A Brochure Data"
+sidebarTitle: "ADV Part 2A brochure"
+description: "What an investment adviser says its business is, read from its own Form ADV Part 2A brochure: business type, strategy, style, products, and the full fee schedule with verbatim quotes."
+---
+
+Form ADV Part 2A Brochure Data is the structured reading of an investment adviser's own Part 2A brochure — the plain-English document a firm files with the SEC describing its business. Each observation is one firm, identified by CRD, and every claim is stored next to the verbatim brochure sentence it was read from. The brochure layer is returned by the adviser profile endpoint alongside the firm's Part 1 figures and its revealed 13F style.
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use ADV Brochure Data For
+
+Classify a firm by what it actually does rather than by its name. Read a manager's full fee schedule as printed, including tiered rates and performance-fee terms. Check whether a firm's declared value or growth orientation matches what its [13F book](/ownership/13f) holds. Quote a firm's own sentence about its strategy, with a link to the brochure PDF it came from.
+
+## What the Adviser Profile Returns
+
+The profile endpoint returns six layers for one firm.
+
+**Identity and contact** carries the legal and business name, full street address, phone, fax, website, and every e-mail found in the firm's brochure — each address with the verbatim sentence it was printed in, so you can see whose mailbox it is.
+
+**Declared business**, from ADV Part 1, carries total and discretionary regulatory AUM, account and employee counts, non-US client share, private-fund flags and counts, services offered, and whether the firm charges performance fees. These are the firm's self-reported numbers.
+
+**Brochure profile** is the Part 2A reading described below.
+
+**Fees** is the full fee schedule from the brochure.
+
+**Revealed style** is what the firm's latest 13F book actually holds.
+
+**Provenance** carries the ADV snapshot date, the brochure date, the style report period, and the confidence of the CIK-to-CRD mapping.
+
+## Three Brochure Axes That Must Not Be Conflated
+
+`primary_type` and `subtype` answer **what kind of business the firm is**. The ten primary types are `asset_manager`, `wealth_manager`, `allocator`, `program_sponsor`, `dual_bd_ria`, `retirement_specialist`, `trust_company`, `insurance_affiliated`, `research_services` and `restricted_mandate`. A subtype is always a child of one of them — `hedge_fund` and `quant_systematic` under `asset_manager`, `family_office` under `wealth_manager`, `ocio` under `allocator`, `wrap_sponsor` under `program_sponsor`.
+
+`investment_strategy` answers **what the firm runs**: tags such as `long_short`, `merger_arbitrage`, `global_macro`, `distressed`, `venture_capital`, `asset_allocation`, `manager_selection`.
+
+`investment_style` answers **how it invests**: `management_approach` (active versus passive), `analysis_basis` (fundamental versus quantitative), `implementation_style` (rules versus judgment), `equity_styles`, `market_cap_focus`, and the short-selling, leverage, derivatives, options and ESG flags.
+
+A quantitative arbitrage firm reads as quantitative and systematic on style while its strategy list names the arbitrages it runs. Those are two different facts and should be reported separately.
+
+Two further fields sit alongside: `services_offered` is what the firm sells to clients, and `role_flags` are facts that hold at the same time as `primary_type` — a wealth manager that is also a broker-dealer is still a wealth manager, and the flag records the second fact without displacing the first.
+
+## Brochure Classification Versus Part 1 Classification
+
+`primary_type` and `subtype` are read from the brochure **text**. The directory row's `firm_type` is a separate label derived from ADV Part 1 **numbers**, and only for 13F filers.
+
+They are two independent classifications. When they disagree, that is two classifications disagreeing — report both with their sources rather than picking one.
+
+## Why an Empty Brochure Field Does Not Mean No
+
+Brochures are marketing documents, and the tags are deliberately conservative: a tag is set only where the brochure states the thing in so many words.
+
+An empty tag list, a value of `unclear`, or a null flag therefore means **the brochure does not say**. It never means the firm does not do it. `uses_short_selling: false` means the brochure states that it does not short — not that shorting went unmentioned.
+
+Because the tags are conservative, a brochure quote often says more than the tags captured. Quoting the sentence is always safe.
+
+## Reading the Brochure Fee Schedule
+
+Every fee row leads with `fee_text`, the verbatim sentence the firm printed. The parsed columns beside it — rate and amount bounds, tiered schedules, performance-fee terms including high-water mark and hurdle — are a best-effort parse provided for filtering.
+
+When the parse and the sentence disagree, **the sentence wins**. A null fee column means the sentence does not say; it never means "no".
+
+All rows are returned, tiers included.
+
+<Warning>
+Fee rows span **every brochure the firm filed**, not only the one described in the profile block. A large firm prices different products in different brochures — a wrap-fee brochure, an institutional brochure, a private-bank brochure — and each row names its own source in `from_brochure` and `from_brochure_url`, with `from_this_brochure` saying whether the block-level `brochure_url` is the right PDF for that row.
+
+Cite a fee with its own brochure. Rows from different brochures describe different products and are not alternatives for the same service, so never present the cheapest as "the" fee, and never compare across them without naming both brochures.
+</Warning>
+
+## Which Brochure Answered
+
+A firm can file many brochures. One brochure answers per firm, and the one describing the **firm** wins over the ones describing a single programme. `brochure_scope` says which kind answered: `entity`, `business_line`, `supplement` or `undetermined`.
+
+`quotes` carries the verbatim sentences behind the claims. Each quote's `topic` names the field it supports, with its ADV item and page, and `brochure_url` links the PDF so any quote can be checked against the original.
+
+## Reading the Revealed 13F Style
+
+For 13F filers, the profile also carries what the latest quarter's book actually holds: `vg_score`, weighted price-to-book and price-to-earnings, top-ten concentration, effective holdings, sector mix and top holdings.
+
+<Warning>
+`vg_score` reads **inverted**: lower is growthier. Below 0.55 is deep growth, around 0.80 is blend, and 1.35 or above is deep value.
+</Warning>
+
+<Warning>
+The 13F long US equity value is **not** the same number as regulatory AUM and the two should never be presented as alternatives. A firm can report roughly $570 billion of regulatory AUM against roughly $71 billion of 13F long US equity, because the two measure different things.
+</Warning>
+
+Together, the brochure profile and the revealed style answer the question neither answers alone: does this firm do what it says?
+
+## Brochure Coverage and Status
+
+Brochure ingestion is still rolling out across the roster. When the `brochure` block is absent it carries a `status` giving the reason.
+
+`on_file_not_processed` means FocusAlpha holds the PDF and extraction is pending. `not_in_store` means no firm-level brochure is held — exempt reporting advisers often file none. Both mean "not ingested yet", and neither means the firm discloses nothing.
+
+`unavailable` is a third and different case: the brochure store could not be read at that moment. Retry.
+
+## Query an Adviser Profile
+
+Use the adviser profile endpoint with a CRD or CIK to retrieve all six layers for one firm.
+
+<ParamField path="id" type="string" required>
+  `crd:105247`, `cik:0001112520`, or a bare number, which is tried as a CRD first and then as a CIK.
+</ParamField>
+
+<Note>
+Quote e-mail addresses with their `matches_firm` flag. `false` usually means a parent-company or outsourced-compliance domain, which is often still the correct mailbox — say so when quoting it.
+</Note>
+
+## Related Datasets
+
+See also [Form ADV Adviser Directory](/advisers/form-adv) to find the firm, [Adviser Screening](/advisers/screening) to search these brochure axes across the whole roster, and [13F Institutional Holdings](/ownership/13f) for the firm's full position history.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/institutions/crd:105129" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response (Bridgewater, trimmed)
+{
+  "data": {
+    "crd": "105129",
+    "cik": "0001350694",
+    "legal_name": "BRIDGEWATER ASSOCIATES, LP",
+    "firm_type": "Hedge-Fund",
+    "sec_registration_type": "Registered",
+    "aum_total": "150159985476.0",
+    "n_holdings": 993,
+    "vg_score": "0.69",
+    "style_tier": "Growth-Biased",
+    "style_report_period": "2026-03-31",
+    "brochure": {
+      "status": "available",
+      "brochure_date": "2026-03-30T00:00:00.000Z",
+      "brochure_name": "BRIDGEWATER ASSOCIATES, LP, PART 2A, MARCH 2026",
+      "brochure_url": "https://files.adviserinfo.sec.gov/IAPD/Content/Common/crd_iapd_Brochure.aspx?BRCHR_VRSN_ID=1032747",
+      "brochure_scope": "entity",
+      "primary_type": "asset_manager",
+      "subtype": "public_markets",
+      "role_flags": [
+        "manages_private_funds"
+      ],
+      "services_offered": [
+        "portfolio_management"
+      ],
+      "investment_strategy": [
+        "asset_allocation",
+        "strategic_asset_allocation"
+      ],
+      "investment_style": {
+        "management_approach": "unclear",
+        "analysis_basis": "fundamental",
+        "implementation_style": "systematic_rules_based",
+        "equity_styles": [],
+        "declared_vg_bucket": "not_applicable",
+        "market_cap_focus": [],
+        "investment_horizon": "long",
+        "uses_short_selling": true,
+        "uses_leverage": true,
+        "uses_derivatives": true,
+        "uses_options": null,
+        "uses_esg": null,
+        "summary": "Bridgewater is a global macro asset manager providing discretionary investment management to institutional clients through pooled funds and managed accounts. It employs a fundamental, systematic, and diversified approach, separating alpha and beta strategies."
+      },
+      "products": {
+        "product_types": [
+          "private_fund",
+          "separately_managed_account"
+        ],
+        "asset_classes": [
+          "equity",
+          "fixed_income",
+          "commodities",
+          "currencies",
+          "derivatives",
+          "structured_credit",
+          "other"
+        ]
+      },
+      "geographic_coverage": [
+        "emerging_markets"
+      ],
+      "quotes": [
+        {
+          "topic": "uses_short_selling",
+          "item": "8",
+          "page": 36,
+          "section": "Item 8: Methods of Analysis, Investment Strategies and Risk of Loss",
+          "text": "The strategies will engage in short selling of any of the instruments they trade to the extent permitted by local laws and regulations"
+        }
+      ],
+      "fees": [
+        {
+          "fee_text": "Bridgewater offers fee arrangements which vary by strategy and involve management fees (generally a percentage of assets), performance fees/allocations (generally a percentage of profits) or some combination of the two",
+          "service_type": "portfolio_management",
+          "fee_type": "aum_percent",
+          "rate_basis": "aum",
+          "negotiable": true,
+          "from_this_brochure": true
+        }
+      ]
+    }
+  }
+}
+```
+
+</ResponseExample>

@@ -1,0 +1,108 @@
+---
+title: "ETF Distributions"
+sidebarTitle: "ETF distributions"
+description: "Declared ETF distribution events with ex, record and pay dates, amount per share, and distribution type."
+---
+
+ETF Distributions records every distribution an ETF declared: the amount per share, the dates attached to it, and what kind of distribution it was. Each observation is associated with an `etf_id` and an ex-dividend date. Distributions are stored as raw declared events and are never folded into any NAV.
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use ETF Distributions For
+
+Compute a fund's trailing distribution yield from what it actually paid. Reconcile the gap between [ETF NAV](/etf/nav) and [ETF Total Return](/etf/total-return). Anticipate the NAV step-down on an upcoming ex date. Separate income distributions from capital-gain distributions when estimating an investor's tax position.
+
+## ETF Distributions Coverage
+
+Distribution events are collected for funds across the ETF registry. The [ETF profile](/etf/overview) returns the newest twelve events inline; the full declared history is available through the history endpoint with `series=distributions`.
+
+Coverage bounds are measured on the way out — read the `coverage` block on the response for the fund you queried.
+
+## Key ETF Distribution Fields
+
+`ex_date` is the ex-dividend date, the date the distribution detaches from the share. `amount_per_share` is the amount as declared, in the fund's currency. `amount_per_share_split_adjusted` restates that amount on today's share count so a long history is comparable across splits.
+
+`declaration_date`, `record_date` and `pay_date` are the other three dates the fund announced. `frequency` describes the fund's declared distribution schedule. `distribution_type` classifies the payment.
+
+## What the ETF Distribution Type Means
+
+`distribution_type` carries the classification only when the fund's own notice stated one. A value of `unclassified` means the notice did not say whether the payment was income or capital gain — it is a record of what the fund disclosed, not a failure of extraction, and it should not be assumed to be ordinary income. In practice most declared events are `unclassified`, because most distribution notices do not break the payment down; treat the type as a bonus where present, never as a partition of the history.
+
+## Distributions Are Never Folded Into NAV
+
+The [ETF NAV series](/etf/nav) is price-basis: on an ex date, NAV simply steps down by the distribution and the cash is never reinvested there. The [ETF Total Return series](/etf/total-return) is the one that folds distributions back in. Keeping the three apart — raw declared events here, price-basis NAV, and a separate total-return series — is what makes each of them reconcilable against the other two. A distribution can always be located as the exact gap between the NAV step and the total-return series on its ex date.
+
+## ETF Distribution Date Convention
+
+Four dates appear on a distribution and they are not interchangeable. `declaration_date` is when the fund announced it. `ex_date` is when the shares begin trading without it, and it is the date NAV steps down. `record_date` is when ownership is fixed. `pay_date` is when cash reaches holders.
+
+Yield and NAV-reconciliation work keys on `ex_date`. Cash-flow work keys on `pay_date`.
+
+## ETF Distributions Sources
+
+Distributions come from the funds' own declared distribution notices, kept as raw events with the currency the fund declared them in. Amounts are validated against the observed ex-date NAV step, and the split-adjusted restatement uses the same adjudicated events documented on [ETF Splits](/etf/splits) — so the declared basis and today's basis are both first-class and either can be reconstructed exactly.
+
+## Query ETF Distributions
+
+Use the ETF history endpoint with `series=distributions` to retrieve the full declared distribution history for one fund.
+
+<ParamField path="id" type="string" required>
+  `etf_id` (`E000011`), a ticker (`SPY`), an ISIN, or a CUSIP.
+</ParamField>
+
+<ParamField query="series" type="string" required>
+  Set to `distributions` for this dataset.
+</ParamField>
+
+<ParamField query="date_gte" type="string">
+  Earliest ex date to return, `YYYY-MM-DD`. `date_lte` sets the ceiling. On this series the date filters apply to `ex_date`.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="250">
+  Rows per page, between 1 and 1000. Pages run newest to oldest via `cursor`.
+</ParamField>
+
+## Related Datasets
+
+See also [ETF NAV and Shares Outstanding](/etf/nav) for the series a distribution steps down, [ETF Total Return](/etf/total-return) for the series that adds it back, and [ETF Splits](/etf/splits) for the events behind the split-adjusted amounts.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/etfs/SPY/history?series=distributions&limit=2" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "etf_id": "E000011",
+  "ticker": "SPY",
+  "series": "distributions",
+  "data": [
+    {
+      "ex_date": "2026-06-18T00:00:00.000Z",
+      "amount_per_share": "1.90352",
+      "amount_per_share_split_adjusted": "1.90352",
+      "distribution_type": "unclassified",
+      "declaration_date": "2026-01-02T00:00:00.000Z",
+      "record_date": "2026-06-18T00:00:00.000Z",
+      "pay_date": "2026-07-31T00:00:00.000Z",
+      "frequency": "Quarterly"
+    }
+  ],
+  "next_cursor": "Fri Mar 20 2026 00:00:00 GMT+0000 (Coordinated Universal Time)",
+  "coverage": {
+    "available_from": "1993-03-19",
+    "available_to": "2026-06-18",
+    "note": "Distribution events as declared; never folded into any NAV here."
+  }
+}
+```
+
+</ResponseExample>

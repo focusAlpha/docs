@@ -1,0 +1,127 @@
+---
+title: "Prediction Market Prices"
+sidebarTitle: "Prediction markets"
+description: "What money is currently betting on a US company: earnings beats, KPI thresholds and earnings-call topics, as contract prices rather than forecasts."
+---
+
+Prediction Market Prices reports what money is betting on a US company — whether it beats its earnings estimate, whether an operating number such as deliveries or subscribers clears a threshold, and whether a topic gets raised on the next earnings call. Each observation is a snapshot of one contract's price at an observation time.
+
+<Info>
+  **Plan:** Fund · **Credits:** 1 per call
+</Info>
+
+This is a **price**, not a forecast FocusAlpha made and not a company statement. It is what someone was willing to pay for the contract.
+
+## What You Can Use Prediction Market Prices For
+
+Read the market-implied odds of an earnings beat alongside [what management guided](/events/guidance). Track how the odds on an operating threshold moved into a print. See which topics traders expect to come up on a call.
+
+## This Is Not a Live Feed
+
+<Warning>
+Every row is a **snapshot**, taken roughly hourly between 12:00 and 24:00 UTC, with a gap of about 12.5 hours every night.
+
+A price fetched at 08:00 UTC is eight hours old. `as_of` is when it was observed and `as_of_age_minutes` says how stale it was when you asked. Read that before describing any probability as current — nothing about the number itself tells you which you have.
+</Warning>
+
+## Why Implied Probability Can Be Null
+
+`implied_probability` is the midpoint of the book. It is **null when the book was one-sided or its spread wider than 0.25**.
+
+Treat that null as "nobody is really trading this", not as missing data. A quarter of quoted contracts sit at bid 0.00 and ask 1.00, and serving their 0.50 midpoint would invent a "the market is split" reading that no trade supports.
+
+`yes_bid` and `yes_ask` are returned raw for anyone who wants to apply their own rule.
+
+## Sort by Volume Before Saying "the Market Expects"
+
+Many contracts have traded a few hundred dollars. That is a listing, not an opinion.
+
+Sort by `volume` and say what the volume was whenever you quote an implied probability.
+
+## The Three Contract Categories
+
+`kpi_ladder` is a set of thresholds on an operating number. `call_keyword` is whether a topic will be said on the earnings call. `earnings_beat` is whether EPS clears the estimate. Omit `category` to get all three.
+
+## Prediction Market Coverage
+
+An empty result means **no contract is listed on this company**, never that the market has no view.
+
+Contracts on takeovers, IPOs and delistings exist but are not reachable by company: they name their companies only in the question text.
+
+## Prediction Market Date Convention
+
+`as_of` is the observation instant of the snapshot, not the contract's expiry and not the event date. `status` of `settled` means the contract has resolved, and settled rows carry the outcome in `settled_yes`.
+
+## Prediction Market Sources
+
+Prices come from prediction-market exchanges. FocusAlpha snapshots the book; the numbers are the exchange's, and the implied probability is the midpoint rule described above applied to them.
+
+## Query Prediction Market Prices
+
+Use the prediction markets endpoint for one company.
+
+<ParamField path="company_id" type="string" required>
+  A `company_id`, ticker, CIK or ISIN.
+</ParamField>
+
+<ParamField query="category" type="string">
+  `kpi_ladder`, `call_keyword` or `earnings_beat`. Omit for all three.
+</ParamField>
+
+<ParamField query="status" type="string">
+  `open` or `settled`. Omit for both.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Rows per page, between 1 and 1000. Page through with `cursor`.
+</ParamField>
+
+## Related Datasets
+
+See also [Earnings Consensus from Prediction Markets](/events/earnings-consensus) for the EPS level an earnings contract settles against, [Management Guidance](/events/guidance) for what management itself said it expects, and [Reported Earnings Figures](/events/earnings-results) for what the quarter delivered.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/TSLA/prediction-markets?limit=2" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "company_id": "cmp_008544",
+      "ticker": "TSLA",
+      "market_id": "pmk_04e71fc342b65d5a",
+      "category": "kpi_ladder",
+      "question": "Tesla deliveries in Q2",
+      "outcome": "above 420000",
+      "period": "26JUL",
+      "closes_at": "2026-07-02T13:32:48.000Z",
+      "settled": true,
+      "settled_yes": true,
+      "yes_bid": null,
+      "yes_ask": null,
+      "implied_probability": null,
+      "volume": null,
+      "as_of": null,
+      "as_of_age_minutes": null
+    }
+  ],
+  "next_cursor": null,
+  "coverage": {
+    "update_frequency": "snapshots, roughly hourly between 12:00 and 24:00 UTC (nine per day, uneven)",
+    "staleness": "NOT LIVE. Median observed gap between snapshots 1.0h; every night there is a gap of about 12.5h. Read as_of_age_minutes on each row before calling a probability current.",
+    "available_from": "2026-08-05",
+    "available_to": null,
+    "history_status": "begins at first capture and cannot be backfilled"
+  }
+}
+```
+
+</ResponseExample>

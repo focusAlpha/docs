@@ -1,0 +1,204 @@
+---
+title: "Company Screening"
+sidebarTitle: "Company screening"
+description: "Find companies by what is true of them — size, valuation, momentum, profitability, guidance changes, corporate events, positioning, products and peer relationships — across roughly 25,000 listed companies in 82 countries."
+---
+
+Company Screening finds companies by condition rather than by identifier. It ranks a universe of roughly 25,000 listed companies across 82 countries on ten combinable axes, and any axis can also be the sort. One row is returned per company.
+
+<Info>
+  **Plan:** Fund · **Credits:** 1 per call; screen facets and terms are free
+</Info>
+
+This is the cross-company question no per-company endpoint can answer: which companies raised guidance this quarter, who filed for bankruptcy, which Japanese companies revised their forecast this month, who manufactures memory.
+
+## What You Can Use Company Screening For
+
+## Detailed Company Filter Pages
+
+<CardGroup cols={3}>
+  <Card title="By fundamentals" href="/screening/companies/by-fundamentals">Size, valuation, margins, growth, momentum.</Card>
+  <Card title="By guidance" href="/screening/companies/by-guidance">Better/worse vs raises/cuts, with dates.</Card>
+  <Card title="By events" href="/screening/companies/by-events">Five sources, one cross-market rollup.</Card>
+  <Card title="By products & peers" href="/screening/companies/by-products-and-peers">The entity-relations graph.</Card>
+  <Card title="By positioning" href="/screening/companies/by-positioning">Short interest, insiders, CEO pay, Taiwan.</Card>
+</CardGroup>
+
+
+Build an investable universe from a set of conditions. Find every company that raised or cut guidance in a window, and when. Rank a market-cap band by short interest. Locate companies that make a specific product, or that name a specific company as a competitor. Compare sizes across countries, which this endpoint converts to US dollars.
+
+## Start With Company Screen Facets
+
+Set `list_facets` to true to get the filterable vocabulary with counts, free of charge. Filter values are exact, and a misspelled value returns an empty page rather than an error, so the facets response is how you confirm a value exists before concluding that no companies match it.
+
+## The Ten Company Screening Axes
+
+**Identity** — `country`, `sector`, `industry`, `exchange`, `has_cik`.
+
+**Size** — `market_cap_usd_gte` and `market_cap_usd_lte`, converted to US dollars so sizes are comparable across countries.
+
+**Momentum** — `ret_1m`, `ret_3m`, `ret_6m` and `ret_12m` bounds, expressed as percentages, plus `include_suspect_returns`.
+
+**Valuation** — `pe_ttm`, `pb`, `ps_ttm`, `fcf_yield`, `dividend_yield`.
+
+**Profitability and leverage** — `gross_margin`, `operating_margin`, `net_margin`, `return_on_equity`, `debt_to_equity`, `revenue_growth_yoy`, `eps_growth_yoy`, `is_lossmaking`.
+
+**Guidance** — `guidance_better_90d_gte`, `guidance_worse_90d_gte`, `guidance_raises_90d_gte`, `guidance_cuts_90d_gte`, and the date forms `guidance_better_since` and `guidance_worse_since`.
+
+**Events over 90 days** — `event_family`, `event_source`, `news_event_type`, and `rollup_family`, the one that spans markets. Each has a date form: `event_family_since`, `news_event_type_since`, `rollup_family_since`.
+
+**Positioning** — `short_percent_float`, `days_to_cover`, `insider_net_90d`, `insider_ownership_pct`, `ceo_total_comp`.
+
+**Taiwan** — `tw_foreign_held_pct`, `tw_revenue_yoy_pct`.
+
+**Products and relationships** — `makes_term`, `related_to_term`, `peer_of`, `competitor_of`.
+
+## How to Phrase Common Company Screens
+
+"Which companies raised guidance this quarter" is `guidance_better_90d_gte=1`, or `guidance_better_since` with a date.
+
+"Who filed for bankruptcy" is `event_family=bankruptcy`.
+
+"Japanese companies that revised their forecast this month" is `event_family=earnings_forecast_revision` with `event_family_since`.
+
+"The most shorted mid caps" is a market-cap band sorted by `short_percent_float`.
+
+"Cheap profitable tech" is `pe_ttm_lte` with a sector and a margin floor.
+
+## Always Look Up Product Terms First
+
+The product vocabulary holds 60,620 terms, and it expands **spellings, not concepts**. `memory`, `dram`, `nand` and `memory chips` are four separate terms with four separate company lists, so `makes_term=memory` on its own misses Kioxia, Winbond and Nanya.
+
+Use `find_terms` to list the spellings first, then pass every spelling it shows you.
+
+Coverage on this axis is 3,130 companies carrying a product term out of 25,206, and 4,403 companies reachable by `peer_of` or `competitor_of`. An empty result means FocusAlpha holds nothing for that company on that axis — never that the company makes nothing or has no peers — and it is worth saying which.
+
+## Every Match Carries Its Evidence
+
+Product and relationship matches come back with `matched_terms` or `matched_relation`: the term that matched, its sources, its grade, and whether a peer selection was mutual.
+
+The evidence travels with the row because a product list nobody can check is a product list nobody should trust.
+
+## Company Screening Date Convention
+
+The event and guidance axes look back **90 days** by default. The `_since` forms replace that window with an explicit start date, which is how you screen a quarter, a month, or the period since a specific event rather than a rolling 90 days.
+
+## Company Screening Sources
+
+Identity comes from [the company registry](/companies/registry). Size, momentum and valuation come from [market data](/market-data/prices) and [financial statements](/financials/combined). Guidance comes from [management guidance](/events/guidance). Events come from [8-K events](/events/8k-events), the [news event layer](/news/news-events) and the Asian exchange disclosure feeds. Positioning comes from [short interest](/ownership/short-interest), [insider trades](/ownership/insider-trades) and [proxy ownership](/ownership/proxy-ownership). Products and relationships come from FocusAlpha's entity-relations graph, built from filings.
+
+## Query the Company Screen
+
+Use the screen endpoint. Filters are combined with AND. No filter is required.
+
+<ParamField query="list_facets" type="boolean">
+  Return the filterable vocabulary with counts instead of results. Free.
+</ParamField>
+
+<ParamField query="country" type="string">
+  Country of the company. `sector`, `industry` and `exchange` narrow the same way.
+</ParamField>
+
+<ParamField query="market_cap_usd_gte" type="number">
+  Market-cap floor in USD. `market_cap_usd_lte` sets the ceiling.
+</ParamField>
+
+<ParamField query="guidance_better_90d_gte" type="number">
+  Minimum count of guidance metrics that improved in the last 90 days. `guidance_worse_90d_gte`, `guidance_raises_90d_gte` and `guidance_cuts_90d_gte` work the same way.
+</ParamField>
+
+<ParamField query="event_family" type="string">
+  An event family observed in the last 90 days. `event_family_since` replaces the window with an explicit start date.
+</ParamField>
+
+<ParamField query="rollup_family" type="string">
+  An event family normalised across markets, so one question spans SEC, Asian exchange and news sources.
+</ParamField>
+
+<ParamField query="makes_term" type="string">
+  A product term the company is linked to. Call `find_terms` first and pass every spelling.
+</ParamField>
+
+<ParamField query="peer_of" type="string">
+  Companies named as peers of this one. `competitor_of` finds companies that name it as a competitor.
+</ParamField>
+
+<ParamField query="sort" type="string">
+  Any filterable measure, so the axis you screened on is also the axis you can rank on. `order` is `asc` or `desc`.
+</ParamField>
+
+<ParamField query="limit" type="integer">
+  Rows per page. Page through with `cursor`.
+</ParamField>
+
+The full filter set also covers the momentum, valuation, profitability, positioning and Taiwan parameters listed above, plus `has_fundamentals`, `fundamentals_stale` and `include_suspect_returns`.
+
+## Related Datasets
+
+See also [Company Registry](/companies/registry) to resolve an identifier you already hold, [ETF Screening](/etf/screening) and [Adviser Screening](/advisers/screening) for the same pattern on other datasets, and [Management Guidance](/events/guidance) and [8-K Events](/events/8k-events) for the underlying event and guidance data.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/screen?sector=Information%20Technology&market_cap_usd_gte=1000000000&pe_ttm_lte=20&net_margin_gte=0.1&sort=market_cap_usd&order=desc" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response (one row, trimmed; coverage omitted)
+{
+  "data": [
+    {
+      "company_id": "cmp_009325",
+      "company_name": "Vistance Networks, Inc.",
+      "country": "US",
+      "sector": "Technology",
+      "industry": "Communication Equipment",
+      "primary_ticker": "VISN",
+      "cik": "0001517228",
+      "has_cik": true,
+      "market_cap_usd": 1423344372,
+      "market_cap_local": "1423344372",
+      "market_cap_currency": "USD",
+      "ret_3m": -49.4391025641026,
+      "ret_12m": -19.4125159642401,
+      "return_suspect": true,
+      "short_percent_float": "10.83",
+      "days_to_cover": "2.29",
+      "guidance_worse_90d": 1,
+      "guidance_last_worse_at": "2026-08-06T11:07:44Z",
+      "event_families_90d": [
+        "asset_transaction_completed",
+        "earnings_release",
+        "officer_director_change"
+      ],
+      "news_event_types_90d": [
+        "capital_return",
+        "earnings",
+        "guidance"
+      ],
+      "rollup_families_90d": [
+        "capital_return",
+        "earnings",
+        "guidance",
+        "management",
+        "merger_acquisition"
+      ],
+      "ceo_total_comp": "15417850",
+      "insider_ownership_pct": "3.5",
+      "fundamentals_grain": "annual",
+      "pe_ttm": 0.623262412751237,
+      "pb": null,
+      "net_margin": 1.18228411679437,
+      "is_lossmaking": false,
+      "equity_negative": true
+    }
+  ],
+  "next_cursor": "WyIwLjYyMzI2MjQxMjc1MTIzNyIsImNtcF8wMDkzMjUiXQ"
+}
+```
+
+</ResponseExample>

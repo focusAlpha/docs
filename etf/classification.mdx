@@ -1,0 +1,117 @@
+---
+title: "ETF Classification and Labels"
+sidebarTitle: "Classification overview"
+description: "How FocusAlpha labels every ETF with two independent systems — the nine-value wrapper tier and a four-level holdings-derived taxonomy — plus the fund's own declared flags and a dated label-change history."
+---
+
+ETF Classification is the label layer FocusAlpha computes for every US-listed ETF. Each fund carries **two independent label systems side by side**: the [wrapper tier](/etf/wrapper-tiers), which says what kind of instrument the fund is, and the [four-level taxonomy](/etf/taxonomy), which says what its holdings actually are. They are never merged, because a leveraged fund and a plain index fund can wrap the same exposure — and separating the two axes is what makes both usable.
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call; the taxonomy endpoint and screen facets are free
+</Info>
+
+## The Two ETF Label Systems
+
+<CardGroup cols={2}>
+  <Card title="Wrapper tier" icon="layer-group" href="/etf/wrapper-tiers">
+    Nine mutually exclusive values — plain_beta, leveraged_inverse, structured_outcome, option_income, physical_commodity, futures_commodity, crypto, currency, alternative — plus the exposure_hidden flag.
+  </Card>
+  <Card title="Four-level taxonomy" icon="sitemap" href="/etf/taxonomy">
+    asset_class → category → segment → specializations, over 900 dotted-path codes computed from holdings, each with a stated semantic.
+  </Card>
+</CardGroup>
+
+## What You Can Use ETF Classification For
+
+Build a peer group that is genuinely comparable, using the level-3 segment code as the peer key. Separate structural risk from exposure: find every leveraged fund regardless of what it tracks, or every health-care fund regardless of how it is wrapped. Aggregate flows or assets by segment. Detect a fund whose portfolio drifted away from the category its name implies — the taxonomy is computed from holdings, so the drift shows up as a dated label change.
+
+## What the Fund Itself Declares
+
+Separately from both computed label systems, the record carries the issuer's own claims: the fund `name`, the filed index flag, the fund-of-fund flag, and the filed leveraged/inverse flag. These are kept apart from FocusAlpha's computed labels so the two can be compared rather than confused — a fund whose filed flags and computed labels disagree is a finding, not an error.
+
+## ETF Classification Date Convention
+
+**Labels are monthly; numbers are daily.** The classification is recomputed from holdings once a month, while NAV, flows and the other measured columns refresh daily. `labels_as_of.holdings_as_of` is the portfolio date the current labels were computed from; `labels_as_of.label_since` is when the current label was assigned; the `history` array dates every previous label change, so a drift can be read directly rather than inferred.
+
+Two "unknown" values mean different things: `unknown.no_holdings` (no holdings feed yet) and `unknown.ambiguous` (holdings arrived but did not decide a label).
+
+## ETF Classification Sources
+
+The taxonomy is calculated by FocusAlpha from issuer-published holdings; the wrapper tier is derived from the fund's filed structure and holdings shape; the declared flags are read from SEC filings. The vocabulary itself is a published artifact served by the free taxonomy endpoint.
+
+## Query ETF Classification
+
+A fund's labels are returned in the `labels` block of the [ETF profile](/etf/overview). The full vocabulary comes from the free taxonomy endpoint. To select funds by label, use the [ETF screen](/etf/screening).
+
+## Related Datasets
+
+See also [ETF Wrapper Tiers](/etf/wrapper-tiers) and [ETF Taxonomy](/etf/taxonomy) for each system in full, [ETF Holdings](/etf/holdings) for the data the labels are computed from, and [ETF Screening](/etf/screening) for filtering by them.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/etfs/XBI" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json labels block (XBI)
+{
+  "labels": {
+    "wrapper": {
+      "tier": "plain_beta",
+      "exposure_hidden": false
+    },
+    "asset_class": {
+      "code": "equity",
+      "label": "Equity",
+      "semantic": "What the fund holds: equity exposure >= l1_dominant_exposure_min of non-cash weight"
+    },
+    "category": {
+      "code": "equity.sector",
+      "label": "Sector",
+      "semantic": "Top GICS sector >= l2_sector_min"
+    },
+    "segment": {
+      "code": "equity.sector.health_care",
+      "label": "Health Care",
+      "semantic": "Segment: top sector of linked equity weight >= l2_sector_min. Industries (level 4) registered on demand under this node"
+    },
+    "specializations": [
+      {
+        "code": "equity.sector.geo_us",
+        "label": "U.S."
+      },
+      {
+        "code": "equity.sector.health_care.biotechnology",
+        "label": "Biotechnology"
+      }
+    ],
+    "measured_tags": [],
+    "declared": {
+      "name": "State Street SPDR S&P Biotech ETF",
+      "multi_inverse_index": null,
+      "is_index": true,
+      "is_fund_of_fund": null
+    },
+    "labels_as_of": {
+      "holdings_as_of": "2026-08-28T00:00:00.000Z",
+      "label_since": "2026-09-01T00:00:00.000Z"
+    },
+    "history": [
+      {
+        "level": "segment",
+        "from_code": null,
+        "to_code": "equity.sector.health_care",
+        "changed_on": "2026-09-01T00:00:00.000Z"
+      }
+    ],
+    "status": "available"
+  }
+}
+```
+
+</ResponseExample>

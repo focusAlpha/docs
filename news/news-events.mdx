@@ -1,0 +1,175 @@
+---
+title: "Company News Events"
+sidebarTitle: "Company news events"
+description: "The live event feed for a company: filings, news wires and IR disclosures aggregated in real time into one labelled stream, one row per event rather than per article."
+---
+
+Company News Events is the live event feed for a company. Filings, news wires, Asian exchange disclosures, IR-site posts and earnings calls flow into one labelled stream, and the output is **one row per event, not per article**. Ten write-ups of a single earnings print collapse into one event with its event-type label, its direction, its peak impact, how many articles carried it, and the strongest read among them.
+
+<Info>
+  **Plan:** Fund · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Company News Events For
+
+Monitor what happened this week, what is new since earnings, or what moved across a watchlist. Find recent catalysts for a name. Drop to [Company News Articles](/news/company-news) when you need the individual write-ups behind an event.
+
+Its role is recent monitoring, not historical research. For fundamentals, or for anything before the feed's start, go to the filings and statement datasets directly.
+
+## One Event Can Mix Sources
+
+An event routinely holds more than one kind of source: the wire write-up, the company's own SEC 8-K, an Asian exchange filing from Japan TDnet, Korea DART or Taiwan MOPS, the company's IR page, and the earnings call.
+
+`publishers` lists who carried it, and `channel` on the per-article rows says which kind each was.
+
+<Warning>
+The headline and the reason come from the event's **strongest** article, not merged from all of them. A filing missing from `publishers` is therefore not evidence that the company filed nothing.
+</Warning>
+
+## Direction and Impact Are This System's Reading
+
+`direction` — bullish, bearish or neutral — and `peak_impact`, on a 0 to 100 scale, are **the model's judgment** of the articles. They are not a price move and not a forecast. `human_reviewed` marks events a person has checked.
+
+Attribute them that way when quoting them.
+
+## Knock-On Events
+
+Each event also carries `reaches`: the companies that event hits **without naming them**, each with a direction, a magnitude and the channel it travels down — `product`, `relationship` or `competition`.
+
+Set `relation` to `knock_on` to run that the other way and get the events repricing this company that never mention it.
+
+Knock-on rows are **inferences from filed relationships, never reporting**. They carry `peak_magnitude` rather than `peak_impact`, on a different scale, so the two are never sorted together.
+
+<Note>
+A null `reaches` means the knock-on pass never ran. It is gated on a first-order impact of 70, so roughly 95% of events have none. It does not mean the event hits nobody.
+</Note>
+
+## Company News Events Coverage
+
+<Warning>
+Coverage starts **2026-07-26** and there is no history before it. An empty result for July means the feed did not exist.
+
+More generally, an empty result means nothing about this name cleared the scoring bar — not that nothing was published.
+</Warning>
+
+## Company News Events Date Convention
+
+`first_at` and `last_at` are when coverage started and when it was last updated, on the **event's own clock**.
+
+`weakest_time_basis` is the least precise clock among the articles in the event. Trust `first_at` and `last_at` only to that level, and check it before comparing them against another source's timestamps.
+
+`occurred_on` carries the 8-K's own Period of Report where one exists.
+
+## Key Company News Event Fields
+
+`event_id` is the stable key for the event; articles with no grouping get `news:<id>`. `relation` is `direct` when the articles name the company, or `knock_on` when the company is reached by inference. `ticker` is the symbol the row is about. `n_articles` is how many write-ups collapsed into it.
+
+`peak_impact` is the strongest per-article impact score, on direct rows only. `peak_magnitude` is the strongest knock-on magnitude, on knock-on rows only — a different scale, and never both set. `via` is the knock-on channel, null on direct rows.
+
+`event_type` is one of the news layer's 34 coarse families — earnings, guidance, merger_acquisition, narrative_change and so on — normalised on read, so rows written before the August 2026 vocabulary unification are translated to the same family names.
+
+`headline`, `why` and `link` come from the strongest article. `publishers` lists every outlet that carried it.
+
+## Company News Events Sources
+
+The feed aggregates news wires, SEC filings, Asian exchange filings, company IR pages and earnings calls. The labels, direction and impact scores are FocusAlpha's reading of those sources; the knock-on rows are inferences drawn from filed relationships.
+
+## Query Company News Events
+
+Use the news events endpoint for one company.
+
+<ParamField path="company_id" type="string" required>
+  A `company_id`, ticker, CIK or ISIN.
+</ParamField>
+
+<ParamField query="relation" type="string" default="direct">
+  `direct` for events that name this company, `knock_on` for events that reach it by inference, or `both` to get each kind labelled.
+</ParamField>
+
+<ParamField query="direction" type="string">
+  `bullish`, `bearish` or `neutral`.
+</ParamField>
+
+<ParamField query="min_impact" type="integer">
+  Minimum peak impact, 0 to 100. Direct rows only.
+</ParamField>
+
+<ParamField query="min_magnitude" type="integer">
+  Minimum knock-on magnitude, 0 to 100 — a different scale from `min_impact`. Most sit between 20 and 40.
+</ParamField>
+
+<ParamField query="since" type="string">
+  ISO timestamp lower bound. `until` sets the ceiling.
+</ParamField>
+
+<ParamField query="include_scheduled" type="boolean">
+  Include future calendar entries.
+</ParamField>
+
+<ParamField query="limit" type="integer">
+  Rows per page, up to 200. Page through with `cursor`.
+</ParamField>
+
+## Related Datasets
+
+See also [Company News Articles](/news/company-news) for the individual write-ups, [Macro and Policy News](/news/themes) for events that move markets without naming a company, [Structured 8-K Events](/events/8k-events) for the filing detail behind a headline — the same `event_id` joins them — and [Corporate Events](/companies/corporate-events) for registry-level splits and ticker changes.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/NVDA/news/events?relation=direct&min_impact=60" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response (one event; reaches trimmed)
+{
+  "data": [
+    {
+      "event_id": "NVDA:results:20260901",
+      "relation": "direct",
+      "ticker": "NVDA",
+      "n_articles": "9",
+      "first_at": "2026-09-01T10:00:00.000Z",
+      "last_at": "2026-09-01T23:06:54.000Z",
+      "peak_impact": 95,
+      "peak_magnitude": null,
+      "via": null,
+      "direction": "bullish",
+      "human_reviewed": false,
+      "headline": "Everyone Loves a Winner: Investors Can't Get Enough of Nvidia After Blowout Earnings",
+      "why": "[capped 95->25 (moved -1.3%)] Nvidia reported blowout earnings with revenue doubling year-over-year to $96 billion and raised guidance for fiscal 2028 to 70% growth, indicating strong continued demand.",
+      "event_type": "earnings",
+      "link": "https://247wallst.com/investing/2026/09/01/everyone-loves-a-winner-investors-cant-get-enough-of-nvidia-after-blowout-earnings/",
+      "publishers": [
+        "247wallst.com",
+        "barrons.com",
+        "fool.com",
+        "seekingalpha.com",
+        "zacks.com"
+      ],
+      "weakest_time_basis": "published",
+      "occurred_on": null,
+      "reaches": [
+        {
+          "via": "competition",
+          "why": "Nvidia's blowout earnings and guidance suggest continued market share gains in AI chips, pressuring AMD's competitive position.",
+          "ticker": "AMD",
+          "direction": "bearish",
+          "magnitude": 70
+        }
+      ]
+    }
+  ],
+  "next_cursor": "2026-09-01T23:06:54.000Z|NVDA:results:20260901",
+  "symbols_searched": [
+    "NVDA",
+    "NVD.DE"
+  ]
+}
+```
+
+</ResponseExample>

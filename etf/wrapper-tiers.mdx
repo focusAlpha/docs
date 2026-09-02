@@ -1,0 +1,107 @@
+---
+title: "ETF Wrapper Tiers"
+sidebarTitle: "Wrapper tiers"
+description: "The nine mutually exclusive ETF wrapper tiers — plain beta, leveraged/inverse, structured outcome, option income, physical commodity, futures commodity, crypto, currency, alternative — and the exposure_hidden flag."
+---
+
+The ETF wrapper tier says what kind of instrument a fund is, independently of what it holds. It is one of two label systems FocusAlpha assigns to every ETF — the other is the [four-level holdings taxonomy](/etf/taxonomy) — and it has nine mutually exclusive values. A leveraged fund on the Nasdaq-100 and a plain index fund on the Nasdaq-100 hold related exposure but are completely different instruments; the wrapper tier is the label that separates them.
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call; the screen facets endpoint that counts funds per tier is free
+</Info>
+
+## The Nine ETF Wrapper Tiers
+
+`plain_beta` — an unlevered fund whose holdings are the exposure. The large majority of the US-listed universe.
+
+`leveraged_inverse` — the fund's daily return is a multiple (positive or negative) of an underlying's daily return, delivered through swaps or futures. These funds reset daily and reverse-split routinely; see [ETF Splits](/etf/splits).
+
+`structured_outcome` — defined-outcome ("buffer") funds that shape the payoff of an underlying with option spreads: capped upside in exchange for a downside buffer, over a stated outcome period.
+
+`option_income` — funds that hold an underlying (or synthetic exposure to it) and sell options against it to generate distributable premium — covered-call and put-write funds.
+
+`physical_commodity` — the fund holds the metal or commodity itself in vaults (gold, silver trusts).
+
+`futures_commodity` — commodity exposure held through futures contracts rather than the physical, with the roll mechanics that implies.
+
+`crypto` — funds whose exposure is a digital asset, whether held spot or through futures.
+
+`currency` — funds whose exposure is foreign exchange.
+
+`alternative` — hedge-fund-style wrappers that fit none of the above: managed futures, market neutral, merger arbitrage and similar strategies in an ETF.
+
+## The exposure_hidden Flag
+
+Alongside the tier, every fund carries `exposure_hidden`. When it is `true`, the market values in the fund's [holdings](/etf/holdings) are margin or option premium rather than economic exposure — the holdings of a 3x fund sum to roughly flat, and a buffer fund's book is a stack of option legs. On such funds, exposure analysis must read `notional_value`, and summing `market_value` as "the portfolio" is wrong by construction. Leveraged/inverse, structured-outcome and option-income funds are where this flag concentrates.
+
+## Wrapper Tier Versus the Holdings Taxonomy
+
+The two label systems answer different questions and are stored side by side, never merged. The wrapper tier says what kind of thing the fund **is**; the [four-level taxonomy](/etf/taxonomy) says what its holdings **show**. A 2x semiconductor fund is `leveraged_inverse` on the wrapper axis and `equity.leveraged_inverse.sector_technology` on the taxonomy axis. Filtering on one axis says nothing about the other, and [ETF Screening](/etf/screening) accepts both at once.
+
+## ETF Wrapper Tier Sources
+
+The wrapper tier is derived by FocusAlpha from the fund's filed structure — the prospectus objective, the filed leveraged/inverse and index flags — and from the shape of its holdings. It is recomputed on the same monthly cadence as the taxonomy; the fund's label-change history dates every switch.
+
+## Query ETF Wrapper Tiers
+
+A fund's tier is returned in the `labels` block of the [ETF profile](/etf/overview). To select funds by tier, pass `tier` to the [ETF screen](/etf/screening) as a comma-separated list — see [Screen ETFs by Wrapper and Structure](/screening/etf/by-wrapper).
+
+## Related Datasets
+
+See also [ETF Classification](/etf/classification) for how the two label systems fit together, [ETF Taxonomy](/etf/taxonomy) for the holdings-derived labels, and [ETF Holdings](/etf/holdings) for reading an exposure-hidden book correctly.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/etfs/screen?tier=leveraged_inverse,structured_outcome&sort=aum" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json labels block (TQQQ)
+{
+  "labels": {
+    "wrapper": {
+      "tier": "leveraged_inverse",
+      "exposure_hidden": true
+    },
+    "asset_class": {
+      "code": "equity",
+      "label": "Equity",
+      "semantic": "What the fund holds: equity exposure >= l1_dominant_exposure_min of non-cash weight"
+    },
+    "category": {
+      "code": "equity.leveraged_inverse",
+      "label": "Leveraged / Inverse",
+      "semantic": "Tier: daily leveraged or inverse (vendor flags, cross-checked with N-CEN multi/inverse)"
+    },
+    "segment": {
+      "code": "equity.leveraged_inverse.nasdaq_100",
+      "label": "Nasdaq-100",
+      "semantic": "Segment: the underlying the packaging is applied to. Nasdaq-100"
+    },
+    "specializations": [
+      {
+        "code": "equity.leveraged_inverse.lev_3x",
+        "label": "3x"
+      }
+    ],
+    "declared": {
+      "name": "ProShares UltraPro QQQ",
+      "multi_inverse_index": true,
+      "is_index": true,
+      "is_fund_of_fund": null
+    },
+    "labels_as_of": {
+      "holdings_as_of": null,
+      "label_since": "2026-09-01T00:00:00.000Z"
+    },
+    "status": "available"
+  }
+}
+```
+
+</ResponseExample>

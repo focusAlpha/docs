@@ -1,0 +1,127 @@
+---
+title: "Venture Investor Directory"
+sidebarTitle: "Venture investors"
+description: "A directory of roughly 10,000 venture and growth investors with type, location, stages, themes, typical first cheque, and how to pitch them."
+---
+
+The Venture Investor Directory is a directory of venture and growth-stage investors: venture firms, corporate venture arms, family offices, angel groups, incubators and accelerators. Each observation is one firm and carries its type, location, the countries and stages it invests in, its themes, its typical first cheque, whether it leads rounds, and how to submit to it. The directory holds roughly 10,000 firms.
+
+<Info>
+  **Plan:** Fund · **Credits:** 1 per call
+</Info>
+
+## What You Can Use the Venture Investor Directory For
+
+Build a target list of investors for a company at a given stage, in a given country, working in a given theme. Find which firms lead rounds rather than follow. Read a firm's stated submission method and link before approaching it.
+
+## Venture Investor Directory Coverage
+
+Roughly 10,000 firms. Most of them do not appear on the SEC Form ADV roster, so this directory and the [Form ADV Adviser Directory](/advisers/form-adv) cover largely different populations and are not substitutes for each other.
+
+<Warning>
+This directory is a **snapshot captured on 2026-07-25** and is not maintained. A fund that has since closed, moved, or changed its thesis still reads as it did on that date. Say so whenever you quote it.
+</Warning>
+
+## Key Venture Investor Fields
+
+The firm's name and `investor_type` — values such as `VC firm`, `Corporate VC`, `Family office`, `Angel group`, `Incubator & Accelerator` — identify what kind of investor it is. Location and `countries` describe where it sits and where it invests. `stages` and `themes` describe its declared mandate. The typical first cheque sizes it, and a lead flag says whether it leads rounds. `submit_method` and `submit_url` describe how to reach it.
+
+## How Venture Investor Filters Match
+
+`country`, `theme` and `stage` each match **one entry of a list, exactly**, spelled as the directory spells it. A near-miss returns nothing rather than a suggestion.
+
+When a filter returns nothing, start again from `q` or `investor_type`, which are more forgiving, and read the spellings off the rows that come back.
+
+At least one filter is required on every page — this endpoint cannot be enumerated unfiltered.
+
+## Venture Investor Directory Sources
+
+The directory was compiled from investors' own public pages and submission forms as of the snapshot date. Nothing here is filed with a regulator, and none of it is self-reported to FocusAlpha.
+
+## Query the Venture Investor Directory
+
+Use the investors endpoint. At least one filter is required.
+
+<ParamField query="q" type="string">
+  Firm-name substring.
+</ParamField>
+
+<ParamField query="investor_type" type="string">
+  The investor type, spelled as the directory spells it.
+</ParamField>
+
+<ParamField query="country" type="string">
+  Matches one entry of the firm's country list exactly.
+</ParamField>
+
+<ParamField query="theme" type="string">
+  Matches one entry of the firm's theme list exactly.
+</ParamField>
+
+<ParamField query="stage" type="string">
+  Matches one entry of the firm's stage list exactly.
+</ParamField>
+
+<ParamField query="limit" type="integer">
+  Rows per page. Page through with `cursor`.
+</ParamField>
+
+## Related Datasets
+
+See also [Form ADV Adviser Directory](/advisers/form-adv) for SEC-registered advisers, which includes the private-equity and venture firms large enough to register, and [Adviser Screening](/advisers/screening) to find those by `investment_strategy=venture_capital`.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/investors?investor_type=Corporate%20VC&country=United%20States" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "record_id": "rec0B2bq5rIlsONLf",
+      "name": "Zeon Ventures",
+      "url": "https://www.openvc.app/fund/Zeon%20Ventures",
+      "website": "https://www.zeon.ventures/",
+      "domain": "zeon.ventures",
+      "investor_type": "Corporate VC",
+      "location": "25 Metro Dr, 95110 San Jose, California, California, US",
+      "countries": [
+        "South%20Korea",
+        "USA"
+      ],
+      "stages": [
+        "3. Early Revenue",
+        "4. Scaling"
+      ],
+      "themes": [],
+      "first_check": "N/A",
+      "lead": "Never",
+      "reply_rate": null,
+      "submit_method": "form",
+      "submit_url": "https://www.pitchdeckexperts.app/",
+      "linkedin_company": "https://www.linkedin.com/company/zeon-ventures",
+      "twitter": null,
+      "who_we_are": "We are the investment arm of a major corporation.",
+      "funding_requirements": "We invest in companies that align with our corporate strategy.",
+      "value_add": null,
+      "as_of": "2026-07-25"
+    }
+  ],
+  "next_cursor": "rec0B2bq5rIlsONLf",
+  "coverage": {
+    "available_from": "2026-07-25",
+    "available_to": "2026-07-25",
+    "update_frequency": "static_snapshot",
+    "history_status": "point_in_time_snapshot"
+  }
+}
+```
+
+</ResponseExample>

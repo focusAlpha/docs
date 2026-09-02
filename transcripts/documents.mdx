@@ -1,0 +1,115 @@
+---
+title: "Document Corpus"
+sidebarTitle: "Document corpus"
+description: "List a company's documents, fetch one by id, and read its ordered text segments."
+---
+
+The Document Corpus holds the earnings call transcripts, SEC filings and company documents that [semantic retrieval](/transcripts/semantic-retrieval) searches. Three endpoints address it directly: list a company's documents, fetch one document's metadata by id, and read a document's ordered text segments. Each document is associated with a ticker, a fiscal year and quarter where it has one, and a source URL.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use the Document Corpus For
+
+Discover which periods exist for a company before searching one. Read a full document in order rather than as ranked fragments. Resolve a document id returned by retrieval back to its metadata and source link.
+
+## Why to List Documents Before Searching
+
+The document listing is the authoritative answer to which fiscal periods a company has in the corpus. Searching a guessed period returns stale passages rather than an error, so listing first is how a wrong period is caught before it becomes a wrong answer.
+
+## Document Corpus Date Convention
+
+`year` and `quarter` are the **fiscal** period the document covers, as the company labels it, not the calendar date it was published. Documents are listed most recent first.
+
+## Key Document Corpus Fields
+
+`document_id` identifies a document and is the key the fetch and segments endpoints take. `ticker` identifies the company. `year` and `quarter` place it in fiscal time. The document type distinguishes a transcript from a filing. `source_url` links the original.
+
+A **segment** is a contiguous ordered passage of a document. Segments are the unit retrieval ranks and cites, and reading them in order reconstructs the document.
+
+## Document Corpus Sources
+
+Transcripts are sourced from the calls themselves; filings come from SEC EDGAR. Every document keeps its `source_url` so any passage can be traced to the original.
+
+## List a Company's Documents
+
+Use the documents-by-ticker endpoint, which returns that company's documents most recent first.
+
+<ParamField path="ticker" type="string" required>
+  The company's ticker.
+</ParamField>
+
+<ParamField query="year" type="integer">
+  Restrict to one fiscal year, between 2000 and 2100.
+</ParamField>
+
+<ParamField query="quarter" type="string">
+  Restrict to one fiscal quarter: `Q1`, `Q2`, `Q3` or `Q4`.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="20">
+  Maximum documents to return, up to 100.
+</ParamField>
+
+<ParamField query="offset" type="integer" default="0">
+  Pagination offset. This endpoint pages by offset, not by cursor.
+</ParamField>
+
+## Fetch One Document
+
+Use the document endpoint with a `document_id` to retrieve that document's metadata.
+
+<ParamField path="id" type="string" required>
+  The `document_id`, as returned by the listing endpoint or by retrieval.
+</ParamField>
+
+## Read a Document's Segments
+
+Use the document segments endpoint to read a document's ordered text.
+
+<ParamField path="id" type="string" required>
+  The `document_id`.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="20">
+  Maximum segments to return, up to 100.
+</ParamField>
+
+## Related Datasets
+
+See also [Semantic Retrieval](/transcripts/semantic-retrieval) to search the corpus by meaning, [Earnings Call Transcripts](/transcripts/earnings-call-transcripts) for what the corpus holds, and [SEC Filing Items](/filings/items) for a named section of a named filing.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/documents/56eaec3c-c65e-4014-94b0-5aed74314f1c/segments?limit=1" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "segments": [
+    {
+      "id": "dd18d8cc-5521-47ff-b1f8-02744cf8a4ae",
+      "documentId": "56eaec3c-c65e-4014-94b0-5aed74314f1c",
+      "content": "Good afternoon. My name is Tiffany and I will be your conference operator today. At this time, I would like to welcome everyone to NVIDIA's second quarter earnings call. …",
+      "sequence": 0,
+      "speakerName": "Tiffany",
+      "speakerTitle": "Conference Operator",
+      "charStart": 0,
+      "charEnd": 557
+    }
+  ],
+  "meta": {
+    "total": 31,
+    "latencyMs": 388
+  }
+}
+```
+
+</ResponseExample>

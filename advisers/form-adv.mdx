@@ -1,0 +1,151 @@
+---
+title: "Form ADV Adviser Directory"
+sidebarTitle: "Form ADV directory"
+description: "The SEC investment-adviser directory from the monthly Form ADV roster: registered and exempt-reporting advisers with CRD, CIK, location, contact details and self-reported AUM."
+---
+
+The Form ADV Adviser Directory contains the investment advisers on the SEC's monthly Form ADV roster — both registered advisers and exempt reporting advisers. Each observation is one firm, identified by its CRD number, and carries the identity, location, contact and business figures the firm reported to the SEC. The roster is a monthly snapshot, not a live feed.
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use the Form ADV Directory For
+
+Resolve a manager's name to a stable CRD and, for 13F filers, to a CIK you can pass to [13F Institutional Holdings](/ownership/13f). Build a list of firms by location, registration type or size. Find a firm's phone number, website and contact e-mail. Enumerate the entire adviser roster as a table by paging with no filter.
+
+## Form ADV Directory Coverage
+
+Coverage is the SEC roster: firms that file Form ADV with the SEC, comprising hedge funds, mutual-fund managers, wealth managers, private-equity and venture firms, and exempt reporting advisers.
+
+Exempt reporting advisers file an abbreviated Form ADV. They report far fewer numbers, and they generally file no Part 2A brochure, so several fields are structurally null for them rather than missing.
+
+## Key Form ADV Directory Fields
+
+`crd` is the firm's CRD number and is the primary identifier. `cik` is the SEC CIK, present only for firms that also file with EDGAR — in practice, 13F filers.
+
+`firm_type` is a derived business label spelled exactly as one of `Hedge-Fund`, `Mutual-Fund`, `Mutual-Fund (perf-fee)`, `Wealth-Manager`, `PE / VC`, `Hybrid (MF + Hedge)`, `Pension / Institutional`, `Sub-Advisor` or `Other / Mixed`. It is derived from ADV Part 1 numbers and exists only for 13F filers.
+
+`sec_registration_type` is `Registered` or `ERA`. City, state and country describe the main office. Every row carries a phone number; website and `email_primary` are present where found.
+
+Self-reported total regulatory assets under management, and the private-fund flags `has_hedge_funds`, `has_pe_funds` and `has_vc_funds`, describe the firm's declared business.
+
+`style_tier` is the value/growth tier revealed by the firm's own 13F book. It is filterable on the directory, but the full style read-out lives on the [adviser profile](/advisers/adv-brochure).
+
+<Note>
+Null style fields mean the firm does not file Form 13F — which is true of most wealth managers and of every exempt reporting adviser. It does not mean the firm's style is unknown.
+</Note>
+
+## Form ADV Directory Date Convention
+
+The roster is a **monthly snapshot**. Rows describe the firm as of the most recent ADV filing captured in that snapshot, and the snapshot date is reported in the profile's provenance block. A firm that changed address, ownership or size since the snapshot still reads as it did then.
+
+## Form ADV Directory Sources
+
+All figures on the directory row are **self-reported by the firm to the SEC** on Form ADV Part 1. They are not audited and are not FocusAlpha estimates. `firm_type` and `style_tier` are the two derived fields, and both are computed only for 13F filers.
+
+## Search the Form ADV Directory
+
+Use the institutions endpoint to search the directory. No filter is required: paging `cursor` at `limit=1000` enumerates the whole roster.
+
+<ParamField query="q" type="string">
+  Firm-name substring, minimum 2 characters. Matches the legal name or the business name.
+</ParamField>
+
+<ParamField query="crd" type="string">
+  Exact CRD number.
+</ParamField>
+
+<ParamField query="cik" type="string">
+  Exact SEC CIK. 13F filers only.
+</ParamField>
+
+<ParamField query="firm_type" type="string">
+  One of the nine derived labels, spelled exactly.
+</ParamField>
+
+<ParamField query="sec_registration_type" type="string">
+  `Registered` or `ERA`.
+</ParamField>
+
+<ParamField query="state" type="string">
+  Main-office US state code, e.g. `CT`.
+</ParamField>
+
+<ParamField query="country" type="string">
+  Main-office country as the ADV spells it, e.g. `United States`.
+</ParamField>
+
+<ParamField query="style_tier" type="string">
+  Revealed 13F style tier, spelled exactly: `Deep Growth`, `Growth-Biased`, `Blend / Core`, `Value-Biased`, `Deep Value`.
+</ParamField>
+
+<ParamField query="min_aum" type="number">
+  Total regulatory AUM floor in USD. `max_aum` sets the ceiling.
+</ParamField>
+
+<ParamField query="has_email" type="boolean">
+  Only firms with an extracted e-mail address.
+</ParamField>
+
+<ParamField query="has_style" type="boolean">
+  Only 13F filers with a style row.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="50">
+  Rows per page, between 1 and 1000. Page through with `cursor`.
+</ParamField>
+
+Directory rows are deliberately light. The brochure layer, the full fee schedule, the 13F style read-out, discretionary versus non-discretionary AUM, account and headcount figures, and the per-address e-mail evidence are all on [the adviser profile](/advisers/adv-brochure).
+
+## Related Datasets
+
+See also [Form ADV Part 2A Brochure Data](/advisers/adv-brochure) for what a firm says its business is, [Adviser Screening](/advisers/screening) to find firms by description rather than by name, [13F Institutional Holdings](/ownership/13f) for what a manager actually holds, and [Venture Investor Directory](/advisers/venture-investors) for early-stage investors, most of whom are not on this roster.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/institutions?firm_type=Hedge-Fund&state=CT&min_aum=1000000000&limit=1" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "crd": "105129",
+      "cik": "0001350694",
+      "legal_name": "BRIDGEWATER ASSOCIATES, LP",
+      "business_name": "BRIDGEWATER ASSOCIATES, LP",
+      "firm_type": "Hedge-Fund",
+      "sec_registration_type": "Registered",
+      "main_office_city": "WESTPORT",
+      "main_office_state": "CT",
+      "main_office_country": "United States",
+      "main_office_phone": "203-226-3030",
+      "website": "HTTPS://SOUNDCLOUD.COM/BRIDGEWATER-ASSOCIATES",
+      "email_primary": "compliance@bwater.com",
+      "email_domain_matches_firm": false,
+      "aum_total": "150159985476.0",
+      "advises_private_funds": true,
+      "has_hedge_funds": true,
+      "has_pe_funds": false,
+      "has_vc_funds": false,
+      "adv_as_of": "2026-08-03T00:00:00.000Z"
+    }
+  ],
+  "next_cursor": "105129",
+  "coverage": {
+    "update_frequency": "monthly_snapshot",
+    "contact_source": "ADV Part 1 roster; e-mail extracted from the ADV Part 2 brochure",
+    "style_source": "13F holdings, latest quarter only (13F filers only)",
+    "self_reported": true
+  }
+}
+```
+
+</ResponseExample>

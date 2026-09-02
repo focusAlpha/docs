@@ -1,0 +1,77 @@
+---
+title: "Dataset Status"
+sidebarTitle: "Dataset status"
+description: "Per-dataset coverage and freshness in one free call: what is available, what is pending, and when each family last refreshed."
+---
+
+Dataset Status reports per-dataset coverage and freshness in one place. Each entry is one dataset family, saying whether it is available, whether a backfill is pending, and when it last refreshed. The endpoint is free, so it can be polled from your own monitoring.
+
+<Info>
+  **Plan:** Free and above · **Credits:** free (not metered)
+</Info>
+
+## What You Can Use Dataset Status For
+
+Check whether a dataset is ready for the company set you care about before running a large job. Monitor freshness from your own systems. Distinguish a dataset that is still backfilling from one that has no data for a company.
+
+## Key Dataset Status Fields
+
+`coverage` and `coverage_pct` describe how much of the universe is covered. `last_sweep_at` is when coverage was last measured.
+
+`families` lists each dataset family with `available`, `pending`, `last_refreshed_at` and a `note`. `generated_at` timestamps the response itself.
+
+## How Coverage Is Reported Elsewhere
+
+Every cursor-based dataset response also carries its own `coverage` block beside `data`, with `available_from`, `available_to`, `update_frequency` and `history_status`.
+
+Read those from the response rather than hard-coding a date from documentation. Several datasets are backfilled **backwards** — newest first, reaching further into the past over time — so their start date moves.
+
+## Dataset Status Date Convention
+
+`last_refreshed_at` on a family is when that family last ingested, not when its newest row is dated. A daily dataset that refreshed an hour ago normally has a newest row dated the previous trading day.
+
+## Query Dataset Status
+
+Use the status endpoint. It costs no credits.
+
+```bash
+curl "https://api.focusalpha.ai/v1/_status" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+Two service endpoints sit alongside it: a health check and a readiness check, both unauthenticated and both intended for load balancers rather than for callers.
+
+## Related Datasets
+
+See also [Coverage and freshness](/concepts/coverage) for how to read a coverage block, [Plans and credits](/concepts/plans-credits) for the other free discovery endpoints, and [API Usage](/account/usage).
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/_status" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "coverage": "subset",
+  "coverage_pct": 0.87,
+  "last_sweep_at": "2026-08-31T13:10:00.000Z",
+  "families": [
+    {
+      "family": "financials",
+      "available": true,
+      "pending": false,
+      "last_refreshed_at": "2026-08-31T12:58:00.000Z",
+      "note": null
+    }
+  ],
+  "generated_at": "2026-08-31T14:00:00.000Z"
+}
+```
+
+</ResponseExample>

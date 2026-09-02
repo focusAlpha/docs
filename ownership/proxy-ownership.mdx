@@ -1,0 +1,124 @@
+---
+title: "Proxy Ownership"
+sidebarTitle: "Proxy ownership"
+description: "Beneficial ownership as disclosed in a US company's latest proxy statement: insiders, the insider group line, and 5% or greater holders."
+---
+
+Proxy Ownership provides beneficial ownership as disclosed in a US company's proxy statement: who holds the shares, how many, and what percentage. Each observation is one owner on the company's **latest** proxy. This dataset answers who owns the company now; it is not an ownership history.
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Proxy Ownership For
+
+See a company's largest declared holders and its insider stakes side by side, as the company itself presented them. Check whether an institution's [13F position](/ownership/13f) crosses the 5% disclosure threshold. Measure aggregate insider ownership from the group line the company printed.
+
+## Proxy Ownership Coverage
+
+Coverage is US companies that file a DEF 14A proxy statement. The latest proxy per company is served; earlier proxies are not retained as a series.
+
+## The Three Proxy Owner Kinds
+
+`owner_kind` takes one of three values. `insider` is an individual officer or director. `insider_group` is the "all directors and executive officers as a group" line the proxy prints. `major_holder` is a holder of 5% or more.
+
+<Warning>
+Do not sum rows across owner kinds. The `insider_group` line already contains the individual insiders, so adding the two double-counts every insider stake.
+</Warning>
+
+## Key Proxy Ownership Fields
+
+`owner_name`, `owner_role` and `owner_kind` identify the holder. `security_class` names the class held. `shares_owned` and `percent` size the holding, on a 0-to-100 scale. `is_group` flags the aggregate line.
+
+`percent_source` says whether the percentage was disclosed by the company or computed from the share count. `confidence` grades the extraction.
+
+<Note>
+Check `percent_source` and `confidence` before quoting a percentage as the company's own figure. A computed percentage is FocusAlpha's arithmetic, not the company's disclosure.
+</Note>
+
+## Proxy Ownership Date Convention
+
+Rows describe ownership as of the record date of the company's latest proxy statement, which is typically a few weeks before the annual meeting and can be several months old at the time of reading. Because only the latest proxy is served, the effective date moves when the company files a new one.
+
+## Proxy Ownership Sources
+
+Rows are read from the beneficial ownership table of the company's own DEF 14A filing on SEC EDGAR. Percentages are the company's where `percent_source` says so, and computed by FocusAlpha otherwise.
+
+## Query Proxy Ownership
+
+Use the proxy ownership endpoint for one company.
+
+<ParamField path="company_id" type="string" required>
+  A ticker, CIK, ISIN, or canonical `cmp_` id.
+</ParamField>
+
+<ParamField query="owner_kind" type="string">
+  `insider`, `insider_group`, or `major_holder`.
+</ParamField>
+
+<ParamField query="min_percent" type="number">
+  Minimum ownership percentage, on the same 0-to-100 scale the rows carry.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Rows per page, between 1 and 1000. Page through with `cursor`.
+</ParamField>
+
+## Related Datasets
+
+See also [13F Institutional Holdings](/ownership/13f) for holdings reported by managers rather than by the company, [Insider Trades](/ownership/insider-trades) for the transactions behind an insider stake, and [Executive Compensation](/ownership/executive-compensation) from the same proxy statement.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/TSLA/proxy-ownership?owner_kind=major_holder" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "id": "130397",
+      "company_id": "cmp_008544",
+      "ticker": "TSLA",
+      "owner_name": "The Vanguard Group",
+      "owner_role": "major_shareholder",
+      "owner_kind": "major_holder",
+      "security_class": "Common Stock",
+      "shares_owned": "229805491",
+      "percent": "6.9",
+      "percent_source": "reported",
+      "is_group": false,
+      "confidence": "high"
+    },
+    {
+      "id": "130398",
+      "company_id": "cmp_008544",
+      "ticker": "TSLA",
+      "owner_name": "Blackrock, Inc.",
+      "owner_role": "major_shareholder",
+      "owner_kind": "major_holder",
+      "security_class": "Common Stock",
+      "shares_owned": "188797465",
+      "percent": "5.7",
+      "percent_source": "reported",
+      "is_group": false,
+      "confidence": "high"
+    }
+  ],
+  "next_cursor": null,
+  "coverage": {
+    "available_from": null,
+    "available_to": null,
+    "update_frequency": "annual",
+    "history_status": "current_snapshot"
+  }
+}
+```
+
+</ResponseExample>

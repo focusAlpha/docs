@@ -1,0 +1,127 @@
+---
+title: "Income Statements"
+sidebarTitle: "Income statements"
+description: "As-reported income statements for SEC filers by fiscal year, quarter or trailing twelve months, in the currency and accounting standard the company filed."
+---
+
+Income Statements provides as-reported income statements for SEC filers. Each observation is one fiscal period for one company, carrying revenue through to net income as the company filed it, in its own reporting currency and under its own accounting standard. Rows are returned newest first.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Income Statements For
+
+Build a revenue and margin history for a company. Compare operating leverage across a peer group, after checking that the peers report in the same currency and standard. Separate a loss caused by a disposal from a loss in the ongoing business. Feed a consistent set of periods into a model.
+
+## Income Statements Coverage
+
+Coverage is SEC filers. Figures are read from each company's own XBRL data as filed, so the history runs as far back as the company's XBRL filings do. For a company that is not an SEC filer, resolve it through [the company registry](/companies/registry) first to see what it is — non-US issuers are served by [Taiwan Financials](/international/taiwan-financials), [Korea DART Financials](/international/korea-dart-financials) and [Form 20-F](/international/form-20f) instead.
+
+## Key Income Statements Fields
+
+The statement carries the reported line items from revenue down to net income, together with `report_period`, `period`, `currency` and `accounting_standard`.
+
+## Currency and Accounting Standard
+
+Every row carries `currency` and `accounting_standard`.
+
+`currency` is the currency the company reported in. Values are never converted to US dollars, so a row for a European filer is in euros and adding it to a US filer's row without conversion produces a meaningless number.
+
+`accounting_standard` is `us_gaap` or `ifrs`. The two standards define several line items differently, so check the field before comparing or summing across companies.
+
+## Discontinued Operations
+
+When a filer reports discontinued operations, `net_income_continuing_operations` and `net_income_discontinued_operations` carry the two halves **as reported**.
+
+This matters because a bottom line can be negative purely because of a disposal while the ongoing business earned money, and only the split shows that. A null in either field means the company did not report it, not that the value was zero.
+
+These two fields exist on the income statement only.
+
+## Income Statements Date Convention
+
+`report_period` is the end of the fiscal period the figures cover, and it is what the `report_period`, `report_period_gte`, `report_period_lte`, `report_period_gt` and `report_period_lt` filters apply to. Rows are returned newest first.
+
+`period` says what kind of period a row is. `annual` rows cover a fiscal year, `quarterly` rows cover a fiscal quarter, and `ttm` rows cover the trailing twelve months ending at `report_period`. A trailing-twelve-month row is a computed rolling window, not a period the company reported as such.
+
+## Income Statements Sources
+
+Figures are read from the company's own XBRL exhibits in its SEC filings. They are as reported: no restatement, no normalisation, and no currency conversion.
+
+## Query Income Statements
+
+Use the income statements endpoint. One of `ticker` or `cik` is required, and `period` is required.
+
+<ParamField query="ticker" type="string">
+  Trading symbol. One of `ticker` or `cik` is required.
+</ParamField>
+
+<ParamField query="cik" type="string">
+  SEC Central Index Key. One of `ticker` or `cik` is required.
+</ParamField>
+
+<ParamField query="period" type="string" required>
+  `annual`, `quarterly` or `ttm`.
+</ParamField>
+
+<ParamField query="report_period" type="string">
+  Exact period end, `YYYY-MM-DD`. `report_period_gte`, `report_period_lte`, `report_period_gt` and `report_period_lt` bound a range.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="4">
+  Number of period rows to return, newest first.
+</ParamField>
+
+The response wrapper key is `income_statements`. These routes return a bare wrapper key rather than the standard envelope, page by `limit` only, and use the flat `{ error, message }` error body.
+
+## Related Datasets
+
+See also [Combined Financial Statements](/financials/combined) to get all three statements in one call, [Financial Metrics](/financials/metrics) for computed ratios over the same periods, [Segmented Financials](/financials/segments) for as-reported segment breakdowns, and [SEC Filings Index](/filings/index) for the filings these figures come from.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/financials/income-statements?ticker=AAPL&period=annual&limit=4" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "income_statements": [
+    {
+      "cik": 320193,
+      "ticker": "AAPL",
+      "period": "annual",
+      "fiscal_period": "FY",
+      "report_period": "2025-09-27",
+      "currency": "USD",
+      "accounting_standard": "us_gaap",
+      "accession_number": "0000320193-25-000079",
+      "filing_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079",
+      "revenue": 416161000000,
+      "cost_of_revenue": 220960000000,
+      "gross_profit": 195201000000,
+      "operating_expense": 62151000000,
+      "research_and_development": 34550000000,
+      "selling_general_and_administrative_expenses": 27601000000,
+      "operating_income": 133050000000,
+      "ebit": 133050000000,
+      "nonoperating_income_expense": -321000000,
+      "income_tax_expense": 20719000000,
+      "net_income": 112010000000,
+      "net_income_common_stock": 112010000000,
+      "earnings_per_share": 7.49,
+      "earnings_per_share_diluted": 7.46,
+      "weighted_average_shares": 14948500000,
+      "weighted_average_shares_diluted": 15004697000,
+      "dividends_per_common_share": 1.02
+    }
+  ]
+}
+```
+
+</ResponseExample>

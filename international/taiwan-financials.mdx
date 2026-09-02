@@ -1,0 +1,139 @@
+---
+title: "Taiwan Financials"
+sidebarTitle: "Taiwan financials"
+description: "Quarterly income statements and balance sheets for TWSE and TPEx-listed companies, with both the cumulative filed figure and the single-quarter figure."
+---
+
+Taiwan Financials provides quarterly financial statements for Taiwan-listed companies on TWSE and TPEx. Each observation is one statement for one fiscal season, in TWD thousands, as filed with the Taiwan exchanges. Coverage starts at 2024 Q1.
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Taiwan Financials For
+
+Build a quarterly revenue and margin history for a Taiwan-listed company. Compare a quarter against the same quarter a year earlier. Pair the quarterly statements with [Taiwan Monthly Revenue](/international/taiwan-monthly-revenue), which reports far sooner.
+
+## Taiwan Income Statements Are Filed Cumulatively
+
+<Warning>
+Read this before using any income figure. TWSE files income-statement values **cumulative from the start of the fiscal year**. Season 2 is the first half and season 4 is the full year.
+
+Reading a cumulative value as a quarter overstates Q4 by roughly the whole year.
+</Warning>
+
+Because of that, every income line comes back **twice**.
+
+The `_ytd` fields — `revenue_ytd` and its siblings — are the figure **as filed**, cumulative.
+
+The `_q` fields — `revenue_q` and its siblings — are the **single quarter**.
+
+## How to Read quarter_basis
+
+`quarter_basis` says how the `_q` value was arrived at.
+
+`as_reported` means season 1, where the cumulative figure is already the quarter and no arithmetic was applied.
+
+`derived_from_ytd` means this season's cumulative figure minus the previous season's.
+
+`null` means the previous season is missing, in which case the `_q` fields are null. **Those nulls must not be treated as zero.**
+
+## Income Rows and Balance Rows Are Different Shapes
+
+`statement` is `income` or `balance`. There is **no cash-flow statement** in this dataset.
+
+Balance-sheet rows are point-in-time: never cumulative and never derived. Their income columns are null, and income rows have null balance columns.
+
+## Taiwan Financials Date Convention
+
+`year` is the fiscal year and `season` is the TWSE season, 1 to 4. A season is a fiscal quarter, but because income is filed cumulatively, the season number describes the **end** of the cumulative window on the `_ytd` fields and the quarter itself on the `_q` fields.
+
+## Taiwan Financials Units
+
+Amounts are **TWD thousands**. The response states `currency` and `unit` explicitly — read them rather than assuming a scale.
+
+## Taiwan Financials Sources
+
+Statements are filed by the companies with the Taiwan exchanges. The `_ytd` values are as filed. The `_q` values are computed by FocusAlpha except in season 1, and `quarter_basis` says which case each row is.
+
+## Query Taiwan Financials
+
+Use the Taiwan financials endpoint. It accepts a Taiwan security code such as `2330`, a suffixed ticker such as `2330.TW`, an ISIN or a `company_id` directly — there is no need to resolve the identifier first.
+
+<ParamField path="company_id" type="string" required>
+  A Taiwan security code, a suffixed ticker, an ISIN or a `company_id`.
+</ParamField>
+
+<ParamField query="statement" type="string">
+  `income` or `balance`. Both by default.
+</ParamField>
+
+<ParamField query="year" type="integer">
+  Fiscal year.
+</ParamField>
+
+<ParamField query="season" type="integer">
+  TWSE season, 1 to 4.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="40">
+  Rows per page, between 1 and 1000. Page through with `cursor`.
+</ParamField>
+
+## Related Datasets
+
+See also [Taiwan Monthly Revenue](/international/taiwan-monthly-revenue) for the monthly filing that leads these statements, [Taiwan Foreign Ownership](/international/taiwan-foreign-ownership), and [Company Registry](/companies/registry) for the identifiers.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/2330/tw/financials?statement=income&year=2026" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "company_id": "cmp_008395",
+      "local_security_code": "2330",
+      "company_name": "台積電",
+      "market": "twse",
+      "industry_class": "ci",
+      "year": 2026,
+      "season": 2,
+      "period_key": 20262,
+      "period_end": "2026-06-30",
+      "statement": "income",
+      "revenue_ytd": "2404483690.00",
+      "gross_profit_ytd": "1611606116.00",
+      "operating_income_ytd": "1425568793.00",
+      "pretax_income_ytd": "1550229773.00",
+      "net_income_ytd": "1279582227.00",
+      "eps_basic_ytd": "49.33",
+      "revenue_q": "1270380250.00",
+      "gross_profit_q": "860310695.00",
+      "operating_income_q": "766602651.00",
+      "net_income_q": "706780923.00",
+      "eps_basic_q": "27.25",
+      "quarter_basis": "derived_from_ytd",
+      "report_date": "2026-09-01"
+    }
+  ],
+  "next_cursor": null,
+  "currency": "TWD",
+  "unit": "thousands",
+  "coverage": {
+    "available_from": "2024-03-31",
+    "available_to": null,
+    "update_frequency": "quarterly",
+    "history_status": "complete_from_2024q1"
+  }
+}
+```
+
+</ResponseExample>

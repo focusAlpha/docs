@@ -1,0 +1,59 @@
+---
+title: "Screening"
+sidebarTitle: "Screening overview"
+description: "FocusAlpha's three screeners — companies, ETFs and investment advisers — and the conventions all three share: free facets, exact vocabularies, and unranked rows."
+---
+
+Screening is the family of FocusAlpha endpoints that answer "which ones", rather than looking one thing up by name. Three screeners exist: one over roughly 25,000 listed companies, one over the US-listed ETF universe, and one over the SEC investment-adviser roster. All three share the same conventions, so learning one teaches the other two.
+
+## The Three FocusAlpha Screeners
+
+<CardGroup cols={3}>
+  <Card title="Company Screening" icon="building" href="/companies/screening">
+    Ten axes over roughly 25,000 listed companies in 82 countries.
+  </Card>
+  <Card title="ETF Screening" icon="chart-pie" href="/etf/screening">
+    Wrapper tier, holdings-derived classification and measured portfolio characteristics.
+  </Card>
+  <Card title="Adviser Screening" icon="briefcase" href="/advisers/screening">
+    Form ADV Part 2A brochure axes crossed with revealed 13F style.
+  </Card>
+</CardGroup>
+
+## Always Call Facets First
+
+Every screener has a facets endpoint, and every one of them is **free**.
+
+Facets return the filterable vocabulary **as it is actually carried by rows**, with a count for each value, plus measured coverage totals. On several datasets this is the only place coverage is a number rather than prose.
+
+This matters because filter values are exact. A misspelled value returns an **empty page rather than an error**, which reads exactly like "nothing matches". The facets response is what distinguishes the two.
+
+## An Empty Page Is Usually a Spelling Problem
+
+Across all three screeners, the most common cause of an empty result is a guessed vocabulary value.
+
+Check the value against facets before reporting that no companies, funds or firms match a condition.
+
+## Sorting Drops Rows With No Sort Key
+
+Every screener ranks on a measure, and a row whose measure is null cannot be ranked.
+
+On the ETF screener, ranking by expense ratio drops every trust that files no fee table. On the adviser screener, four of the five sorts drop every exempt reporting adviser, because an ERA files an abbreviated Form ADV that reports none of those numbers.
+
+When rows are dropped, the response carries an **`unranked` block** saying how many matched the filters but could not be ranked. An apparently empty first page with a large `unranked` count means the filters worked and the sort did not.
+
+Read the `unranked` count before drawing a conclusion, and re-run on an identifier sort — `ticker` on ETFs, `crd` on advisers — to see the dropped rows.
+
+## Coverage Filters Hide Inside Content Filters
+
+On datasets where a layer is still being ingested, filtering on that layer silently narrows the universe to the rows that have it.
+
+The adviser screener makes this explicit with `has_brochure`, and its facets response reports `totals.with_brochure` against `totals.firms`. Never report "only N firms do X" without both numbers.
+
+## Screening Plans
+
+Company screening and ETF screening are **Fund** plan. Adviser screening is **Professional** and above. Every facets endpoint is free of credits regardless of plan.
+
+## Related Datasets
+
+See also [Plans and credits](/concepts/plans-credits) for entitlements, [Pagination](/concepts/pagination) for cursor paging, and the three screener pages linked above.
