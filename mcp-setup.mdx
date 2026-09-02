@@ -1,7 +1,7 @@
 ---
 sidebarTitle: "Connect MCP"
 title: "Connect via MCP"
-description: "Use FocusAlpha from Claude, Cursor, or any MCP client — every dataset exposed as a tool, authenticated with your API key."
+description: "Use FocusAlpha from Claude, ChatGPT, Cursor, VS Code, or any MCP client — every dataset exposed as a tool, with one-click OAuth or API-key auth."
 ---
 
 FocusAlpha ships a hosted [Model Context Protocol](https://modelcontextprotocol.io) server. Point an MCP-capable client at it and the model can search transcripts, pull financials, screen companies, and watch events — every dataset in the API, as tools.
@@ -10,46 +10,72 @@ FocusAlpha ships a hosted [Model Context Protocol](https://modelcontextprotocol.
 https://mcp.focusalpha.ai/mcp
 ```
 
-The server speaks the HTTP transport and is stateless. Authentication is your normal API key, sent as a header on every request:
+The server speaks the streamable HTTP transport, is stateless, and supports two ways to authenticate:
+
+- **One-click OAuth** — paste the URL and connect. The client opens a browser window where you sign in to your FocusAlpha account and click **Approve**; a dedicated API key is minted for that client behind the scenes, so you never copy a key. Revoking that key in the [dashboard](https://app.focusalpha.ai) instantly disconnects the client. This is the only path for clients that cannot set custom headers (Claude connectors, ChatGPT).
+- **API key header** — send your normal key as a header on every request, for clients and agents where you would rather pin a specific key:
 
 ```text
 Authorization: Bearer fa_live_...
 ```
 
 <Note>
-  MCP tool calls are ordinary API calls underneath. They spend the same credits, respect the same plan entitlements, and count against the same rate limits as REST requests — see [Plans & credits](/concepts/plans-credits). A missing or invalid key is rejected with `401` before any data is read.
+  MCP tool calls are ordinary API calls underneath. They spend the same credits, respect the same plan entitlements, and count against the same rate limits as REST requests — see [Plans & credits](/concepts/plans-credits). A missing or invalid credential is rejected with `401` before any data is read.
 </Note>
 
 <Info>
   This is the **data** server. Separately, `https://docs.focusalpha.ai/mcp` serves this documentation site itself over MCP (search and read the docs) — no API key required. Connect both if you want an agent that can look up the docs *and* pull the data.
 </Info>
 
+Pick your client below — the **Connect in …** entries in the menu at the top right of every docs page jump straight to the matching section.
+
+## Claude
+
+Claude on the web, Claude Desktop, and Cowork all connect the same way, through connectors:
+
+1. Open **Settings → Connectors** ([direct link](https://claude.ai/settings/connectors)) and click **Add custom connector**.
+2. Name it `FocusAlpha`, paste `https://mcp.focusalpha.ai/mcp` as the URL, and click **Add**. Leave the OAuth fields under **Advanced settings** empty.
+3. Click **Connect** — a browser window opens on `app.focusalpha.ai`; sign in and click **Approve**.
+
+Custom connectors are available on every Claude plan, including Free (limited to one custom connector). On Team and Enterprise plans an owner adds the connector under **Organization settings → Connectors**, and each member then clicks **Connect** to authorize their own account.
+
+<Warning>
+  Do not add the server to `claude_desktop_config.json` with `"type": "http"` — Claude Desktop silently skips remote servers configured that way. Use **Settings → Connectors** in the Desktop app instead.
+</Warning>
+
 ## Claude Code
+
+```bash
+claude mcp add --transport http focusalpha https://mcp.focusalpha.ai/mcp
+```
+
+Then run `/mcp` inside Claude Code and choose **Authenticate** — the OAuth flow opens in your browser. To pin a specific key instead of OAuth, attach it as a header:
 
 ```bash
 claude mcp add --transport http focusalpha https://mcp.focusalpha.ai/mcp \
   --header "Authorization: Bearer fa_live_your_key_here"
 ```
 
-## Claude Desktop
+## ChatGPT
 
-Add to `claude_desktop_config.json`:
+Custom MCP connectors in ChatGPT require **Developer mode** and a paid plan — the Free plan cannot add them. ChatGPT only supports OAuth or no-auth connectors (no custom headers), so it always uses the one-click OAuth path.
 
-```json
-{
-  "mcpServers": {
-    "focusalpha": {
-      "type": "http",
-      "url": "https://mcp.focusalpha.ai/mcp",
-      "headers": { "Authorization": "Bearer fa_live_your_key_here" }
-    }
-  }
-}
-```
+1. Enable **Developer mode** in ChatGPT settings (under **Advanced settings** on most accounts; some show it under **Security and login**). On Business, Enterprise, and Edu plans a workspace admin has to allow developer mode first.
+2. Open [Settings → Connectors](https://chatgpt.com/#settings/Connectors) and click **Create**.
+3. Name it `FocusAlpha`, set the MCP server URL to `https://mcp.focusalpha.ai/mcp`, choose **OAuth** as authentication, and save — then sign in on `app.focusalpha.ai` and click **Approve**.
+4. In a chat, click **+**, choose **Developer mode**, and enable the FocusAlpha connector for that conversation.
+
+Connectors are created and managed on ChatGPT web; the desktop and mobile apps pick a connector up after you have added it there. Every FocusAlpha tool is read-only, so plans that OpenAI restricts to read/fetch actions can still use all of them.
 
 ## Cursor
 
-Add to `.cursor/mcp.json` (project) or `~/.cursor/mcp.json` (global):
+One click — Cursor opens its MCP settings with the server pre-filled; click **Connect** (or **Needs login**) to run the OAuth flow:
+
+<a href="cursor://anysphere.cursor-deeplink/mcp/install?name=focusalpha&config=eyJ1cmwiOiJodHRwczovL21jcC5mb2N1c2FscGhhLmFpL21jcCJ9">
+  <img noZoom src="https://cursor.com/deeplink/mcp-install-dark.svg" alt="Add FocusAlpha to Cursor" height="32" />
+</a>
+
+Or configure it by hand in `.cursor/mcp.json` (project) or `~/.cursor/mcp.json` (global) — with a pinned key, or without `headers` to use OAuth:
 
 ```json
 {
@@ -62,12 +88,33 @@ Add to `.cursor/mcp.json` (project) or `~/.cursor/mcp.json` (global):
 }
 ```
 
-## Other clients
+## VS Code
 
-Any MCP client that supports the HTTP transport and can attach an `Authorization` header works the same way — configure the URL and the header, nothing else is required.
+One click — VS Code asks you to trust the server, then prompts for the OAuth sign-in:
+
+[**Install in VS Code**](vscode:mcp/install?%7B%22name%22%3A%22focusalpha%22%2C%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fmcp.focusalpha.ai%2Fmcp%22%7D)
+
+Or add it by hand: run **MCP: Add Server** from the Command Palette, or create `.vscode/mcp.json`:
+
+```json
+{
+  "servers": {
+    "focusalpha": {
+      "type": "http",
+      "url": "https://mcp.focusalpha.ai/mcp"
+    }
+  }
+}
+```
+
+VS Code handles the OAuth flow for remote servers; add a `"headers"` object with the `Authorization` header if you prefer a pinned key.
+
+## Other MCP clients
+
+Any MCP client that speaks the streamable HTTP transport works: configure the URL, then either complete the OAuth flow (if the client supports MCP authorization) or attach the `Authorization` header. Nothing else is required.
 
 <Warning>
-  Your API key travels in the client configuration. Keep the config file out of source control, and revoke the key in the [dashboard](https://app.focusalpha.ai) if it leaks.
+  If you use the header method, your API key travels in the client configuration. Keep the config file out of source control, and revoke the key in the [dashboard](https://app.focusalpha.ai) if it leaks. OAuth connections avoid this entirely — each client gets its own key, visible and revocable in the dashboard.
 </Warning>
 
 ## Available tools
