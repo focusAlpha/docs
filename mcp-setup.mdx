@@ -18,6 +18,8 @@ Prefer to manage keys yourself (for scripts, agents, or shared configs)? The ser
 Authorization: Bearer fa_live_...
 ```
 
+Wherever this guide shows <strong style={{ color: '#16a34a' }}>fa_live_your_key_here</strong>, it is a placeholder — replace it with your own key.
+
 <Note>
   MCP tool calls are ordinary API calls underneath. They spend the same credits, respect the same plan entitlements, and count against the same rate limits as REST requests — see [Plans & credits](/concepts/plans-credits). A missing or invalid credential is rejected with `401` before any data is read.
 </Note>
@@ -76,9 +78,9 @@ One click — Cursor opens its MCP settings with the server pre-filled; click **
   <img noZoom src="https://cursor.com/deeplink/mcp-install-dark.svg" alt="Add FocusAlpha to Cursor" height="32" />
 </a>
 
-Or configure it by hand in `.cursor/mcp.json` (project) or `~/.cursor/mcp.json` (global) — replace `fa_live_your_key_here` with a key from the [API keys page](https://app.focusalpha.ai/keys), or drop the `headers` line entirely to use the sign-in flow:
+Or configure it by hand in `.cursor/mcp.json` (project) or `~/.cursor/mcp.json` (global) — replace <strong style={{ color: '#16a34a' }}>fa_live_your_key_here</strong> with a key from the [API keys page](https://app.focusalpha.ai/keys), or drop the `headers` line entirely to use the sign-in flow:
 
-```json
+```json highlight={5}
 {
   "mcpServers": {
     "focusalpha": {
@@ -120,9 +122,9 @@ claude mcp add --transport http focusalpha https://mcp.focusalpha.ai/mcp
 
 Then run `/mcp` inside Claude Code and choose **Authenticate** — the sign-in opens in your browser, and you're done.
 
-Alternatively, you can skip the sign-in by attaching an API key directly. `fa_live_your_key_here` is a placeholder — replace it with a real key, created on the [API keys page](https://app.focusalpha.ai/keys) of your dashboard:
+Alternatively, you can skip the sign-in by attaching an API key directly. <strong style={{ color: '#16a34a' }}>fa_live_your_key_here</strong> is a placeholder — replace it with a real key, created on the [API keys page](https://app.focusalpha.ai/keys) of your dashboard:
 
-```bash
+```bash highlight={2}
 claude mcp add --transport http focusalpha https://mcp.focusalpha.ai/mcp \
   --header "Authorization: Bearer fa_live_your_key_here"
 ```
