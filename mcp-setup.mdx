@@ -75,33 +75,37 @@ Tools map one-to-one onto the REST API. The model can also call `list_datasets` 
 
 | Dataset | Tools | Plan | REST docs |
 | --- | --- | --- | --- |
-| Earnings call transcripts | `retrieve`, `list_documents`, `get_document`, `get_document_segments` | Free | [Search & documents](/transcripts/semantic-retrieval) |
-| Agent-ready indexed filings | `get_filings`, `get_filing_items` | Free | [Filings](/filings/index), [Filing items](/filings/items) |
-| Financial statements | `get_income_statements`, `get_balance_sheets`, `get_cash_flow_statements`, `get_all_financials` | Free | [Financials](/financials/combined) |
-| Financial metrics | `get_financial_metrics` | Free | [Financials](/financials/combined) |
-| Segmented financials | `get_segmented_financials` | Free | [Financials](/financials/combined) |
-| Company facts | `get_company_facts` | Free | [Financials](/financials/combined) |
-| Company search & profile | `search_companies`, `get_company` | Free | [Company registry](/companies/registry) |
-| Company screener | `screen_companies` | Fund | [Screener](/companies/screening) |
-| Real-time company events | `get_company_events` | Fund | [News & themes](/news/news-events) |
-| Real-time company news | `get_company_news` | Fund | [News & themes](/news/news-events) |
-| Real-time macro news | `get_macro_news` | Fund | [News & themes](/news/news-events) |
-| Real-time US events and filings | `get_8k_events`, `get_8k_raw_filings` | Fund | [Corporate events](/events/8k-events) |
-| Real-time guidance and changes | `get_guidance`, `get_guidance_changes` | Fund | [Corporate events](/events/8k-events) |
-| Real-time earnings result analysis | `get_8k_earnings_results` | Fund | [Corporate events](/events/8k-events) |
-| Prediction-market consensus | `get_prediction_markets_quote`, `get_prediction_markets_consensus` | Fund | [Corporate events](/events/8k-events) |
-| Real-time international disclosures | `get_international_disclosure` | Fund | [International](/international/exchange-disclosures) |
-| VC investor search | `search_vc_investors` | Fund | [Ownership & people](/ownership/13f) |
-| Institutional holdings (13F) | `get_institutional_holdings` | Professional | [Ownership & people](/ownership/13f) |
-| Insider trades | `get_insider_trades` | Professional | [Ownership & people](/ownership/13f) |
-| Executive compensation & proxy ownership | `get_executive_compensation`, `get_proxy_ownership` | Professional | [Ownership & people](/ownership/13f) |
-| Institution directory | `search_institutions`, `get_institution_profile` | Professional | [Ownership & people](/ownership/13f) |
-| Market data & benchmarks | `get_market_data`, `get_benchmark_prices` | Professional | [Market data](/market-data/prices) |
-| Short interest | `get_short_interest` | Professional | [Market data](/market-data/prices) |
-| Taiwan datasets | `get_taiwan_financials`, `get_taiwan_monthly_revenue`, `get_taiwan_foreign_ownership` | Professional | [International](/international/exchange-disclosures) |
-| Korea datasets | `get_korea_financials`, `get_korea_report_sections` | Professional | [International](/international/exchange-disclosures) |
-| Form 20-F | `get_adr_20f_notes`, `get_adr_20f_data` | Professional | [International](/international/exchange-disclosures) |
-| Discovery | `list_datasets`, `list_coverage` | Free | [Coverage & freshness](/concepts/coverage) |
+| Earnings call transcripts | `retrieve`, `list_documents`, `get_document`, `get_document_segments` | Free trial | [Semantic retrieval](/transcripts/semantic-retrieval) |
+| Agent-ready indexed filings | `get_filings`, `get_filing_items` | Free trial | [Filings](/filings/index), [Filing items](/filings/items) |
+| Financial statements | `get_income_statements`, `get_balance_sheets`, `get_cash_flow_statements`, `get_all_financials` | Free trial | [Financials](/financials/combined) |
+| Financial metrics | `get_financial_metrics` | Free trial | [Financial metrics](/financials/metrics) |
+| Segmented financials | `get_segmented_financials` | Free trial | [Segments](/financials/segments) |
+| Company facts | `get_company_facts` | Free trial | [Company facts](/financials/company-facts) |
+| Company search & profile | `search_companies`, `get_company` | Free trial | [Company registry](/companies/registry) |
+| Discovery | `list_datasets`, `list_coverage` | Free trial | [Coverage & freshness](/concepts/coverage) |
+| Institutional holdings (13F) | `get_institutional_holdings` | Professional | [13F holdings](/ownership/13f) |
+| Insider trades | `get_insider_trades` | Professional | [Insider trades](/ownership/insider-trades) |
+| Executive compensation & proxy ownership | `get_executive_compensation`, `get_proxy_ownership` | Professional | [Executive compensation](/ownership/executive-compensation), [Proxy ownership](/ownership/proxy-ownership) |
+| Short interest | `get_short_interest` | Professional | [Short interest](/ownership/short-interest) |
+| Adviser directory & profile | `search_institutions`, `get_institution_profile` | Professional | [Form ADV directory](/advisers/form-adv), [ADV brochure](/advisers/adv-brochure) |
+| Adviser screener | `screen_institutions` | Professional | [Adviser screening](/advisers/screening) |
+| ETF directory & profile | `search_etfs`, `get_etf`, `get_etf_taxonomy` | Professional | [ETF data](/etf/overview), [Taxonomy](/etf/taxonomy) |
+| ETF daily series & holdings | `get_etf_history`, `get_etf_holdings` | Professional | [NAV & shares](/etf/nav), [Holdings](/etf/holdings) |
+| Market data & benchmarks | `get_market_data`, `get_benchmark_prices` | Professional | [Prices](/market-data/prices), [Benchmarks](/market-data/benchmarks) |
+| Taiwan datasets | `get_taiwan_financials`, `get_taiwan_monthly_revenue`, `get_taiwan_foreign_ownership` | Professional | [Taiwan financials](/international/taiwan-financials) |
+| Korea datasets | `get_korea_financials`, `get_korea_report_sections` | Professional | [Korea financials](/international/korea-dart-financials) |
+| Form 20-F | `get_adr_20f_notes`, `get_adr_20f_data` | Professional | [Form 20-F](/international/form-20f) |
+| Company screener | `screen_companies` | Fund | [Company screening](/companies/screening) |
+| ETF screener | `screen_etfs` | Fund | [ETF screening](/etf/screening) |
+| Real-time company events | `get_company_events` | Fund | [News events](/news/news-events) |
+| Real-time company news | `get_company_news` | Fund | [Company news](/news/company-news) |
+| Real-time macro news | `get_macro_news` | Fund | [News themes](/news/themes) |
+| Real-time US events and filings | `get_8k_events`, `get_8k_raw_filings` | Fund | [8-K events](/events/8k-events), [8-K exhibits](/events/8k-exhibits) |
+| Real-time guidance and changes | `get_guidance`, `get_guidance_changes` | Fund | [Guidance](/events/guidance), [Guidance changes](/events/guidance-changes) |
+| Real-time earnings result analysis | `get_8k_earnings_results` | Fund | [Earnings results](/events/earnings-results) |
+| Prediction-market consensus | `get_prediction_markets_quote`, `get_prediction_markets_consensus` | Fund | [Prediction markets](/events/prediction-markets), [Earnings consensus](/events/earnings-consensus) |
+| Real-time international disclosures | `get_international_disclosure` | Fund | [Global disclosures](/international/exchange-disclosures) |
+| VC investor search | `search_vc_investors` | Fund | [Venture investors](/advisers/venture-investors) |
 
 Datasets your plan does not include return a clear upgrade message rather than data — the model will tell you which tier a tool needs.
 
