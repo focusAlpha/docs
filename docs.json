@@ -298,20 +298,33 @@
     "options": [
       "copy",
       "view",
-      "chatgpt",
-      "claude",
-      "perplexity",
       {
         "title": "Connect in Claude",
-        "description": "Add FocusAlpha as a custom connector — one-click OAuth",
+        "description": "Opens Claude with a prompt to walk you through connecting",
         "icon": "message",
-        "href": "https://docs.focusalpha.ai/mcp-setup#claude"
+        "href": {
+          "base": "https://claude.ai/new",
+          "query": [
+            {
+              "key": "q",
+              "value": "Help me connect the FocusAlpha MCP server to this client. Server URL: https://mcp.focusalpha.ai/mcp (streamable HTTP; sign in with my FocusAlpha account when prompted). Setup guide: https://docs.focusalpha.ai/mcp-setup"
+            }
+          ]
+        }
       },
       {
         "title": "Connect in ChatGPT",
-        "description": "Add FocusAlpha as a connector in developer mode",
+        "description": "Opens ChatGPT with a prompt to walk you through connecting",
         "icon": "comment",
-        "href": "https://docs.focusalpha.ai/mcp-setup#chatgpt"
+        "href": {
+          "base": "https://chatgpt.com/",
+          "query": [
+            {
+              "key": "q",
+              "value": "Help me connect the FocusAlpha MCP server to this client. Server URL: https://mcp.focusalpha.ai/mcp (streamable HTTP; sign in with my FocusAlpha account when prompted). Setup guide: https://docs.focusalpha.ai/mcp-setup"
+            }
+          ]
+        }
       },
       {
         "title": "Connect in Claude Code",
