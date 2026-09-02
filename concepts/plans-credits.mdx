@@ -55,6 +55,9 @@ is available before spending anything:
 | `GET /v1/company/facts/ciks` | CIKs with company-facts coverage |
 | `GET /v1/screen/facets` | Screener filter values and counts |
 | `GET /v1/screen/terms` | The product/relation term vocabulary |
+| `GET /v1/etfs/taxonomy` | The four-level ETF classification vocabulary |
+| `GET /v1/etfs/screen/facets` | ETF screener filter values and counts |
+| `GET /v1/institutions/screen/facets` | Adviser screener filter values and counts |
 | `GET /v1/news/themes` | News theme vocabulary |
 | `GET /v1/8k-events/families` | 8-K event families, fields, and observed values |
 
@@ -72,8 +75,8 @@ Professional or Fund:
 | Tier required | Datasets |
 |---|---|
 | Any plan | Semantic retrieval, document corpus, SEC filings index and items, financial statements, financial metrics, segments, company facts, the company registry |
-| Professional and up | 13F institutional holdings, insider trades (Form 4), Taiwan financials and ownership, Korea (DART) financials, executive compensation and proxy ownership, short interest, daily prices and market caps, benchmarks, the investment-adviser directory, Form 20-F datasets |
-| Fund only | Cross-company screening, live news and events, structured 8-K events, 8-K exhibits, earnings-call guidance, reported earnings figures, prediction-market prices, international disclosures (TW/KR/JP), the venture-investor directory |
+| Professional and up | 13F institutional holdings, insider trades (Form 4), Taiwan financials and ownership, Korea (DART) financials, executive compensation and proxy ownership, short interest, daily prices and market caps, benchmarks, the investment-adviser directory (including the adviser screener), the ETF directory — NAV, shares, AUM, holdings, splits, distributions, fees and labels, Form 20-F datasets |
+| Fund only | Cross-company screening, ETF screening, live news and events, structured 8-K events, 8-K exhibits, earnings-call guidance, reported earnings figures, prediction-market prices, international disclosures (TW/KR/JP), the venture-investor directory |
 
 Calling a dataset above your tier returns `402 Payment Required` with a message naming
 the dataset and the plan it requires — Professional refusals include the upgrade URL,
