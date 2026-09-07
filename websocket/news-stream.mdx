@@ -1,0 +1,71 @@
+---
+title: "Raw News Interface (raw stream)"
+sidebarTitle: "Raw news interface"
+description: "One message per arriving item, uncollapsed — every wire article, filing, guidance and dividend row, each naming the event it belongs to."
+---
+
+The Raw news interface (`stream: "raw"`) is everything, uncollapsed: one message per arriving item, in contrast with the [Events interface](/websocket/events-stream)'s one-per-revision. If the Events interface says "earnings beat, guidance raised", this interface has the nine underlying items that conclusion was based on.
+
+## Payload
+
+Real output — an 8-K arriving:
+
+```json
+{
+  "kind": "form_filing",
+  "id": "form_filing:0001213900-26-088446|1801417",
+  "event_id": "BYNO:results:20260813",
+  "triggered_revision": null,
+  "company_id": null,
+  "symbols": ["BYNO"],
+  "at": "2026-08-12T21:00:17+00:00",
+  "time_basis": "filing_accepted",
+  "time_precision": "second",
+  "labels": [["corporate_action", "corporate_reorganisation"]],
+  "title": "byNordic Acquisition Corp filed an 8-K (item 5.03,5.07,8.01,9.01)",
+  "why": "8-K filed with the SEC, items 5.03,5.07,8.01,9.01.",
+  "link": "https://www.sec.gov/Archives/edgar/data/1801417/000121390026088446/",
+  "impacts": [],
+  "channel": "sec_filing",
+  "publisher": "SEC EDGAR",
+  "detail": {
+    "form": "8-K",
+    "company_name": "byNordic Acquisition Corp",
+    "items": "5.03,5.07,8.01,9.01",
+    "filing_date": "2026-08-12",
+    "period": "2026-08-06",
+    "occurred_on": "2026-08-06",
+    "announced_lag_days": 6
+  }
+}
+```
+
+## Fields
+
+| field | meaning |
+|---|---|
+| `kind` | `news`, `form_filing` (SEC filings: 8-Ks and deal forms), `guidance`, `dividend`, or `filing_8k` (insider Form 4 rows). A single event mixes kinds — a real earnings event is wire stories + the 8-K + guidance rows, all under one `event_id`. |
+| `id` | `kind:` plus **the source's own primary key** — never a row number, never a timestamp. Re-runs, backfills and out-of-order delivery all dedupe on it. Composite keys join with `\|` (a filing key is `accession\|cik`: co-filed forms are two rows about two different subjects). |
+| `event_id` | The event this item belongs to — the join key to the Events interface. |
+| `triggered_revision` | Which merged revision this item caused, or `null` if it changed no conclusion. This is how you answer "what was that conclusion based on". |
+| `labels` | The item's own `[family, subtype]` pairs, in the same vocabulary as everything else — see [Event labels](/websocket/event-labels). |
+| `at` + `time_basis` + `time_precision` | When — and **by whose clock**: `published`, `filing_accepted`, or `stated`. A publisher's stamp and the SEC's acceptance time are different claims; the basis travels with every timestamp so you never mix them silently. |
+| `detail` | The source's own fields, whitelisted **per kind** — a guidance row's value text and a dividend's amount are deliberately *not* flattened into one shared column, because they are not comparable. |
+| `detail.occurred_on` / `announced_lag_days` | Filings only: when the thing happened vs. when it was announced. A company signs on Friday and files on Monday — "what happened last week" and "what was announced last week" are different questions, and this is what lets you ask either. |
+
+## Where items come from — `channel`
+
+| channel | means | `publisher` |
+|---|---|---|
+| `wire` | A news outlet's story | the outlet's domain |
+| `sec_filing` | An SEC filing itself | `SEC EDGAR` |
+| `exchange_filing` | A Japan, Korea or Taiwan exchange disclosure | the exchange feed |
+| `company_ir` | The company's own IR page | `Company IR` |
+| `earnings_call` | A call transcript, or guidance read from one | `Earnings call` |
+| `company_release` | Guidance we read out of a press release | null — the reading is ours, and naming a publisher would misattribute it |
+| `market_data` | Dividend rows | null |
+| `primary_source` | A practitioner or supply-chain primary source | the source |
+
+<Note>
+One deliberate absence: **no article text**. Title, labels, `why` and the link are the content — the payload never redistributes an outlet's own words; the article is one click away on `link`. Where an item carries `impacts`, those are this system's reading of it, same as on the Events interface — attribute them to FocusAlpha, never to the publisher.
+</Note>

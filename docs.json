@@ -48,6 +48,15 @@
         ]
       },
       {
+        "group": "WebSocket streaming",
+        "pages": [
+          "websocket/overview",
+          "websocket/events-stream",
+          "websocket/news-stream",
+          "websocket/event-labels"
+        ]
+      },
+      {
         "group": "Screening tools",
         "pages": [
           "screening/overview",
