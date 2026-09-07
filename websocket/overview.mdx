@@ -1,0 +1,99 @@
+---
+title: "WebSocket Streaming"
+sidebarTitle: "WebSocket overview"
+description: "Connect a WebSocket and receive every company event as it lands — two interfaces on one ordered log: merged events (our conclusions, one message per revision) and raw news (every arriving item, uncollapsed)."
+---
+
+The WebSocket stream pushes the real-time event layer to you as it is written, so you never poll. Everything FocusAlpha reads — news wires, SEC filings, Asian exchange disclosures, company IR pages, earnings calls — lands in one append-only log, and your socket receives each row the moment it is inserted.
+
+## Two interfaces, one join key
+
+Every row carries a `stream` field with one of two values. They are two different products:
+
+| interface | `stream` | what one message is |
+|---|---|---|
+| **Events** | `merged` | **Our conclusion about an event, one message per revision.** Nine wire stories, an 8-K and a guidance change about the same earnings print collapse into one event with a stable `event_id`; each time the conclusion materially changes (a new label arrives) you get one revision. Carries the full label state, accumulated facts, what changed in this revision, and our per-ticker impact reading. |
+| **Raw news** | `raw` | **One arriving item, uncollapsed.** Every wire article, every filing, every guidance and dividend row, exactly as it arrived — nothing merged away. Each row names the `event_id` it belongs to, so the two interfaces join. |
+
+Merged is the compression for humans; raw is everything the compression was based on. A raw row's `triggered_revision` says which merged revision it caused (or `null` if it changed nothing) — that is how you answer "what was this conclusion based on".
+
+See [Events interface](/websocket/events-stream) and [Raw news interface](/websocket/news-stream) for the payloads, and [Event labels](/websocket/event-labels) for the taxonomy both speak.
+
+## Connect
+
+<Steps>
+  <Step title="Mint a stream token">
+    ```bash
+    curl "https://api.focusalpha.ai/v1/events/stream-token" \
+      -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+    ```
+
+    ```json
+    {
+      "token": "eyJhbGciOiJIUzI1NiIs...",
+      "expires_at": "2026-09-07T16:00:00.000Z",
+      "realtime_url": "wss://….supabase.co/realtime/v1",
+      "rest_url": "https://….supabase.co/rest/v1/event_push_log",
+      "table": "event_push_log",
+      "catch_up": "https://….supabase.co/rest/v1/event_push_log?select=seq,stream,event_id,payload&seq=gt.{last_seq}&order=seq.asc"
+    }
+    ```
+
+    The token lives one hour. Mint a new one before it expires and reconnect — your position is not stored in the token (see step 4), so rotation loses nothing.
+  </Step>
+  <Step title="Subscribe">
+    The stream speaks the Supabase Realtime protocol, so the simplest client is `@supabase/supabase-js` — connect with the URL and token from the response:
+
+    ```typescript
+    import { createClient } from "@supabase/supabase-js";
+
+    const projectUrl = grant.rest_url.split("/rest/")[0];
+
+    createClient(projectUrl, grant.token)
+      .channel("events")
+      .on("postgres_changes",
+        { event: "INSERT", schema: "public", table: grant.table },
+        ({ new: row }) => handle(row))
+      .subscribe();
+    ```
+
+    Each `row` is `{ seq, stream, event_id, revision, payload, created_at }` — the `payload` is the full message documented on the next two pages.
+  </Step>
+  <Step title="Filter client-side">
+    The socket delivers **both** interfaces; keep the one you want:
+
+    ```typescript
+    function handle(row) {
+      if (row.stream === "merged") onEvent(row.payload);   // Events interface
+      if (row.stream === "raw")    onItem(row.payload);    // Raw news interface
+    }
+    ```
+
+    Filtering by symbol, company or label family is also yours to do client-side — the payload's own `symbols`, `company_id` and `labels` fields are the things to match on.
+  </Step>
+  <Step title="Catch up after a disconnect">
+    Your whole position is one integer: the highest `seq` you have processed. On reconnect, fill the gap with the `catch_up` URL from the token response — the same token authorizes it:
+
+    ```bash
+    curl "${CATCH_UP_URL/\{last_seq\}/2308414}" \
+      -H "apikey: $TOKEN" -H "Authorization: Bearer $TOKEN"
+    ```
+
+    Rows come back in `seq` order; process them, then resume the socket. A consumer that stores nothing but `last_seq` can always recover.
+  </Step>
+</Steps>
+
+## Delivery semantics
+
+- **At-least-once.** Dedupe merged rows on `(event_id, revision)` and raw rows on the payload's `id` — both are stable across any re-delivery.
+- **Rows are never edited.** A changed conclusion is a *new revision*, never an update to an old row, so your copy can be append-only too.
+- **`seq` is monotonic** across the whole log; `revision` is monotonic per event. Gaps are detectable and repairable from your side (`delta.since_revision` on the Events interface tells you exactly which revision to backfill).
+- **Freshness**: the producer writes to the log on a ~2-minute cycle; the socket removes polling, not that cycle. End-to-end from a filing's acceptance to a row on your socket is typically a few minutes.
+
+<Note>
+The WebSocket has no server-side filtering — every subscriber sees every insert. If you want us to filter (by symbols, companies or label families) and POST to your endpoint instead, webhook subscriptions over the same log exist — `POST /v1/events/subscriptions` (Events) and `POST /v1/news/subscriptions` (Raw news) — with the same one-integer cursor and replay.
+</Note>
+
+## Plans
+
+The event streams are **Fund** plan.

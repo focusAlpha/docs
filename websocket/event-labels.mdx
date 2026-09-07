@@ -1,0 +1,110 @@
+---
+title: "Event Labels"
+sidebarTitle: "Event labels"
+description: "The label taxonomy both streams speak: one canonical vocabulary of 34 event families and 203 subtypes, with each market's own classification system mapped into it — SEC 8-K items, Japan, Korea and Hong Kong disclosure categories, news-side labels, and company IR pages."
+---
+
+Every label you see on either stream — an event's `state.labels`, a raw item's `labels` — is a `[family, subtype]` pair from **one vocabulary**. Sources as different as an 8-K item code, a Korean disclosure category and a wire headline all resolve into the same names, so "show me every buyback, in every market, from every source" is one filter, not five.
+
+`subtype: null` is a positive statement, not missing data: the family is known, but the direction or specific action is not yet readable from what has arrived.
+
+## Layer 1 — the canonical vocabulary
+
+34 families, 203 subtypes. Names are lowercase with underscores — they survive as SQL identifiers, JSON keys and URL segments unchanged.
+
+**Results and the outlook**
+
+| family | covers |
+|---|---|
+| `earnings` | a reported period: the print, a pre-announcement, a restatement. Subtypes carry the verdict: `earnings_beat` / `earnings_miss` / `earnings_in_line` / `earnings_profit_warning` / `earnings_preview` … |
+| `guidance` | the company's own forward numbers changing or being set: `guidance_raise` / `guidance_cut` / `guidance_initiate` / `guidance_withdraw` / `guidance_reaffirm` … |
+| `operating_metric` | a recurring operating number between prints — monthly revenue, deliveries, production, traffic, subscribers, occupancy, AUM |
+| `analyst` | third-party opinion: ratings, price targets, broker notes |
+
+**The shape of the company**
+
+| family | covers |
+|---|---|
+| `merger_acquisition` | any step from approach to completion or termination: `…_rumour` / `…_talks` / `…_proposal` / `…_agreement` / `…_regulatory` / `…_close` / `…_terminate` / `…_divest` / `…_spinoff` / `…_stake` … |
+| `strategy` | a strategic review, a mid-term plan, a cost programme, a write-down |
+| `partnership` | partnership, JV, collaboration, licensing — working together with no order attached |
+| `contract` | an order or a mandate: a win, a renewal, a cancellation |
+| `ownership` | a holder crossing a threshold, an activist stake, insider dealing |
+| `corporate_action` | a split, a reorganisation, a listing change, a name change |
+
+**Money in and money out**
+
+| family | covers |
+|---|---|
+| `capital` | raising or repaying money: debt, equity, credit facilities, bankruptcy, capex plans |
+| `capital_return` | money going back to holders: `capital_return_dividend` / `…_dividend_hike` / `…_buyback` / `…_buyback_expand` / `…_special` … |
+
+**What the company makes and sells**
+
+| family | covers |
+|---|---|
+| `product` | a launch, a certification, mass production, a recall |
+| `expansion` | capacity and footprint in physical terms: a plant, a line, a store, a closure |
+| `competition` | the competitive landscape moving: a rival's move, the supply/demand balance, demand shifting |
+| `pricing` | this company changing its own prices |
+
+**The outside world acting on the company**
+
+| family | covers |
+|---|---|
+| `fda_clinical` | a drug or device regulator, or a trial: approval, rejection, result |
+| `legal` | lawsuits, settlements, verdicts, investigations, fines |
+| `regulatory` | any other regulator or government acting on this company |
+| `index` | index membership |
+| `rating` | a credit rating agency action — not a broker call (that is `analyst`) |
+
+**The company talking about itself**
+
+| family | covers |
+|---|---|
+| `ir_calendar` | a date, not a result: when it will report, an investor day, an AGM |
+| `filing` | a periodic or routine filing being made available |
+| `esg` | emissions targets, a sustainability report |
+| `recognition` | an award, community giving |
+| `management` | a director or officer arriving, leaving, or being removed |
+| `workforce` | hiring, cuts, labour relations, a strike |
+| `exploration` | drilling results, resource and reserve estimates |
+| `incident` | a fire, an outage, a spill, a cyber incident |
+| `tax` | tax treatment of a distribution, a dispute, a rate change |
+
+**Not one company, and the escape hatches**
+
+| family | covers |
+|---|---|
+| `macro` | policy, rates, geopolitics — the market, not one company |
+| `narrative_change` | the *story* is what changed: a record, a turnaround, losses narrowing, growth accelerating or fading |
+| `other` | a real event that fits none of the above |
+
+## Layer 2 — each market's own classification, mapped in
+
+Regulated markets already classify their own disclosures, and those classifications are better than anything re-derived from text — so they are **kept verbatim** on the item and *bridged* into the canonical families:
+
+| market layer | native classification | how it maps |
+|---|---|---|
+| **SEC (US)** | 8-K item codes, plus the deal-form types (SC TO-I, 13D, 25-NSE…) | Item codes that name an event (results, bankruptcy, officer change…) map deterministically to a family — the regulator said what it is. Item codes that carry no information do not open events. Buybacks, dividends and stock splits have no item code of their own, so those three are recognized from the filing body. |
+| **Japan** | The exchange's disclosure categories (earnings revisions, dividend forecasts, buybacks…) | Each category bridges to a `[family, subtype]` pair. |
+| **Korea** | The regulator's report families | Same: native family kept, bridged to a pair. |
+| **Hong Kong** | The exchange's own two-tier headline taxonomy (~290 second-tier categories) | Tier-1 maps to a family; the fine second-tier category travels with the item unchanged. |
+
+A native category that has no canonical home yet stays explicit — mapped-to-nothing is distinguishable from not-yet-mapped, so a filter never silently drops a market.
+
+## Layer 3 — news-side labels
+
+Wire coverage is labelled by a model against the closed family list, then normalized through an alias layer — the many spellings the world uses for one thing (`m&a`, `outlook`, `forecast`, `restructuring`…) resolve to one canonical name before anything is emitted. Some families only exist on this side, because a company does not publish its own downgrade: `analyst`, `competition`, `narrative_change`, `macro` come from coverage, not filings.
+
+The impact reading that travels with news items (`direction`, `score`) is separate from the label and is always this system's judgment, not the label's.
+
+## Layer 4 — company IR pages
+
+Company newsrooms are a door of their own: IR press releases are collected daily from companies' own websites and classified by a rule-matched taxonomy (102 subtypes across 28 families, measured against real release titles) that feeds the **same** vocabulary — an earnings release on a company's site and the wire story about it land in the same event with the same labels. IR items carry `channel: "company_ir"`, and guidance read out of a release or an earnings call joins the same events through the guidance ledger.
+
+## Using labels
+
+- Filter on **family** for breadth (`["guidance", *]`), on **subtype** for direction (`guidance_cut` only).
+- On the Events interface, `delta.added` is the new pair this revision; `state.labels` is the full set so far.
+- Subtypes are readable names, not codes — `merger_acquisition_terminate` means what it says.
