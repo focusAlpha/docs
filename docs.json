@@ -300,8 +300,8 @@
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://app.focusalpha.ai"
+      "label": "Connect now",
+      "href": "https://app.focusalpha.ai/keys"
     }
   },
   "contextual": {
