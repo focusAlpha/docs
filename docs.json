@@ -188,6 +188,14 @@
         ]
       },
       {
+        "group": "Macro data",
+        "pages": [
+          "macro/overview",
+          "macro/series",
+          "macro/calendar"
+        ]
+      },
+      {
         "group": "Ownership & incentives",
         "pages": [
           {

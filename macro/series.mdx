@@ -1,0 +1,213 @@
+---
+title: "Macro Series"
+sidebarTitle: "Series"
+description: "Search the macro series by words, fetch a series' values as they stand today, as first published, or as they stood on any date, and look up whether a series exists anywhere."
+---
+
+Three endpoints serve the series: a search over what we hold, the values of one series, and a free catalog of what exists in the FRED® and World Bank indices whether or not we hold it yet.
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call for search and values; the catalog lookup is free
+</Info>
+
+## GET /v1/macro/series
+
+Search the series we serve. `q` is full text over the title, the country's name in every spelling (`Vietnam` and `Viet Nam` both work, so do `UK` and `DEU`), and concept tags — `Taiwan inflation` finds the consumer price index and `euro area inflation` finds HICP. When no row matches every word, the words are retried as alternatives so `JGB 10 year` still finds the 10-year JGB yield.
+
+Results put the monthly, quarterly and daily official series first and the World Bank annual series last, never excluded: `Indonesia unemployment` is answered by a World Bank row. Pass `frequency=A` or `country=` to reach those rows directly.
+
+<ParamField query="q" type="string">
+  Words to match: `Vietnam GDP`, `nonfarm payrolls`, `10 year yield`, `Japan CPI`.
+</ParamField>
+
+<ParamField query="country" type="string">
+  Two-letter ISO code. `EU` is the euro area.
+</ParamField>
+
+<ParamField query="category" type="string">
+  One of `actuals` (published statistics), `rates` (market and policy rates), `central_bank` (targets and balance sheets), `implied` (breakevens), `nowcast` (model estimates).
+</ParamField>
+
+<ParamField query="frequency" type="string">
+  One of `D`, `W`, `M`, `Q`, `A`, or `EVENT` for series that change on the day a decision takes effect.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="50">
+  Rows per page, between 1 and 500. Page through with `cursor`.
+</ParamField>
+
+Each row carries the `series_key`, `title`, `country` and `country_name`, `category`, `frequency`, `unit`, `seasonal_adj`, the concept `tags`, `revision_history`, `release_dates_tracked`, `release_dates_from`, `period_semantics`, and a `coverage` block with the first and last period, the last release date and the observation count.
+
+## GET /v1/macro/series/\{series_key\}
+
+The values of one series, newest period first. The response carries the same series block as search, then `data` rows of `period_date`, `value` and `released_on`.
+
+`period_date` is the period the number describes: the first day of the month or quarter, the observation day for daily rates, or the day a change took effect for `EVENT` series — the row's `period_semantics` says which. `value` is in the series' `unit`.
+
+<ParamField query="view" type="string" default="current">
+  `current` returns one row per period with the figure as it stands today. `first_release` returns what was published first. `vintages` returns every revision, one row per release.
+</ParamField>
+
+<ParamField query="as_of" type="string">
+  Point in time, `YYYY-MM-DD`: only releases on or before this day count, and each period shows the newest of those. Must be on or after the series' `release_dates_from`; earlier dates return a `400`.
+</ParamField>
+
+<ParamField query="date_gte" type="string">
+  Earliest `period_date`, `YYYY-MM-DD`. `date_lte` sets the ceiling.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="200">
+  Rows per page, between 1 and 1000. Page through with `cursor`.
+</ParamField>
+
+<Warning>
+Values are **today's revised figures** unless you say otherwise. Read `release_dates_from` in the series block before using `first_release`, `vintages` or `as_of`: it is the start of the series for the ten core US series, 2026-09-10 for every other monthly, quarterly and annual series (older rows carry `released_on: null`), and never for daily rates. See [Release dates and revisions](/macro/overview#release-dates-and-revisions).
+</Warning>
+
+An unknown key, or a key we do not serve, returns a `404` with the advice to search first — not an empty page.
+
+## GET /v1/macro/catalog
+
+Whether a series exists anywhere: the FRED® and World Bank indices, titles only, with `ingested` saying whether we serve it. Free. An entry with `ingested: false` is a series that can be added on request; an entry with `ingested: true` carries our `series_key`.
+
+<ParamField query="q" type="string">
+  Words to match in the title, for example `manufacturing orders germany`.
+</ParamField>
+
+<ParamField query="frequency" type="string">
+  Restrict to a frequency, `D` to `A`.
+</ParamField>
+
+<ParamField query="ingested" type="boolean">
+  `true` for entries we already serve, `false` for entries we do not.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="50">
+  Rows per page, between 1 and 500. Page through with `cursor`.
+</ParamField>
+
+## Related datasets
+
+See [Overview](/macro/overview) for what is served and the release-date rules, [Economic calendar](/macro/calendar) for scheduled releases and consensus, and [Benchmarks](/market-data/benchmarks) for index and commodity prices.
+
+<RequestExample>
+
+```bash Search
+curl "https://api.focusalpha.ai/v1/macro/series?q=Japan+CPI&limit=1" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```bash Point in time
+curl "https://api.focusalpha.ai/v1/macro/series/us.payrolls.nonfarm.sa?as_of=2026-07-15&date_gte=2026-06-01&limit=1" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```bash Every revision of one period
+curl "https://api.focusalpha.ai/v1/macro/series/us.payrolls.nonfarm.sa?view=vintages&date_gte=2026-06-01&date_lte=2026-06-01" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```bash Catalog
+curl "https://api.focusalpha.ai/v1/macro/catalog?q=manufacturing+orders+germany&limit=1" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Search: q=Japan CPI
+{
+  "data": [
+    {
+      "series_key": "jp.cpi.headline.index",
+      "title": "Consumer Price Index, all items, nationwide",
+      "country": "JP",
+      "country_name": "Japan",
+      "category": "actuals",
+      "frequency": "M",
+      "unit": "Index 2025=100",
+      "seasonal_adj": "NSA",
+      "tags": ["cpi", "inflation", "consumer prices", "prices"],
+      "revision_history": "from_2026-09-10",
+      "release_dates_tracked": true,
+      "release_dates_from": "2026-09-10",
+      "period_semantics": "period_start",
+      "coverage": {
+        "first_period": "1970-01-01",
+        "last_period": "2026-07-01",
+        "last_released_on": "2026-07-01",
+        "observations": 679,
+        "vintaged_periods": 0
+      }
+    }
+  ],
+  "next_cursor": null
+}
+```
+
+```json Point in time: June 2026 payrolls as seen on 2026-07-15
+{
+  "series": {
+    "series_key": "us.payrolls.nonfarm.sa",
+    "title": "All Employees, Total Nonfarm",
+    "country": "US",
+    "unit": "Thousands of Persons",
+    "seasonal_adj": "SA",
+    "revision_history": "complete",
+    "release_dates_tracked": true,
+    "release_dates_from": "1939-01-01",
+    "period_semantics": "period_start"
+  },
+  "view": "current",
+  "as_of": "2026-07-15",
+  "data": [
+    { "period_date": "2026-06-01", "value": 158984, "released_on": "2026-07-02" }
+  ],
+  "next_cursor": null
+}
+```
+
+```json Vintages: every revision of June 2026 payrolls
+{
+  "view": "vintages",
+  "data": [
+    { "period_date": "2026-06-01", "value": 158892, "released_on": "2026-09-04" },
+    { "period_date": "2026-06-01", "value": 158881, "released_on": "2026-08-07" },
+    { "period_date": "2026-06-01", "value": 158984, "released_on": "2026-07-02" }
+  ]
+}
+```
+
+```json as_of before release dates begin
+{
+  "success": false,
+  "error": {
+    "statusCode": 400,
+    "message": "as_of 2026-01-15 is before 2026-09-10, the day release dates begin for 'eu.hicp.headline.yoy' (revision_history='from_2026-09-10'). Point-in-time views of this series exist from 2026-09-10 on."
+  }
+}
+```
+
+```json Catalog: q=manufacturing orders germany
+{
+  "data": [
+    {
+      "catalog": "fred",
+      "source_series_id": "DEUPROMANMISMEI",
+      "title": "Production, Sales, Work Started and Orders: Production Volume: Economic Activity: Manufacturing for Germany",
+      "frequency": "M",
+      "unit": "Index 2015=100",
+      "seasonal_adj": "SA",
+      "start_date": "1950-01-01",
+      "end_date": "2024-01-01",
+      "popularity": 10,
+      "ingested": false,
+      "series_key": null
+    }
+  ],
+  "next_cursor": "WzEwLCJmcmVkIiwiREVVUFJPTUFOTUlTTUVJIl0"
+}
+```
+
+</ResponseExample>
