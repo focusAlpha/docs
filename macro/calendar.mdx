@@ -1,0 +1,143 @@
+---
+title: "Economic Calendar"
+sidebarTitle: "Economic calendar"
+description: "Scheduled releases and central-bank decisions for about 160 economies with previous, consensus and actual, and a daily snapshot history of how consensus moved before each print."
+---
+
+The economic calendar lists what is due when — CPI, payrolls, GDP, PMIs, rate decisions — with the previous figure, the consensus estimate and the actual once published. A second view keeps the daily history of the consensus, so "what did the market expect a week before the print" is answered from the row captured that day.
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call
+</Info>
+
+## What you can use the calendar for
+
+Know what prints this week and which of it matters. Compare an actual with the consensus that stood the day before, not the one that stood a month out. Line up a company's earnings date against the macro releases around it.
+
+## GET /v1/macro/calendar
+
+Oldest first. The default window is today to 30 days ahead; pass `date_gte` and `date_lte` to look elsewhere, back to 2013.
+
+<ParamField query="view" type="string" default="schedule">
+  `schedule` returns the calendar as it stands. `snapshots` returns the point-in-time history: one row per event per day it was captured.
+</ParamField>
+
+<ParamField query="country" type="string">
+  Two-letter ISO code. `EU` is the euro area, `GB` the United Kingdom, `WL` world events.
+</ParamField>
+
+<ParamField query="q" type="string">
+  A fragment of the event name, matched ignoring spaces and punctuation: `CPI`, `Nonfarm`, `Interest Rate Decision`.
+</ParamField>
+
+<ParamField query="date_gte" type="string">
+  Earliest `scheduled_date`, `YYYY-MM-DD`; defaults to today. `date_lte` sets the ceiling and defaults to today plus 30 days.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Rows per page, between 1 and 500. Page through with `cursor`.
+</ParamField>
+
+## One release is several rows
+
+<Warning>
+A CPI day carries the index, the year-on-year rate and the month-on-month rate as **separate events**, each with its own `previous`, `estimate` and `actual` in its own `unit`. They are not duplicates and must not be averaged.
+</Warning>
+
+## A far-out estimate is a placeholder
+
+<Warning>
+`estimate` is meaningful only close to the release. Weeks out it is a placeholder — a round number, or the previous value carried forward. Do not report a far-dated estimate as consensus.
+</Warning>
+
+## The snapshot history starts 2026-09-09
+
+`view=snapshots` carries one row per event per `snapshot_date`, captured every day since 2026-09-09 for events from 21 days back to 30 days ahead. Nothing earlier exists and nothing earlier can be reconstructed: "what was consensus a week before the August 2026 CPI" is unanswerable, and stays so.
+
+## Key calendar fields
+
+Schedule rows carry `country`, `country_name`, `event`, `scheduled_date`, `scheduled_at` (UTC, when the source gives a time), `period_hint`, `unit`, `impact`, `previous`, `estimate`, `actual`, and `official_meeting`, which is `true` for FOMC rows taken from the Fed's own schedule (those carry no consensus). Snapshot rows carry `country`, `event`, `scheduled_date`, `snapshot_date`, `estimate`, `previous` and `actual`.
+
+The response's `coverage` block states `schedule_from`, `snapshots_from` and the snapshot window.
+
+## Taiwan is sparse here
+
+The calendar carries a handful of Taiwanese rows a month. Taiwan's statistics themselves are in [Series](/macro/series).
+
+## Related datasets
+
+See [Series](/macro/series) for the values a release updates, [Earnings consensus](/events/earnings-consensus) for company-level expectations, and [Prediction markets](/events/prediction-markets) for traded odds on macro outcomes.
+
+<RequestExample>
+
+```bash Schedule
+curl "https://api.focusalpha.ai/v1/macro/calendar?country=US&q=CPI&limit=2" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```bash Consensus history
+curl "https://api.focusalpha.ai/v1/macro/calendar?view=snapshots&country=US&q=Nonfarm&limit=2" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Schedule: country=US, q=CPI
+{
+  "view": "schedule",
+  "data": [
+    {
+      "country": "US",
+      "country_name": "United States",
+      "event": "Cleveland CPI MoM (Aug)",
+      "scheduled_date": "2026-09-11",
+      "scheduled_at": "2026-09-11T15:00:00.000Z",
+      "period_hint": "Aug",
+      "unit": "%",
+      "impact": "Low",
+      "previous": 0.3,
+      "estimate": null,
+      "actual": null,
+      "official_meeting": false
+    }
+  ],
+  "next_cursor": "WyIyMDI2LTA5LTExIiwiVVMiLCJDbGV2ZWxhbmQgQ1BJIE1vTSAoQXVnKSJd",
+  "coverage": {
+    "schedule_from": "2013-01-02",
+    "schedule_to_days_ahead": 120,
+    "snapshots_from": "2026-09-09",
+    "snapshot_window": "each day, events from 21 days back to 30 days ahead"
+  }
+}
+```
+
+```json Snapshots: country=US, q=Nonfarm
+{
+  "view": "snapshots",
+  "data": [
+    {
+      "country": "US",
+      "event": "Non Farm Payrolls (Sep)",
+      "scheduled_date": "2026-10-02",
+      "snapshot_date": "2026-09-09",
+      "estimate": 120,
+      "previous": 162,
+      "actual": null
+    },
+    {
+      "country": "US",
+      "event": "Non Farm Payrolls (Sep)",
+      "scheduled_date": "2026-10-02",
+      "snapshot_date": "2026-09-10",
+      "estimate": 120,
+      "previous": 162,
+      "actual": null
+    }
+  ],
+  "next_cursor": null
+}
+```
+
+</ResponseExample>

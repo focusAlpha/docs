@@ -1,0 +1,70 @@
+---
+title: "Macroeconomic Data"
+sidebarTitle: "Overview"
+description: "Official statistics for the United States, the euro area, Japan and Taiwan, World Bank annual indicators for every economy, and a worldwide release calendar with consensus — with real release dates for point-in-time work."
+---
+
+Macroeconomic Data serves the numbers behind the headlines: inflation, growth, unemployment, payrolls, policy rates, government-bond yields and inflation expectations, plus the calendar of when the next print is due and what the market expects. It sits beside the company datasets rather than inside them — a CPI index is not an issuer, so nothing here takes a company identifier.
+
+<Info>
+  **Plan:** Professional and above · **Credits:** 1 per call (the catalog lookup is free)
+</Info>
+
+## What you can use macro data for
+
+Put a company's results in the context of the economy it sells into. Build a backtest that only uses the figures that were public on each date, rather than today's revised series. Know what is due this week, and what the consensus was a week before it printed. Find out whether a series exists at all before asking for it.
+
+## What is here, by economy
+
+**United States** (monthly and quarterly, from the Bureau of Labor Statistics and the Bureau of Economic Analysis): CPI headline and core (index, seasonally adjusted and not), CPI shelter, food at home and gasoline, PCE and core PCE price indices, PPI final demand and core, the employment cost index, real and nominal GDP, nonfarm payrolls, the unemployment rate and U-6, participation and employment-population ratios, average hourly earnings and weekly hours, JOLTS openings, hires and quits, nonfarm productivity and unit labor costs, retail sales, industrial production and weekly initial claims.
+
+**United States, daily rates and the Fed:** Treasury constant-maturity yields from 1 month to 30 years, SOFR, the effective fed funds rate and the target range, the Fed balance sheet (weekly), 5-year, 10-year and 5-year-5-year breakeven inflation, Atlanta Fed GDPNow, and the Cleveland Fed 1-year and 10-year expected inflation.
+
+**Euro area:** HICP index and year-on-year rate, GDP quarter-on-quarter, the unemployment rate and retail trade volume (Eurostat); the ECB deposit facility and main refinancing rates, €STR, Eurosystem total assets, AAA government spot yields at 2 and 10 years and 1-year and 5-year forward rates (ECB).
+
+**Japan:** nationwide CPI, all items (e-Stat); JGB yields from 1 to 40 years (Ministry of Finance).
+
+**Taiwan:** the CPI general index (DGBAS); the central bank discount rate on the dates it changed (CBC).
+
+**Every economy the World Bank covers** (annual, about two hundred): GDP in US dollars, GDP growth, GDP per capita, CPI inflation, unemployment, population and population growth, life expectancy, exports and imports as a share of GDP, FDI inflows, total reserves, central government debt as a share of GDP, manufacturing value added and CO2 emissions.
+
+**The calendar:** scheduled releases and central-bank decisions for about 160 economies with the previous figure, the consensus estimate and the actual, history back to 2013, the FOMC schedule from the Fed itself, and a daily snapshot of consensus since 2026-09-09.
+
+<Note>
+**Not here yet:** Korea has no national series (only its World Bank rows); China is served through the World Bank rows only; and series whose publisher's terms do not allow redistribution are not served, by key or otherwise.
+</Note>
+
+## Series are addressed by `series_key`
+
+Every series has a stable key of our own, such as `us.cpi.headline.sa` or `eu.hicp.headline.yoy`. Keys cannot be guessed — the same statistic exists seasonally adjusted and not, as an index and as a rate, and sometimes from two official publishers — so [search first](/macro/series) and pass a key back.
+
+## Read the unit before the number
+
+<Warning>
+The same word names different quantities. The US, Japanese and Taiwanese CPI series are **indices on three different base years** (1982-84 = 100, 2025 = 100, 2021 = 100); the euro-area HICP rate and the World Bank "inflation" series are **year-on-year percentages**. A reading of 332.8 and a reading of 2.1 are not comparable. Every row carries `unit` and `seasonal_adj` for exactly this reason.
+</Warning>
+
+## Release dates and revisions
+
+Macro figures get revised, and a backtest must only see the figure that was public on each date. How far back that is possible differs by series and the series block says so in `release_dates_from`:
+
+| Series | `revision_history` | Release dates are real from |
+|---|---|---|
+| Ten core US series: CPI, core CPI, PCE, core PCE, GDP, real GDP, unemployment, payrolls, retail sales, industrial production | `complete` | The start of the series — every revision back to the 1950s |
+| Every other monthly, quarterly and annual series | `from_2026-09-10` | 2026-09-10, the day tracking began; older rows carry `released_on: null` |
+| Daily market rates | `none` | Never — a daily fixing has no revision to track |
+
+`as_of` before a series' `release_dates_from` returns a `400` that says so, rather than today's figure dressed up as history. See [Series values](/macro/series#get-v1macroseriesseries_key).
+
+## Sources, attribution and terms
+
+The series come from the statistical agencies and central banks named above and from the World Bank. Rows carry no source column; the publisher is stated here and in the dataset catalog.
+
+- US series are retrieved through the FRED® API. **This product uses the FRED® API but is not endorsed or certified by the Federal Reserve Bank of St. Louis.** By using these endpoints you agree to the [FRED® API Terms of Use](https://fred.stlouisfed.org/docs/api/terms_of_use.html).
+- World Bank indicators are provided under the [Creative Commons Attribution 4.0 licence](https://datacatalog.worldbank.org/public-licenses#cc-by): *The World Bank: World Development Indicators*.
+- ECB series are available free of charge at [ecb.europa.eu](https://www.ecb.europa.eu); Eurostat data is reused under its [copyright notice](https://ec.europa.eu/eurostat/web/main/help/copyright-notice).
+- Japanese series follow the Japanese government's standard terms of use; Taiwanese series follow the Open Government Data Licence.
+
+## Related datasets
+
+See [Series](/macro/series) for search, values and the catalog, [Economic calendar](/macro/calendar) for scheduled releases and consensus, [Benchmarks](/market-data/benchmarks) for index and commodity prices, and [News themes](/news/themes) for the articles about a macro theme rather than the numbers.
