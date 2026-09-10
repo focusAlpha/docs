@@ -34,6 +34,8 @@ Identifiers are a current snapshot. A company's earlier identifiers still resolv
 
 Identifiers come from the registries that issue them — exchange listing registries, the SEC, national regulators and ISIN issuers — and are maintained as an append-only ledger, so an identifier is never silently dropped when a company renames or re-lists.
 
+`source` names the kind of evidence behind each identifier, not a feed: `listing_feed` (an exchange listing registry), `sec_registrant` and `sec_adr` (SEC registration and ADR records), `listing_feed_and_sec` (both agree), `twse_mops` (Taiwan's exchange registry), `opendart` (Korea's filing system), `finra_issue_name`, `proxy_statement`, `alias` and `entity_merge`. `confidence` grades the match.
+
 ## Query Company Identifiers
 
 Use the company identifiers endpoint with a canonical `company_id`.
@@ -63,31 +65,31 @@ curl "https://api.focusalpha.ai/v1/companies/cmp_008395/identifiers" \
     {
       "id_type": "CIK",
       "id_value": "0001046179",
-      "source": "fmp+sec",
+      "source": "listing_feed_and_sec",
       "confidence": "high"
     },
     {
       "id_type": "ISIN",
       "id_value": "TW0002330008",
-      "source": "fmp_company_list",
+      "source": "listing_feed",
       "confidence": "high"
     },
     {
       "id_type": "TICKER",
       "id_value": "2330.TW",
-      "source": "fmp_company_list",
+      "source": "listing_feed",
       "confidence": "high"
     },
     {
       "id_type": "TICKER",
       "id_value": "TSM",
-      "source": "fmp_company_list",
+      "source": "listing_feed",
       "confidence": "high"
     },
     {
       "id_type": "TW_UBN",
       "id_value": "22099131",
-      "source": "twse_mops_company",
+      "source": "twse_mops",
       "confidence": "high"
     }
   ],
