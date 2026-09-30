@@ -1,0 +1,123 @@
+---
+title: "Japan EDINET Disclosures"
+sidebarTitle: "Japan EDINET disclosures"
+description: "Statutory event filings by Japanese-listed companies to EDINET — extraordinary reports classified by their legal reason code, and monthly buyback-progress reports."
+---
+
+Japan EDINET Disclosures provides the statutory event filings a Japanese-listed company makes to EDINET, the Financial Services Agency's filing system: the **extraordinary report** (臨時報告書), the closest Japanese equivalent of a US 8-K, and the monthly **buyback-progress report** (自己株券買付状況報告書). Every extraordinary report carries the legal reason code it was filed under, classified into an `event_type` you can filter on.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What you can use Japan EDINET disclosures for
+
+Find out whether a major shareholder changed, whether the representative director (CEO) changed, whether a subsidiary was bought or sold, or whether a company declared a material hit to results. Read the per-resolution AGM vote count, which Japanese companies file as an extraordinary report. Follow buyback execution month by month.
+
+## This is not the TDnet feed
+
+[Japan TDnet Disclosures](/international/disclosures-japan) is the exchange's timely-disclosure wire: fast, earnings-driven, and a rolling window only weeks deep. This endpoint is the regulator's filing system: fewer filings, about two years of history, and a **statutory reason code** on every extraordinary report that TDnet has no equivalent of. Use TDnet for "what did they announce this week"; use this for "did the CEO change" or "has a major shareholder moved".
+
+## Event types
+
+Pass `event_type` to filter. Each is FocusAlpha's label for the filing's legal reason code; the raw code travels on every row as `reason_code` (for example `第19条第2項第9号`), so you can always go back to the statute. The vocabulary, most frequent first:
+
+`shareholders_meeting_vote_result` (the per-resolution AGM vote, concentrated in late June), `material_impact_on_results`, `stock_option_or_share_plan`, `subsidiary_change_specified`, `subsidiary_acquisition_or_disposal`, `major_shareholder_change`, `representative_director_change`, `material_impact_on_consolidated`, `absorption_type_split`, `accounting_auditor_change`, `securities_offering_overseas`, `business_transfer_or_merger`, `share_exchange_or_transfer`, `litigation`, `material_impact_related`, `consolidated_subsidiary_event`, `securities_issue`, `subsidiary_acquisition_by_subsidiary`, `share_transfer_decision`, `debtor_default_or_credit_event`, `public_offering_amendment`, `business_discontinuation_or_transfer`, `subsidiary_business_transfer`, `financial_covenant_change`, `subsidiary_merger`, `shareholders_meeting_amended_or_rejected`.
+
+A value outside this list returns no rows. Set `form=buyback_progress` for the monthly buyback reports instead.
+
+<Warning>
+**One filing can carry several reason codes and is returned once per code.** Counting rows counts reasons, not filings — count distinct `doc_id` for filings.
+</Warning>
+
+## Key Japan EDINET disclosure fields
+
+- `form` — `extraordinary_report` or `buyback_progress`; `is_amendment` marks a corrected filing.
+- `event_type`, `reason_code`, `reason_raw` — the classification and the legal code behind it.
+- `filed_on` and `submitted_at` — the filing date and timestamp.
+- `doc_id`, `doc_description` and `filing_url` — the EDINET document.
+- `body_chars` — the total length of the filing's text, returned on every row.
+- `bodies` — with `include_text=true`, an **array** of the filing's text blocks, longest first, each with `section`, `label_ja`, `n_chars` and `text`. Null otherwise.
+
+The text is clean but has **no line breaks**: tables are flattened into one run of characters, so a buyback report's day-by-day share counts and yen amounts run together. Read the body as prose.
+
+## Japan EDINET disclosure coverage
+
+Coverage is a **rolling window set by Japanese law**: EDINET serves a filing only during its statutory public-inspection period — about two years for an extraordinary report and one year for a buyback report. Older filings are gone from the source, and a `filing_url` can stop resolving once a filing leaves that period even though the row is still correct. The `coverage` block on every response reports the measured window.
+
+These are statutory filings and are not frequent: a company with no AGM in the window, no CEO change and no major-shareholder move files nothing, so an empty answer is often correct.
+
+## GET /v1/companies/\{company\}/jp/disclosures
+
+<ParamField path="company" type="string" required>
+  Tokyo symbol (`6758.T` or `6758`), five-digit EDINET security code, EDINET filer code, ADR symbol (`SONY`), ISIN or `company_id`.
+</ParamField>
+
+<ParamField query="event_type" type="string">
+  One of the event types listed above, e.g. `major_shareholder_change`.
+</ParamField>
+
+<ParamField query="form" type="string">
+  `extraordinary_report` or `buyback_progress`. Omit for both.
+</ParamField>
+
+<ParamField query="date_gte" type="string">
+  Earliest filing date, `YYYY-MM-DD`; `date_lte` sets the ceiling.
+</ParamField>
+
+<ParamField query="include_text" type="string" default="false">
+  `true` fills `bodies` with the filing's text.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="50">
+  Rows per page, between 1 and 200, newest first. Page through with `cursor`, passing back `next_cursor` unchanged.
+</ParamField>
+
+## Related datasets
+
+See also [Japan TDnet Disclosures](/international/disclosures-japan) for the exchange wire, [Japan Ownership](/international/japan-ownership) for the 5% filings behind a major-shareholder change, [Japan Officers](/international/japan-officers) for the board roster, and [Japan IR Website Disclosures](/international/japan-ir-web-disclosures) for AGM notices and releases posted on the company's own site.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/6758.T/jp/disclosures?event_type=representative_director_change&limit=1" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "company_id": "cmp_007966",
+      "doc_id": "S100XJKB",
+      "doc_type_code": "180",
+      "form": "extraordinary_report",
+      "is_amendment": false,
+      "doc_description": "臨時報告書",
+      "event_type": "representative_director_change",
+      "reason_code": "第19条第2項第9号",
+      "reason_raw": "第19条第2項第9号",
+      "filed_on": "2026-02-05",
+      "submitted_at": "2026-02-05T06:14:00.000Z",
+      "bodies": null,
+      "body_chars": "346",
+      "filing_url": "https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100XJKB.pdf"
+    }
+  ],
+  "next_cursor": "WyIyMDI2LTAyLTA1IiwiUzEwMFhKS0IiXQ",
+  "coverage": {
+    "available_from": "2024-04-01",
+    "available_to": "2026-09-30",
+    "update_frequency": "daily",
+    "history_status": "all_tracked_filers_loaded",
+    "companies_covered": 3786,
+    "companies_tracked": 3791
+  }
+}
+```
+
+</ResponseExample>

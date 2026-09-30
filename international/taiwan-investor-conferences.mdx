@@ -1,0 +1,130 @@
+---
+title: "Taiwan Investor Conferences"
+sidebarTitle: "Taiwan investor conferences"
+description: "Every 法人說明會 a Taiwan-listed company filed on MOPS since 2005 — date, Taipei time, venue and summary, with links to the Chinese and English slides and to the recording."
+---
+
+Taiwan Investor Conferences is the schedule of 法人說明會 (institutional investor conferences) that Taiwan-listed companies file on MOPS, the Market Observation Post System. Each row is one conference: its date and Taipei time, the venue, the company's own summary, links to the slides it uploaded in Chinese and English, and links to any recording or webcast. History runs from 2005 and covers about 2,260 companies.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+This endpoint serves **links only** — no slide text and no transcript.
+
+## What you can use Taiwan investor conferences for
+
+Find the results conference where a Taiwanese company gave its next-quarter outlook, and open the deck it presented. Track which broker forums a company attends between results. Get the exchange-hosted recording of a call where one exists. Build a results-date history for a Taiwan supply chain.
+
+## Results conferences and broker forums
+
+Most rows are not results conferences. A company that presents at a broker's forum files that appearance too, and typically shows the deck from its most recent results conference — TSMC at the UBS Taiwan Summit on 2026-09-14 showed its 2026-07-16 results deck.
+
+`deck.file_date` is the date in the uploaded file's name, which makes this readable:
+
+- Rows sharing a `deck.file_date` show the **same deck**.
+- The row whose `conference_date` equals `deck.file_date` is usually the company's **own results conference**.
+
+The summaries are too irregular to classify reliably, so the endpoint states this relationship as a fact rather than labelling rows.
+
+## Taiwan investor conference coverage
+
+Coverage starts on 2005-01-10 and is complete from then, refreshed daily from MOPS; the last three months are re-read to pick up slides a company uploads late. Not every company holds a conference each quarter, and emerging-board companies rarely do.
+
+Recordings are sparse. TWSE-hosted recordings exist for roughly one conference in ten, mostly since 2023; counting every kind of recording or webcast link, a little over a quarter of conferences carry one.
+
+Companies announce these conferences only days ahead. For upcoming conferences, check the [company calendar](/companies/calendar), which carries Taiwan 法人說明會 filings as they are announced.
+
+## Key Taiwan investor conference fields
+
+- `market` — `twse` (Taiwan Stock Exchange) or `tpex` (Taipei Exchange).
+- `conference_date` — the first day of the conference; `conference_date_end` is set for multi-day forums.
+- `date_as_written` — the date as filed, in the Republic of China calendar (`115/09/14` is 2026-09-14).
+- `time_taipei` — the start time, Taipei time. `place` is the venue as filed.
+- `summary` — the company's own description, in Chinese as filed.
+- `deck.zh_url` and `deck.en_url` — the Chinese and English slides on MOPS; `deck.file_date` is described above.
+- `recording` — four lists kept apart: `twse_recording` (an audio or video file hosted by TWSE that plays in a browser), `twse_player`, `youtube` and `other_webcast` pages. An empty list means no link of that kind was filed.
+- `company_ir_url` — the company's investor-relations page as filed.
+- `conference_id` — a stable identifier for the row.
+
+## Query Taiwan investor conferences
+
+Rows are returned newest first.
+
+<Note>
+A four-digit code that matches no Taiwan listing returns `200` with an empty `data` array, not `404` — the code is matched directly against MOPS rows. An identifier that cannot be resolved at all (not a code, `cmp_` id, ticker or ISIN) returns `404`.
+</Note>
+
+## GET /v1/companies/\{company\}/tw/earnings
+
+<ParamField path="company" type="string" required>
+  A Taiwan security code such as `2330`, a suffixed ticker (`2330.TW`, `6488.TWO`), an ISIN or a `company_id`.
+</ParamField>
+
+<ParamField query="date_gte" type="string">
+  Earliest `conference_date`, `YYYY-MM-DD`. `date_lte` sets the ceiling.
+</ParamField>
+
+<ParamField query="has_recording" type="boolean">
+  `true` returns only conferences with at least one recording or webcast link.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="50">
+  Rows per page, between 1 and 500. Page through with `cursor`, passing back `next_cursor` unchanged.
+</ParamField>
+
+## Related datasets
+
+See also [Taiwan Monthly Revenue](/international/taiwan-monthly-revenue) and [Taiwan Financials](/international/taiwan-financials) for the numbers these conferences discuss, [Taiwan Exchange Disclosures](/international/disclosures-taiwan) for the company's other announcements, and [Company Calendar](/companies/calendar) for conferences announced but not yet held.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/2330/tw/earnings?has_recording=true&limit=1" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "company_id": "cmp_008395",
+      "local_security_code": "2330",
+      "market": "twse",
+      "company_name": "台積電",
+      "conference_date": "2026-07-16",
+      "conference_date_end": null,
+      "date_as_written": "115/07/16",
+      "time_taipei": "14:00",
+      "place": "台北文華東方酒店B2 文華廳（台北市松山區敦化北路158號）",
+      "summary": "(1)公布本公司2026年第2季財務報告及2026年第3季業績展望。(2)參加方式：請參見https://investor.tsmc.com/chinese/quarterly-results/2026/q2",
+      "deck": {
+        "zh_url": "https://mopsov.twse.com.tw/nas/STR/233020260716M001.pdf",
+        "en_url": "https://mopsov.twse.com.tw/nas/STR/233020260716E001.pdf",
+        "file_date": "2026-07-16"
+      },
+      "recording": {
+        "twse_recording": [],
+        "twse_player": [],
+        "youtube": [],
+        "other_webcast": ["https://investor.tsmc.com/chinese/quarterly-results/2026/q2"]
+      },
+      "company_ir_url": "https://investor.tsmc.com/chinese/quarterly-results/2026/q2",
+      "conference_id": "a9b821da7e187e533799d7a8959754ef"
+    }
+  ],
+  "next_cursor": "WyIyMDI2LTA3LTE2IiwiYTliODIxZGE3ZTE4N2U1MzM3OTlkN2E4OTU5NzU0ZWYiXQ",
+  "coverage": {
+    "available_from": "2005-01-10",
+    "available_to": null,
+    "update_frequency": "daily (MOPS 法人說明會一覽表, re-read three months back for late uploads)",
+    "history_status": "complete_from_2005"
+  }
+}
+```
+
+</ResponseExample>

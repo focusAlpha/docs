@@ -7,7 +7,7 @@ description: "Daily foreign-investor shareholding in Taiwan-listed companies: sh
 Taiwan Foreign Ownership provides daily foreign-investor shareholding in a Taiwan-listed company. Each observation is one trading day, carrying shares issued, shares held by foreign investors, the percentage held, and the regulatory ceiling for that security. One row per trading day from 2024-01-02.
 
 <Info>
-  **Plan:** Professional and above · **Credits:** 1 per call
+  **Plan:** Free and above · **Credits:** 1 per call
 </Info>
 
 ## What You Can Use Taiwan Foreign Ownership For
@@ -36,9 +36,9 @@ Pass a date range rather than paging blind: the series is daily and a full histo
 
 Holdings and ceilings are published by the Taiwan exchanges. Nothing is computed.
 
-## Query Taiwan Foreign Ownership
+## GET /v1/companies/\{company_id\}/tw/foreign-ownership
 
-Use the Taiwan foreign ownership endpoint. It accepts a Taiwan security code, a suffixed ticker, an ISIN or a `company_id` directly.
+Daily foreign-investor holdings, newest first. The route accepts a Taiwan security code, a suffixed ticker, an ISIN or a `company_id` directly.
 
 <ParamField path="company_id" type="string" required>
   A Taiwan security code such as `2330`, a suffixed ticker, an ISIN or a `company_id`.
@@ -48,13 +48,17 @@ Use the Taiwan foreign ownership endpoint. It accepts a Taiwan security code, a 
   Earliest date, `YYYY-MM-DD`. `date_lte` sets the ceiling.
 </ParamField>
 
+<ParamField query="cursor" type="string">
+  `next_cursor` from the previous page.
+</ParamField>
+
 <ParamField query="limit" type="integer" default="100">
-  Rows per page, between 1 and 1000. Page through with `cursor`.
+  Rows per page, between 1 and 1000.
 </ParamField>
 
 ## Related Datasets
 
-See also [Taiwan Financials](/international/taiwan-financials), [Taiwan Monthly Revenue](/international/taiwan-monthly-revenue), and [Company Screening](/companies/screening), which carries `tw_foreign_held_pct` as a cross-company filter.
+See also [Taiwan Ownership](/international/taiwan-ownership) for domestic insider holdings and pledges, [Taiwan Financials](/international/taiwan-financials), [Taiwan Monthly Revenue](/international/taiwan-monthly-revenue), and [Company Screening](/companies/screening), which carries `tw_foreign_held_pct` as a cross-company filter.
 
 <RequestExample>
 

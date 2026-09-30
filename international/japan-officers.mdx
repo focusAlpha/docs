@@ -1,0 +1,106 @@
+---
+title: "Japan Officers"
+sidebarTitle: "Japan officers"
+description: "The board and executive roster of a Japanese-listed company and what it is paid, from the officer and remuneration sections of its EDINET annual report."
+---
+
+Japan Officers provides a Japanese-listed company's board and executive roster (役員の状況) and its officer pay (役員報酬), as disclosed in the annual securities report filed to EDINET. `kind=people` returns one row per officer; `kind=compensation` returns pay broken out by officer category.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What you can use Japan officers for
+
+See who sits on a Japanese board, their titles, ages and terms. Track how many shares each director holds from one year's report to the next. Compare fixed against performance-linked pay for directors, auditors and outside officers.
+
+## Officers (`kind=people`, the default)
+
+One row per officer: `officer_name`, `title` (役職名, in Japanese), `date_of_birth`, `term_of_office` as printed (often a pointer to a footnote such as `(注)６`), and `shares_held`, the officer's own holding in the company. `period_end` is the fiscal year of the report and `filed_on` its filing date. Rows come newest `period_end` first, largest holding first. `period_end` can be null on some reports; use `filed_on` to tell the years apart.
+
+<Warning>
+`shares_held` is the closest thing Japan has to insider ownership, and it is an **annual snapshot**, not a transaction feed. Japan publishes no equivalent of a US Form 4: two years of snapshots give a net change across the year, never the trades inside it. For dated ownership moves, see [Japan Ownership](/international/japan-ownership) — a director's holding company that crosses 5% files there, with a trigger date.
+</Warning>
+
+## Compensation (`kind=compensation`)
+
+Japan discloses pay **by officer category**, not by person. Each row is one category — `officer_category` such as `DirectorsMember`, `CorporateAuditorsMember` or `ExecutiveOfficersMember` — with `total_remuneration`, `fixed_remuneration`, `base_remuneration`, `performance_remuneration`, `bonus`, `non_monetary` and `n_officers`, the headcount the figure covers. Amounts are in yen. A column the filer did not tag is null. A per-person figure is disclosed only for the few officers paid ¥100 million or more.
+
+## Japan officers coverage
+
+The roster comes from the annual report, so it appears once a year and only for periods whose report is loaded. `kind=compensation` is sparser than `kind=people`: a filer with a single officer category reports one row. Every response carries a measured `coverage` block.
+
+These results are not paged: `next_cursor` is always null. Use `period_end` to select one year and raise `limit` if a roster is long.
+
+## GET /v1/companies/\{company\}/jp/officers
+
+<ParamField path="company" type="string" required>
+  Tokyo symbol (`6758.T` or `6758`), five-digit EDINET security code, EDINET filer code, ADR symbol (`SONY`), ISIN or `company_id`.
+</ParamField>
+
+<ParamField query="kind" type="string" default="people">
+  `people` (one row per officer) or `compensation` (pay by officer category).
+</ParamField>
+
+<ParamField query="period_end" type="string">
+  Exact fiscal period end, `YYYY-MM-DD`.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Maximum rows, between 1 and 500.
+</ParamField>
+
+## Related datasets
+
+See also [Japan Ownership](/international/japan-ownership) for 5% holders and the top-ten shareholder table, [Japan Report Sections](/international/japan-report-sections) for the full officer and governance narrative (`InformationAboutOfficers`, `CorporateGovernance`), and [Japan EDINET Disclosures](/international/japan-edinet-disclosures) for statutory reports of a representative-director change.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/6758.T/jp/officers?limit=2" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "company_id": "cmp_007966",
+      "doc_id": "S100YE2C",
+      "officer_name": "吉田　憲一郎",
+      "title": "取締役",
+      "date_of_birth": "1959-10-20",
+      "term_of_office": "*2",
+      "shares_held": "662000.0",
+      "period_end": "2026-03-31",
+      "filed_on": "2026-06-18"
+    },
+    {
+      "company_id": "cmp_007966",
+      "doc_id": "S100YE2C",
+      "officer_name": "十時　裕樹",
+      "title": "取締役",
+      "date_of_birth": "1964-07-17",
+      "term_of_office": "*2",
+      "shares_held": "398000.0",
+      "period_end": "2026-03-31",
+      "filed_on": "2026-06-18"
+    }
+  ],
+  "next_cursor": null,
+  "coverage": {
+    "available_from": "2017-06-20",
+    "available_to": "2026-09-29",
+    "update_frequency": "annual",
+    "history_status": "all_tracked_filers_loaded",
+    "companies_covered": 3775,
+    "companies_tracked": 3791
+  }
+}
+```
+
+</ResponseExample>

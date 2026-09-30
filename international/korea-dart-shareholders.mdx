@@ -1,0 +1,267 @@
+---
+title: "Korea DART Shareholders"
+sidebarTitle: "Korea shareholders"
+description: "Who owns a Korean-listed company: insider and 5%-holder filings as they are made, and the shareholder register from the periodic report."
+---
+
+Korea DART Shareholders covers who owns a Korean-listed company. Two endpoints serve it. The ownership endpoint returns insider and 5%-holder filings as they are made. The shareholders endpoint returns the register printed in the company's DART periodic report. Coverage runs from 2022 onward, and every row links back to the original DART document.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Korea Shareholders For
+
+Follow insider buying and selling at a Korean company filing by filing. Track a 5% holder's stake as it builds or unwinds. Read the controlling shareholder and its related parties from the annual register. See how much of the company minority shareholders hold.
+
+## Two Endpoints, Two Grains
+
+`/kr/ownership` is **event-based**. Each row is one filing, dated by `report_dt`, and you filter it with `date_gte` and `date_lte`. It has no `year` or `report_period`.
+
+`/kr/shareholders` is **per periodic report**. Each row belongs to one report for one business year, and you filter it with `year`. It does not accept `date_gte` or `date_lte`; passing them returns `400`.
+
+## Ownership Kinds
+
+`kind` separates the two filing types behind `/kr/ownership`. They follow different reporting rules and carry different fields.
+
+`major_5pct` is a 5%-holder report. It carries `reporter`, `report_type`, `report_reason`, the block in `shares` and `ownership_pct`, the change in `shares_change` and `ownership_pct_change`, and any shares under contract in `contract_shares` and `contract_ownership_pct`.
+
+`insider` is an executive or major-shareholder ownership report. It carries `reporter`, `executive_position`, `is_registered_executive`, `is_major_shareholder`, the holding in `owned_shares` and `owned_pct`, and the change in `owned_shares_change` and `owned_pct_change`.
+
+Fields that belong to the other kind are null.
+
+## Shareholder Register Kinds
+
+`kind` separates the three tables behind `/kr/shareholders`.
+
+`major` is the largest shareholder and its related parties. Each row names the `shareholder_name`, its `relationship` to the largest shareholder and the `stock_class`, with holdings at the start and end of the period in `beginning_shares`, `beginning_pct`, `ending_shares` and `ending_pct`.
+
+`minority` is the minority-shareholder summary: `shareholder_count` against `total_shareholder_count`, and `held_shares` against `total_shares`, each with its percentage.
+
+`major_change` lists changes of the largest shareholder, with `change_date` and `change_cause`. A row of `-` values means the filer reported no change.
+
+## Filter to One Kind Before Summing
+
+<Warning>
+Rows of different kinds are not comparable and must not be summed together.
+
+Some rows are also the filer's own **subtotal lines**, with `shareholder_name` of 계 or 합계. Samsung Electronics' 2025 `major` table, in the example below, carries one 계 row per share class. Drop those before adding up a table, or the total is counted twice.
+</Warning>
+
+## Key Korea Shareholder Fields
+
+Share counts are counts, not money. Percentages are on a **0-to-100 scale**. Numbers arrive as strings, exactly as filed.
+
+Text fields such as `shareholder_name`, `relationship`, `stock_class` and `executive_position` are the filing's own Korean and are not translated. `stock_class` is 보통주 for common shares and 우선주 for preferred shares.
+
+Every row carries `rcept_no`, the DART receipt number, and `filing_url`, the original DART document. Cite that when quoting a number.
+
+## Korea Shareholders Date Convention
+
+Ownership rows are dated by `report_dt`, the date the filing was made. `date_gte` and `date_lte` bound it.
+
+Register rows carry `bsns_year`, `report_period` and `settlement_date`, the balance date the register describes. `report_period` is `annual`, `half`, `q1` or `q3`. There is no `report_period` filter, so read it on each row.
+
+Rows are returned newest filing first.
+
+## Korea Shareholders Coverage
+
+<Warning>
+Coverage is 2022 onward and is still backfilling, newest year and largest cap first. A missing older year for a small company means **not yet loaded**, not not filed.
+</Warning>
+
+## Page Through One Kind at a Time
+
+Pass `next_cursor` back as `cursor` to get the next page. Rows of different kinds can share a position inside one filing, so a page boundary can drop rows when you page through several kinds together. Filter to one `kind`, or ask for a `limit` large enough to take a year's register in one page.
+
+## GET /v1/companies/\{company_id\}/kr/ownership
+
+Insider and 5%-holder filings, newest first.
+
+<ParamField path="company_id" type="string" required>
+  A Korean DART corp code (8 digits), a suffixed ticker such as `005930.KS`, an ISIN or a `company_id`.
+</ParamField>
+
+<ParamField query="kind" type="string">
+  `insider` or `major_5pct`. Both by default.
+</ParamField>
+
+<ParamField query="date_gte" type="string">
+  Earliest report date, `YYYY-MM-DD`.
+</ParamField>
+
+<ParamField query="date_lte" type="string">
+  Latest report date, `YYYY-MM-DD`.
+</ParamField>
+
+<ParamField query="cursor" type="string">
+  `next_cursor` from the previous page.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Rows per page, between 1 and 1000.
+</ParamField>
+
+## GET /v1/companies/\{company_id\}/kr/shareholders
+
+The shareholder register from the periodic report, newest filing first.
+
+<ParamField path="company_id" type="string" required>
+  A Korean DART corp code (8 digits), a suffixed ticker such as `005930.KS`, an ISIN or a `company_id`.
+</ParamField>
+
+<ParamField query="kind" type="string">
+  `major`, `minority` or `major_change`. All three by default.
+</ParamField>
+
+<ParamField query="year" type="integer">
+  Business year.
+</ParamField>
+
+<ParamField query="cursor" type="string">
+  `next_cursor` from the previous page.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Rows per page, between 1 and 1000.
+</ParamField>
+
+## Related Datasets
+
+See also [Korea DART Capital](/international/korea-dart-capital) for share structure, treasury shares, dividends, investments and debt, [Korea DART Executive Compensation](/international/korea-dart-executive-compensation), [Korea DART Report Sections](/international/korea-dart-report-sections) for the rules every section shares, and [Proxy Ownership](/ownership/proxy-ownership) for the US equivalent of the shareholder register.
+
+<RequestExample>
+
+```bash Ownership
+curl "https://api.focusalpha.ai/v1/companies/005930.KS/kr/ownership?kind=insider&date_gte=2026-07-01" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```bash Shareholders
+curl "https://api.focusalpha.ai/v1/companies/005930.KS/kr/shareholders?kind=major&year=2025" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Ownership
+{
+  "data": [
+    {
+      "company_id": "cmp_007386",
+      "corp_code": "00126380",
+      "kind": "insider",
+      "seq": 3369,
+      "corp_name": "삼성전자",
+      "rcept_no": "20260730000240",
+      "reporter": "김현석",
+      "report_dt": "2026-07-30",
+      "report_type": null,
+      "report_reason": null,
+      "shares": null,
+      "ownership_pct": null,
+      "shares_change": null,
+      "ownership_pct_change": null,
+      "contract_shares": null,
+      "contract_ownership_pct": null,
+      "executive_position": "상무",
+      "is_registered_executive": "비등기임원",
+      "is_major_shareholder": "-",
+      "owned_shares": "1200",
+      "owned_pct": "0.00",
+      "owned_shares_change": "-230",
+      "owned_pct_change": "0.00",
+      "filing_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260730000240"
+    }
+  ],
+  "next_cursor": "20260730000240:3369",
+  "coverage": {
+    "available_from": "2022",
+    "available_to": null,
+    "update_frequency": "daily",
+    "history_status": "backfill_in_progress"
+  }
+}
+```
+
+```json Shareholders
+{
+  "data": [
+    {
+      "company_id": "cmp_007386",
+      "corp_code": "00126380",
+      "bsns_year": 2025,
+      "reprt_code": "11011",
+      "kind": "major",
+      "seq": 25,
+      "corp_name": "삼성전자",
+      "rcept_no": "20260310002820",
+      "shareholder_name": "계",
+      "relationship": null,
+      "stock_class": "보통주",
+      "change_date": null,
+      "change_cause": null,
+      "beginning_shares": "1198033154",
+      "beginning_pct": "20.07",
+      "ending_shares": "1174366888",
+      "ending_pct": "19.84",
+      "shares": null,
+      "ownership_pct": null,
+      "category": null,
+      "shareholder_count": null,
+      "shareholder_count_pct": null,
+      "total_shareholder_count": null,
+      "held_shares": null,
+      "held_shares_pct": null,
+      "total_shares": null,
+      "settlement_date": "2025-12-31",
+      "remarks": "-",
+      "filing_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820",
+      "report_period": "annual"
+    },
+    {
+      "company_id": "cmp_007386",
+      "corp_code": "00126380",
+      "bsns_year": 2025,
+      "reprt_code": "11011",
+      "kind": "major",
+      "seq": 22,
+      "corp_name": "삼성전자",
+      "rcept_no": "20260310002820",
+      "shareholder_name": "삼성복지재단",
+      "relationship": "출연 재단",
+      "stock_class": "보통주",
+      "change_date": null,
+      "change_cause": null,
+      "beginning_shares": "4484150",
+      "beginning_pct": "0.08",
+      "ending_shares": "4484150",
+      "ending_pct": "0.08",
+      "shares": null,
+      "ownership_pct": null,
+      "category": null,
+      "shareholder_count": null,
+      "shareholder_count_pct": null,
+      "total_shareholder_count": null,
+      "held_shares": null,
+      "held_shares_pct": null,
+      "total_shares": null,
+      "settlement_date": "2025-12-31",
+      "remarks": "-",
+      "filing_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820",
+      "report_period": "annual"
+    }
+  ],
+  "next_cursor": "20260310002820:22",
+  "coverage": {
+    "available_from": "2022",
+    "available_to": null,
+    "update_frequency": "daily",
+    "history_status": "backfill_in_progress"
+  }
+}
+```
+
+</ResponseExample>

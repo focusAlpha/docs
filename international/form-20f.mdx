@@ -54,28 +54,98 @@ A 20-F covers a **fiscal year**. `fiscal_year` on the segments section selects o
 
 All content is read from the issuer's own Form 20-F filing on SEC EDGAR, including the XBRL instance the issuer filed with it.
 
-## Query Form 20-F Data
+## Form 20-F Coverage
 
-Use the 20-F endpoints. Each section is its own route under the company's `20f` path.
+Coverage is 321 foreign private issuers filing Form 20-F, from 2014-12, updated annually as each issuer files.
+
+## GET /v1/companies/\{company_id\}/20f/profile
+
+Which filing this is: one object, not a list. It carries `ticker`, `name`, `country`, `form`, `filing_date`, `accession`, `filing_url`, the reporting `currency`, the `taxonomy` (`ifrs-full` or US GAAP), and `ownership_status` and `ownership_as_of` for the ownership section.
+
+<ParamField path="company_id" type="string" required>
+  A ticker, CIK, ISIN or `company_id`.
+</ParamField>
+
+## GET /v1/companies/\{company_id\}/20f/notes
+
+The notes to the accounts — accounting policies, risk disclosures, lease, pension and tax notes — in full text.
+
+**Find the note first, then read it.** By default this returns the **index**: each note's readable `note_title` (for example `Leases`), its `note_tag` (the IFRS concept), `period_end` and `text_chars`, with no text. You do not have to know taxonomy concept names — list the index, pick by title, then set `include_text` on a narrowed request, and the text comes back in `content_text`. With `include_text` the page is capped at 10 rows, because a single note can run to 50,000 characters.
+
+<ParamField path="company_id" type="string" required>
+  A ticker, CIK, ISIN or `company_id`.
+</ParamField>
+
+<ParamField query="title_contains" type="string">
+  Substring of the note title, at least 2 characters, for example `lease`.
+</ParamField>
+
+<ParamField query="note_tag" type="string">
+  The note's concept, with or without its taxonomy prefix — `DisclosureOfLeasesExplanatory` works as well as `ifrs-full:DisclosureOfLeasesExplanatory`.
+</ParamField>
+
+<ParamField query="accession" type="string">
+  One filing's accession number, for example `0001628280-26-025362`.
+</ParamField>
+
+<ParamField query="include_text" type="boolean" default="false">
+  Return the note text.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="200">
+  Rows per page, between 1 and 1000 — capped at 10 when `include_text` is set. Page through with `cursor`.
+</ParamField>
+
+## GET /v1/companies/\{company_id\}/20f/segments
+
+As-reported business and geographic breakdowns. Each row carries `dimension`, `segment_path`, `segment_name`, `depth`, `is_elimination`, `metric`, the XBRL `tag`, `period_end`, `fiscal_year`, `value` and `currency`.
 
 <ParamField path="company_id" type="string" required>
   A ticker, CIK, ISIN or `company_id`.
 </ParamField>
 
 <ParamField query="dimension" type="string">
-  `geographic` or `business`. Segments section only.
+  `geographic` or `business`.
 </ParamField>
 
 <ParamField query="metric" type="string">
-  For example `revenue` or `assets`. Segments section only.
+  For example `revenue` or `assets`.
 </ParamField>
 
 <ParamField query="fiscal_year" type="integer">
-  Fiscal year. Segments section only.
+  Fiscal year.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="200">
+  Rows per page, between 1 and 1000. Page through with `cursor`.
+</ParamField>
+
+## GET /v1/companies/\{company_id\}/20f/ownership
+
+The holders the filing disclosed. Each row carries `holder_name`, `shares`, `ownership_pct`, `voting_pct`, `share_class`, `as_of` and `filing_url`. As noted above, a board-as-a-group line sits beside the individual holders — do not sum them.
+
+<ParamField path="company_id" type="string" required>
+  A ticker, CIK, ISIN or `company_id`.
+</ParamField>
+
+<ParamField query="accession" type="string">
+  One filing's accession number.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Rows per page, between 1 and 1000. Page through with `cursor`.
+</ParamField>
+
+## GET /v1/companies/\{company_id\}/20f/xbrl-facts
+
+The filing's own XBRL instance. Each row carries `taxonomy`, `tag`, `value`, `unit`, `decimals`, `period_start`, `period_end` and `is_instant`. At least one of `tag`, `accession` or `period_end` is required; a request with none returns `400`.
+
+<ParamField path="company_id" type="string" required>
+  A ticker, CIK, ISIN or `company_id`.
 </ParamField>
 
 <ParamField query="tag" type="string">
-  An XBRL tag. XBRL-facts section — at least one of `tag`, `accession` or `period_end` is required there.
+  The concept name **without** its taxonomy prefix — `CashAndCashEquivalents`, not `ifrs-full:CashAndCashEquivalents`. The taxonomy comes back in its own `taxonomy` field.
 </ParamField>
 
 <ParamField query="accession" type="string">
@@ -83,10 +153,10 @@ Use the 20-F endpoints. Each section is its own route under the company's `20f` 
 </ParamField>
 
 <ParamField query="period_end" type="string">
-  Period end date, `YYYY-MM-DD`. XBRL-facts section.
+  Period end date, `YYYY-MM-DD`.
 </ParamField>
 
-<ParamField query="limit" type="integer">
+<ParamField query="limit" type="integer" default="200">
   Rows per page, between 1 and 1000. Page through with `cursor`.
 </ParamField>
 
@@ -98,6 +168,11 @@ See also [Income Statements](/financials/income-statements) and its siblings for
 
 ```bash cURL
 curl "https://api.focusalpha.ai/v1/companies/TSM/20f/segments?dimension=geographic&metric=revenue" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```bash Notes index
+curl "https://api.focusalpha.ai/v1/companies/TSM/20f/notes?title_contains=lease&limit=2" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 ```
 
@@ -130,6 +205,41 @@ curl "https://api.focusalpha.ai/v1/companies/TSM/20f/segments?dimension=geograph
     }
   ],
   "next_cursor": "1537",
+  "coverage": {
+    "available_from": "2014-12",
+    "available_to": null,
+    "update_frequency": "annual",
+    "history_status": "complete_for_covered_filers"
+  }
+}
+```
+
+
+```json Notes index
+{
+  "data": [
+    {
+      "company_id": "cmp_008395",
+      "id": "4887",
+      "cik": "1046179",
+      "accession": "0001628280-26-025362",
+      "note_tag": "ifrs-full:DescriptionOfAccountingPolicyForLeasesExplanatory",
+      "note_title": "Description Of Accounting Policy For Leases",
+      "period_end": "2025-12-31",
+      "text_chars": 2744
+    },
+    {
+      "company_id": "cmp_008395",
+      "id": "4894",
+      "cik": "1046179",
+      "accession": "0001628280-26-025362",
+      "note_tag": "ifrs-full:DisclosureOfLeasesExplanatory",
+      "note_title": "Leases",
+      "period_end": "2025-12-31",
+      "text_chars": 2154
+    }
+  ],
+  "next_cursor": "4894",
   "coverage": {
     "available_from": "2014-12",
     "available_to": null,

@@ -1,0 +1,187 @@
+---
+title: "Mainland China Financials"
+sidebarTitle: "China financials"
+description: "Income, balance-sheet and cash-flow headline lines for about 5,600 Shanghai-, Shenzhen- and Beijing-listed companies, 2023 Q1 onward, in CNY."
+---
+
+Mainland China Financials serves the financial statements of companies listed in Shanghai, Shenzhen and Beijing, newest period first. Each observation is one company, one period end and one statement, with typed headline columns beside the source's own summary fields. Coverage is about 5,600 A-share companies from 2023 Q1 onward, amounts in CNY.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use China Financials For
+
+Track revenue and profit for an A-share company period by period. Compare companies across the mainland market. Read the derived ratios the [company screen](/screening/companies/by-fundamentals) ranks on, for the same company, in the same call.
+
+## The Half-Year and Q3 Reports Are Cumulative
+
+<Warning>
+The A-share reporting cadence is annual (年报), half-year (中报), Q1 (一季报) and Q3 (三季报). `report_type` names which one a row came from. There is **no Q2 or Q4 report**, and Q1 and Q3 are unaudited.
+
+The half-year and Q3 figures are **cumulative year-to-date** — six and nine months from 1 January, not a quarter. A single quarter is one report minus the previous one: Q3 is 三季报 minus 中报, Q4 is 年报 minus 三季报. Reading 三季报 revenue as Q3 overstates it about threefold.
+</Warning>
+
+A-share fiscal years are calendar years, so `year` is unambiguous here.
+
+## Every Row Today Is Aggregated Data
+
+`source` says what evidence stands behind a row. Today it is `aggregated` on **every** row: standardized statement data with no document reference — no filing URL and no page number to check a figure against.
+
+`filing` is an accepted value because a leg read from the reports themselves is planned. When it exists, the endpoint will prefer it.
+
+## Use disclosed_at for Anything Point-in-Time
+
+<Warning>
+Each row carries two dates, and only one of them is the publication date.
+
+`disclosed_at` is when the report first became public, read off the regulator-designated disclosure index. `announcement_id` names that filing, and `has_clock_time` false means the index gave a date without a clock, so the midnight time is absence, not a time.
+
+`announced_on` ships with the aggregated data and is **not** a publication date. It is later than the real one on most income and cash-flow rows — it tracks the newest filing that repeated the period as a comparative.
+
+[Mainland China Report Timing](/international/china-report-timing) answers the same question one row per period, without the numbers.
+</Warning>
+
+## What the data Field Holds
+
+The typed columns — `revenue`, `operating_profit`, `net_profit`, `net_profit_incl_nci`, `total_assets`, `total_liabilities`, `total_equity`, `ocf` — are the headline lines only, and each is filled on the statement it belongs to.
+
+`data` holds the source's **summary** fields verbatim, about 46–57 field codes per row — not every account. It has **no R&D, no EPS and no minority-interest lines**, so do not report those as undisclosed. Total equity in this dataset **includes** minority interests; there is no parent-only equity here.
+
+`org_type` is the source's industry name (128 values, for example 汽车零部件), **not** a reporting template. It does not tell you which chart of accounts a row uses — though banks, insurers and brokers do file different lines from industrials, so compare `revenue` across those with care.
+
+## The metrics Block Is the Latest Period Only
+
+The response carries a top-level `metrics` block: margins, returns, liquidity, efficiency, leverage and year-on-year growth — the same numbers the company screen filters and sorts on.
+
+- It describes **one period, the latest**, named in `metrics.period`. It does not move with the `year` or `period_end` filters on the rows beside it.
+- `metrics.amounts` are in whole units of `metrics.currency`.
+- `metrics.ratios` are fractions (`0.2` is 20%), except `days_sales_outstanding` and `operating_cycle`, which are days.
+- For A-shares, `return_on_invested_capital`, `debt_to_equity`, `payout_ratio`, `ebitda` and the four liquidity ratios are always null, because the source publishes no debt total, dividend, share count, depreciation line or current-asset and current-liability totals.
+
+`metrics: null` means we hold no fundamentals for the company at all — a different fact from a null field inside it.
+
+## China Financials Coverage
+
+Coverage is about 5,600 A-share companies from **2023 Q1** (period end 2023-03-31) onward, updated quarterly.
+
+## China Financials Sources
+
+Standardized statement data for companies listed on the Shanghai, Shenzhen and Beijing exchanges. Publication timestamps come from cninfo, the disclosure site the Chinese securities regulator designates.
+
+## GET /v1/companies/\{company_id\}/cn/financials
+
+Statements for one mainland-listed company, newest period first.
+
+<ParamField path="company_id" type="string" required>
+  A six-digit security code (`600519`), a suffixed ticker (`600519.SS`, `000333.SZ`, `920680.BJ`), an ISIN or a `company_id`.
+</ParamField>
+
+<ParamField query="statement" type="string">
+  `income`, `balance` or `cashflow`. Omit for all three.
+</ParamField>
+
+<ParamField query="source" type="string">
+  `filing` or `aggregated`. Omit to let the endpoint prefer `filing` where it exists.
+</ParamField>
+
+<ParamField query="year" type="integer">
+  Calendar year of the period end.
+</ParamField>
+
+<ParamField query="period_end" type="string">
+  Exact period end, `YYYY-MM-DD` — `2026-06-30` is a half-year report.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="40">
+  Rows per page, between 1 and 200. Page through with `cursor`.
+</ParamField>
+
+## Related Datasets
+
+See also [Mainland China Report Timing](/international/china-report-timing) for when each report became public, [Mainland China Disclosures](/international/china-disclosures) for the announcements themselves, [Hong Kong Financials](/international/hong-kong-financials) for the ~148 companies listed in both places, and [Screen Companies by Fundamentals](/screening/companies/by-fundamentals) for the cross-market ratios.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/600519.SS/cn/financials?statement=income&limit=1" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response (data and metrics trimmed)
+{
+  "data": [
+    {
+      "company_id": "cmp_022919",
+      "sec_code": "600519",
+      "sec_name": "贵州茅台",
+      "market": "sse",
+      "period_end": "2026-06-30",
+      "report_type": "中报",
+      "statement": "income",
+      "source": "aggregated",
+      "org_type": "白酒Ⅱ",
+      "currency": "CNY",
+      "announced_on": "2026-08-15",
+      "disclosed_at": "2026-08-14T16:00:00.000Z",
+      "has_clock_time": false,
+      "announcement_id": "1225475868",
+      "revenue": "92278072083.21",
+      "operating_profit": "61411291686.27",
+      "net_profit": "44516880421.86",
+      "net_profit_incl_nci": null,
+      "total_assets": null,
+      "total_liabilities": null,
+      "total_equity": null,
+      "ocf": null,
+      "data": {
+        "TOTAL_OPERATE_INCOME": 92278072083.21,
+        "PARENT_NETPROFIT": 44516880421.86,
+        "DEDUCT_PARENT_NETPROFIT": 44464207646.01
+      }
+    }
+  ],
+  "next_cursor": "WyIyMDI2LTA2LTMwIiwiaW5jb21lIl0",
+  "currency": "CNY",
+  "metrics": {
+    "period": "2025-12-31",
+    "grain": "annual",
+    "source": "china_cas",
+    "currency": "CNY",
+    "accounting_standard": "CAS",
+    "filed_at": "2026-04-17",
+    "stale": false,
+    "unit": "ones",
+    "amounts": {
+      "revenue": 172054171890.91,
+      "net_income": 82320067101.68,
+      "ebitda": null
+    },
+    "ratios": {
+      "gross_margin": 0.913444251846724,
+      "net_margin": 0.478454350725506,
+      "return_on_invested_capital": null,
+      "current_ratio": null
+    },
+    "growth": {
+      "revenue_growth_yoy": -0.0120009717691854
+    },
+    "flags": {
+      "is_lossmaking": false,
+      "equity_negative": false
+    }
+  },
+  "coverage": {
+    "available_from": "2023-03-31",
+    "available_to": null,
+    "update_frequency": "quarterly",
+    "history_status": "complete_from_2023q1"
+  }
+}
+```
+
+</ResponseExample>

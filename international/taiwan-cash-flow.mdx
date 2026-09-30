@@ -1,0 +1,188 @@
+---
+title: "Taiwan Cash Flow"
+sidebarTitle: "Taiwan cash flow"
+description: "Quarterly cash-flow statements for TWSE and TPEx-listed companies, with capex, depreciation, free cash flow and the balance-sheet detail behind net debt."
+---
+
+Taiwan Cash Flow provides the quarterly cash-flow statement for Taiwan-listed companies on TWSE and TPEx, plus the balance-sheet detail that [Taiwan Financials](/international/taiwan-financials) does not carry: cash, inventories, PP&E, borrowings, lease liabilities and net debt. Each observation is one company for one fiscal season, in TWD thousands. Coverage starts at 2024 Q1.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Taiwan Cash Flow For
+
+Measure how much cash a Taiwan company generates and how much it reinvests. Build a quarterly capex and depreciation series for a semiconductor or hardware name. Track free cash flow, leverage and net cash. Check whether reported earnings are turning into cash.
+
+## Why Cash Flow Is Its Own Endpoint
+
+The summary tables behind [Taiwan Financials](/international/taiwan-financials) print **no cash-flow statement** and no balance-sheet detail beyond the three totals and share capital. The figures here are read from the inline XBRL originals of the same filed reports instead, so they carry a different set of fields and a shorter history.
+
+If a cash, capex or borrowings question comes back empty from the financials endpoint, this is the endpoint to use.
+
+## Cash Flows Are Filed Cumulatively
+
+<Warning>
+Like the income statement, TWSE cash-flow figures are **cumulative from the start of the fiscal year**. Season 2 is the first half and season 4 is the full year.
+
+Reading a cumulative value as a quarter overstates the second half of the year.
+</Warning>
+
+Every flow line therefore comes back **twice**.
+
+The `_ytd` fields — `operating_cf_ytd`, `investing_cf_ytd`, `financing_cf_ytd`, `fx_effect_ytd`, `net_change_ytd`, `capex_ytd`, `intangible_capex_ytd`, `depreciation_ytd`, `amortisation_ytd` and `free_cash_flow_ytd` — are the figure **as filed**, cumulative.
+
+The `_q` fields with the same names are the **single quarter**.
+
+## How to Read quarter_basis
+
+`quarter_basis` says how the `_q` values were arrived at.
+
+`as_reported` means season 1, where the cumulative figure is already the quarter.
+
+`derived_from_ytd` means this season's cumulative figure minus the previous season's.
+
+`null` means the previous season is missing, in which case the `_q` fields are null. **Those nulls must not be treated as zero.**
+
+## Point-in-Time Fields Have No Quarter Version
+
+`cash_begin`, `cash_end`, `cash`, `inventories`, `ppe`, `lt_borrowings`, `st_borrowings`, `lease_liab_current`, `lease_liab_noncurrent` and `net_debt` are balances at a date. They never accumulate, so they have no `_q` form.
+
+## Key Taiwan Cash Flow Fields
+
+`capex` is purchases of property, plant and equipment and is **negative**, as filed. `intangible_capex` is purchases of intangible assets, reported separately.
+
+`free_cash_flow` is operating cash flow plus capex. Because capex is already negative, this is operating cash flow less capex, and it does not deduct `intangible_capex`.
+
+`net_debt` is borrowings plus lease liabilities minus cash. **Negative means net cash.** A borrowing or lease field that is null on the row contributes nothing to `net_debt`, so check those fields before reading a small net debt as low leverage.
+
+A null `financing_cf_ytd` is normal: a company with no financing activity in the period does not print the line.
+
+## Check cf_closes Before Trusting a Row
+
+`cf_closes` checks the filing against itself: the three subtotals plus the FX effect against the reported net change in cash.
+
+`true` means the row adds up. `false` means it does not, and the row should not be trusted. `null` means one of the legs was missing, so it could not be checked.
+
+## Consolidated Where the Company Files It
+
+`basis` names the report the row came from: `cr` consolidated, `ir` parent-only, or `er`, the remaining variant. Consolidated is used where it exists. Companies with no subsidiaries file no consolidated statements, so their rows are `ir` rather than absent.
+
+Do not mix bases when comparing companies.
+
+## Taiwan Cash Flow Date Convention
+
+`year` is the fiscal year and `season` is the TWSE season, 1 to 4. Each row also carries `period_start`, `period_end` and `period_months`, the length of the cumulative window: `3` for season 1 and `12` for season 4.
+
+Rows are returned newest first, one row per company per season.
+
+## Taiwan Cash Flow Units
+
+Amounts are **TWD thousands**. The response states `currency` and `unit` explicitly — read them rather than assuming a scale.
+
+## Taiwan Cash Flow Coverage
+
+Coverage starts at **2024 Q1**, for about 2,700 companies. That is a shorter history than [Taiwan Financials](/international/taiwan-financials), which starts at 2013 Q1, because the inline XBRL originals are read directly.
+
+## GET /v1/companies/\{company_id\}/tw/cashflow
+
+Quarterly cash-flow statements and balance-sheet detail, newest first.
+
+<ParamField path="company_id" type="string" required>
+  A Taiwan security code such as `2330`, a suffixed ticker such as `2330.TW` or `6976.TWO`, an ISIN or a `company_id`.
+</ParamField>
+
+<ParamField query="year" type="integer">
+  Fiscal year.
+</ParamField>
+
+<ParamField query="season" type="integer">
+  TWSE season, 1 to 4.
+</ParamField>
+
+<ParamField query="cursor" type="string">
+  `next_cursor` from the previous page.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="40">
+  Rows per page, between 1 and 1000.
+</ParamField>
+
+## Related Datasets
+
+See also [Taiwan Financials](/international/taiwan-financials) for the income statement and balance-sheet totals, [Taiwan Monthly Revenue](/international/taiwan-monthly-revenue), and [Cash Flow Statements](/financials/cash-flow-statements) for SEC filers.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/2330/tw/cashflow?year=2025&season=4" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "company_id": "cmp_008395",
+      "local_security_code": "2330",
+      "company_name": "台灣積體電路製造股份有限公司",
+      "market": "twse",
+      "industry_class": "ci",
+      "year": 2025,
+      "season": 4,
+      "period_key": 20254,
+      "basis": "cr",
+      "period_start": "2025-01-01",
+      "period_end": "2025-12-31",
+      "period_months": "12",
+      "operating_cf_ytd": "2274975625.00000000",
+      "investing_cf_ytd": "-1144393407.00000000",
+      "financing_cf_ytd": "-440344692.00000000",
+      "fx_effect_ytd": "-50008167.000000000000",
+      "net_change_ytd": "640229359.00000000",
+      "capex_ytd": "-1272410529.00000000",
+      "intangible_capex_ytd": "-10146942.000000000000",
+      "depreciation_ytd": "679683958.00000000",
+      "amortisation_ytd": "8412412.000000000000",
+      "free_cash_flow_ytd": "1002565096.00000000",
+      "operating_cf_q": "725508787.00000000",
+      "investing_cf_q": "-365960057.00000000",
+      "financing_cf_q": "-107685373.00000000",
+      "fx_effect_q": "45233661.000000000000",
+      "net_change_q": "297097018.00000000",
+      "capex_q": "-356906004.00000000",
+      "intangible_capex_q": "-4552025.000000000000",
+      "depreciation_q": "159979251.00000000",
+      "amortisation_q": "2132857.000000000000",
+      "free_cash_flow_q": "368602783.00000000",
+      "quarter_basis": "derived_from_ytd",
+      "cash_begin": "2127627043.00000000",
+      "cash_end": "2767856402.00000000",
+      "cash": "2767856402.00000000",
+      "inventories": "288109485.00000000",
+      "ppe": "3691840916.00000000",
+      "lt_borrowings": "39834496.000000000000",
+      "st_borrowings": null,
+      "lease_liab_current": null,
+      "lease_liab_noncurrent": null,
+      "net_debt": "-2728021906.000000000000",
+      "cf_closes": true
+    }
+  ],
+  "next_cursor": null,
+  "currency": "TWD",
+  "unit": "thousands",
+  "coverage": {
+    "available_from": "2024-03-31",
+    "available_to": null,
+    "update_frequency": "quarterly",
+    "history_status": "complete_from_2024q1"
+  }
+}
+```
+
+</ResponseExample>

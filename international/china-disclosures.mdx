@@ -1,0 +1,139 @@
+---
+title: "Mainland China Disclosures"
+sidebarTitle: "China disclosures"
+description: "Announcements filed by Shanghai-, Shenzhen- and Beijing-listed companies to the regulator-designated disclosure site — an archive from 2023, with the filer's own type codes."
+---
+
+Mainland China Disclosures serves the announcements a Shanghai-, Shenzhen- or Beijing-listed company filed to cninfo, the site the Chinese regulator designates for disclosure. Each observation is one announcement, newest first, with its title in Chinese, its type codes and a link to the PDF. Unlike the Taiwan, Korea and Japan feeds, this one is an **archive**: it runs from 2023-01-03 for about 6,000 companies.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use China Disclosures For
+
+See what an A-share company filed and when. Find every profit pre-announcement a company made since 2023. Link a periodic report to the PDF it was published as. Trace a figure from [Mainland China Financials](/international/china-financials) back to the announcement that carried it.
+
+For **when** a periodic report first became public, [Mainland China Report Timing](/international/china-report-timing) answers directly, one row per period, instead of making you find the announcement.
+
+## A Midnight Timestamp Is Not a Time
+
+<Warning>
+`announced_at` carries a real clock **only when `has_clock_time` is true**. The source gives a date and no time for anything filed on a non-trading day and for most of the backfilled history.
+
+When `has_clock_time` is false, `announced_at` is midnight Beijing time on `announce_date` — which reads as `16:00Z` on the previous day in UTC. That is the absence of a time, not an announcement at 4 p.m.
+
+Filter and sort on `announce_date`, which is always present. Read the hour only after checking the flag. When a real clock is present, it is usually 20:30–21:40 Beijing time, after the close.
+</Warning>
+
+## Type Codes Are the Filer's Own Numbers
+
+`announcement_types` holds the site's own numeric codes, returned verbatim. No code-to-name table is published, so a name here would be our reading rather than the filer's.
+
+The useful ones:
+
+| Code | Meaning |
+|---|---|
+| `012111` | Profit pre-announcement (业绩预告) |
+| `010301` | Annual report |
+| `010303` | Half-year report |
+| `010305` | Q1 report |
+| `010307` | Q3 report |
+| `011301` | Dividend |
+| `011303` | Lock-up expiry |
+| `012325` | Share-incentive plan |
+
+One announcement carries **several** codes, so `announcement_type` matches any announcement carrying that code — not announcements of that kind only.
+
+## One Report, Several Filings
+
+A periodic report is usually filed as several separate announcements: the main text, the summary and sometimes an English version. Each is its own row with its own `announcement_id`.
+
+## Key China Disclosure Fields
+
+Each row carries `announcement_id`, `company_id`, the six-digit `sec_code`, the Chinese short name `sec_name`, the `market` (`sse` for Shanghai, for example), `announce_date`, `announced_at`, `has_clock_time`, the Chinese `title`, `announcement_types`, `filing_url` for the PDF, and `adjunct_size_kb`.
+
+## China Disclosures Language
+
+Titles are in Simplified Chinese and are **not translated**.
+
+## China Disclosures Coverage
+
+Coverage runs from **2023-01-03**, updated daily. `coverage.history_status` on the response is `backfilled_from_2023_01`.
+
+## China Disclosures Date Convention
+
+`date_gte` and `date_lte` filter on `announce_date`, the Beijing calendar day of the announcement.
+
+## China Disclosures Sources
+
+Announcements come from cninfo, the disclosure site the Chinese securities regulator designates — the companies' own filings.
+
+## GET /v1/companies/\{company_id\}/cn/disclosures
+
+Announcements for one mainland-listed company, newest first.
+
+<ParamField path="company_id" type="string" required>
+  A six-digit security code (`600519`), a suffixed ticker (`600519.SS`, `000333.SZ`, `920680.BJ`), an ISIN or a `company_id`.
+</ParamField>
+
+<ParamField query="date_gte" type="string">
+  Earliest announcement date (Beijing calendar day), `YYYY-MM-DD`. `date_lte` sets the ceiling.
+</ParamField>
+
+<ParamField query="announcement_type" type="string">
+  One numeric type code, for example `012111` for a profit pre-announcement. Matches announcements carrying that code.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="50">
+  Rows per page, between 1 and 200. Page through with `cursor`.
+</ParamField>
+
+## Related Datasets
+
+See also [Mainland China Report Timing](/international/china-report-timing) for when each periodic report first became public, [Mainland China Financials](/international/china-financials) for the numbers, [Exchange Disclosures](/international/exchange-disclosures) for the same rows alongside every other venue a company files in, and [Management Guidance](/events/guidance), which reads this market's profit pre-announcements.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/600519.SS/cn/disclosures?limit=1" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "announcement_id": "1225475868",
+      "company_id": "cmp_022919",
+      "sec_code": "600519",
+      "sec_name": "贵州茅台",
+      "market": "sse",
+      "announce_date": "2026-08-15",
+      "announced_at": "2026-08-14T16:00:00.000Z",
+      "has_clock_time": false,
+      "title": "贵州茅台2026年半年度报告",
+      "announcement_types": [
+        "01010503",
+        "010113",
+        "010303"
+      ],
+      "filing_url": "http://static.cninfo.com.cn/finalpage/2026-08-15/1225475868.PDF",
+      "adjunct_size_kb": 814
+    }
+  ],
+  "next_cursor": "WyIyMDI2LTA4LTE0VDE2OjAwOjAwLjAwMFoiLCIxMjI1NDc1ODYwIl0",
+  "coverage": {
+    "available_from": "2023-01-03",
+    "available_to": null,
+    "update_frequency": "daily",
+    "history_status": "backfilled_from_2023_01"
+  }
+}
+```
+
+</ResponseExample>

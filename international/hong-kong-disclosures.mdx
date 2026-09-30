@@ -1,0 +1,151 @@
+---
+title: "Hong Kong Disclosures"
+sidebarTitle: "Hong Kong disclosures"
+description: "Announcements filed by HKEX-listed companies to HKEXnews, stamped to the minute the exchange released them — the documents the Hong Kong filing figures are read out of."
+---
+
+Hong Kong Disclosures serves the announcements an HKEX-listed company filed to HKEXnews, the exchange's own disclosure site, newest first. Each observation is one announcement with the exact minute the exchange released it, its HKEX category codes and a link to the document. These are the same documents a `source=filing` row in [Hong Kong Financials](/international/hong-kong-financials) was read out of, so a figure can be walked back to the announcement that carried it.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Hong Kong Disclosures For
+
+See what a Hong Kong-listed company filed and exactly when the market could read it. Find every results announcement or profit warning since the start of 2026. Open the results announcement behind a Hong Kong financial figure.
+
+## Coverage Starts 2026-01-01
+
+<Warning>
+The index does not reach earlier than **2026-01-01**. An empty result for an earlier date means the index does not cover it, not that the issuer filed nothing.
+</Warning>
+
+## English Filings Only
+
+<Warning>
+A Hong Kong issuer files the same announcement twice — once in English and once in Chinese, under separate ids. Only the **English** filing is indexed, so this is not a complete record of everything the company published.
+</Warning>
+
+## released_at Is a Real Clock
+
+`released_at` is the minute HKEXnews released the document, and it is the authority for when the market could first read it. The peak is 16:00–19:00 Hong Kong time, after the close. `release_date` is the Hong Kong calendar day.
+
+## One Row Can Be Several Companies and Several Kinds
+
+About 13% of announcements carry **several stock codes** — a joint filing by an issuer and its listed subsidiaries, or, as in the example below, an issuer filing under its listed notes as well. `tickers`, `stock_names` and `company_ids` list every one of them.
+
+About 15% carry **several category codes**, so `category_code` matches announcements *carrying* that code rather than announcements of that kind only.
+
+## HKEX Category Codes Worth Knowing
+
+| Code | Meaning |
+|---|---|
+| `13300` | Annual results |
+| `13400` | Interim results |
+| `13600` | Quarterly results |
+| `13301` | Profit warning or profit alert — the company's own statement that the period will be materially better or worse |
+
+<Note>
+`13300` and `13400` also carry supplemental and clarification announcements, so a hit on the code is not proof the document contains a results table.
+</Note>
+
+## Withdrawn Announcements Are Excluded by Default
+
+Set `include_cancelled=true` to see them. A withdrawal is itself a fact about the issuer, and `is_cancelled` marks it on the row.
+
+## Key Hong Kong Disclosure Fields
+
+Each row carries `news_id`, `released_at`, `release_date`, `tickers`, `stock_names`, `company_ids`, the English `title`, `headline_category`, `categories` and `category_codes`, `filing_url`, `file_type`, `file_size` and `is_cancelled`.
+
+## Hong Kong Disclosures Date Convention
+
+`date_gte` and `date_lte` filter on the Hong Kong release date.
+
+## Hong Kong Disclosures Sources
+
+Announcements come from HKEXnews, the Hong Kong exchange's disclosure site — the issuers' own filings.
+
+## GET /v1/companies/\{company_id\}/hk/disclosures
+
+Announcements for one Hong Kong-listed company, newest first.
+
+<ParamField path="company_id" type="string" required>
+  A stock code (`700` or `0700.HK`), an ISIN or a `company_id`.
+</ParamField>
+
+<ParamField query="date_gte" type="string">
+  Earliest release date (Hong Kong date), `YYYY-MM-DD`. `date_lte` sets the ceiling.
+</ParamField>
+
+<ParamField query="category_code" type="string">
+  One HKEX category code, for example `13300` for annual results.
+</ParamField>
+
+<ParamField query="include_cancelled" type="boolean" default="false">
+  Include withdrawn announcements.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="50">
+  Rows per page, between 1 and 200. Page through with `cursor`.
+</ParamField>
+
+## Related Datasets
+
+See also [Hong Kong Financials](/international/hong-kong-financials) for the figures read out of these announcements, [Exchange Disclosures](/international/exchange-disclosures) for the same rows alongside every other venue a company files in, and [Management Guidance](/events/guidance), which reads this market's profit warnings.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/0700.HK/hk/disclosures?category_code=13400&limit=1" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response (tickers and stock_names trimmed)
+{
+  "data": [
+    {
+      "news_id": "12280990",
+      "released_at": "2026-08-12T08:31:00.000Z",
+      "release_date": "2026-08-12",
+      "tickers": [
+        "0700.HK",
+        "5093.HK",
+        "5094.HK"
+      ],
+      "stock_names": [
+        "TENCENT",
+        "TENCENT N2801",
+        "TENCENT N3801"
+      ],
+      "company_ids": [
+        "cmp_020585"
+      ],
+      "title": "ANNOUNCEMENT OF THE RESULTS FOR THE THREE AND SIX MONTHS ENDED 30 JUNE 2026",
+      "headline_category": "Announcements and Notices",
+      "categories": [
+        "Interim Results"
+      ],
+      "category_codes": [
+        "13400"
+      ],
+      "filing_url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0812/2026081200296.pdf",
+      "file_type": "PDF",
+      "file_size": "729KB",
+      "is_cancelled": false
+    }
+  ],
+  "next_cursor": null,
+  "coverage": {
+    "available_from": "2026-01-01",
+    "available_to": null,
+    "update_frequency": "daily",
+    "history_status": "index_starts_2026_english_filings_only"
+  }
+}
+```
+
+</ResponseExample>

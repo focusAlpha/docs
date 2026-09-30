@@ -1,0 +1,218 @@
+---
+title: "Company Calendar"
+sidebarTitle: "Company calendar"
+description: "Scheduled company events across markets — reporting dates, ex-dividend, split and IPO dates, investor days, conference appearances, shareholder meetings and record dates — one row per event with the one date FocusAlpha stands behind."
+---
+
+The Company Calendar lists dated, scheduled events for listed companies, ahead or behind: reporting dates, ex-dividend, split and IPO dates, investor and analyst days, appearances at broker conferences, shareholder meetings, record dates, and the entries a company's own investor-relations calendar lists. It answers "what is on next week", "when does this company report" and "who is holding an investor day in October". The company is a filter, not a requirement.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+This is the forward-looking dataset. For what has already happened, see [News Events](/news/news-events); for macro releases and central-bank decisions, see the [Economic Calendar](/macro/calendar).
+
+## What you can use the company calendar for
+
+Find a company's next catalyst. Build a week-ahead list of reporting dates for a watchlist or a whole market. Catch investor days and broker-conference appearances before they happen. Line up ex-dividend and record dates for an income book. Track Japanese shareholder meetings with `market=JP`.
+
+## One event, one row, one date
+
+Several sources often date the same event, and they do not always agree. The calendar does that adjudication for you and returns **one row per company, per event type, per day**, carrying the date it stands behind rather than the candidates:
+
+- **Sources.** Within one company, one event type and 21 days, the source closest to the company wins the date: `filing` > `press_release` > `ir_site` > `calendar_feed`. For mainland-China reporting dates, the date a company books with its exchange matched the actual disclosure date for 5,546 of 5,550 companies on the last disclosed quarter.
+- **Listings.** When a company has several listings that disagree, the main listing wins — NVDA's 2026-11-18 is served, not the 11-17 on its Frankfurt line.
+- **Labels.** When a company page lists one event under several wordings, they collapse into one row.
+
+The dates that lost are not returned. **Ex-dividend, split and IPO dates are exempt** from the source rule, because the exchange sets them, not the company.
+
+The one cost: on the rare day a company holds two different events of the same type, you get one row.
+
+## Company calendar coverage
+
+| `source_kind` | What it is | From |
+| --- | --- | --- |
+| `calendar_feed` | Market-data scheduled reporting, ex-dividend, split and IPO dates worldwide; reporting dates about 400 days ahead, ex-dividend about 30 | 2019-01-01 |
+| `press_release` | Dates a company announced in a press release headline or body | 2026-07-23 |
+| `ir_site` | Entries on company investor-relations calendars, for the companies whose websites FocusAlpha reads | 2026-09-24 |
+| `filing` | Exchange filings and disclosure registers, by `filing_market` (below) | 2026-06-01 |
+
+Exchange filings by market:
+
+- **Taiwan** (`TW`, from 2026-07-22) — 法人說明會 investor conferences, plus both exchanges' shareholder-meeting register from 2026-09-26. Conferences are announced only 1–7 days ahead, so Taiwan is always thin far out; see [Taiwan Investor Conferences](/international/taiwan-investor-conferences) for the full history.
+- **Korea** (`KR`, from 2026-06-01) — 기업설명회 IR notices with time and venue, plus convocation and record-date filings from 2026-09-26.
+- **Japan** (`JP`, from 2026-08-18) — shareholder meetings only. Japan does not file investor days; Japanese reporting dates come from `calendar_feed`.
+- **Hong Kong** (`HK`, from 2026-09-26) — the board-meeting notice an issuer must publish at least seven business days before approving results, which is the Hong Kong reporting date. These cluster before the interim and annual seasons, so a thin window outside a season is the market, not a gap.
+- **Mainland China** (`CN`, from 2026-09-26) — the periodic-report date each issuer books with its exchange, with the whole booking chain in `detail`, plus 业绩说明会 results-briefing dates.
+
+The response's `coverage` block repeats these start dates.
+
+<Warning>
+An empty result is a statement about these sources, never that a company has nothing scheduled. A missing `ir_site` entry means FocusAlpha does not read that company's website or its site lists nothing.
+</Warning>
+
+## Key company calendar fields
+
+- `event_date` — the day the event happens, as a local calendar date in the issuer's own market. Dates are never converted between time zones.
+- `event_type` — one of the types below.
+- `company_id`, `company_name`, `primary_ticker` — the company; `symbol` is the listing the row came from.
+- `title` — the event as the source named it; `null` for most `calendar_feed` rows.
+- `source_kind` — the one source behind the served date (table above). A reporting date from `calendar_feed` is an expectation that the company can still move; a date from `press_release`, `ir_site` or `filing` is the company's own.
+- `date_basis` — how the date was obtained, narrower than `source_kind` (below).
+- `filing_market` — `TW`, `KR`, `JP`, `HK` or `CN` on `filing` rows.
+- `link_status` — how the company was attached: `linked` (the source carried it), `symbol_map` (resolved from the row's symbol), `unconfirmed` (the source's symbol did not match the headline; `company_id` is `null` on purpose — do not fill it from `symbol`) or `unlinked`.
+- `announced_on` — when the source announced the date, where known.
+- `detail` — per-type extras: EPS and revenue estimates on reporting dates, the split ratio, the IPO exchange, price range and status, the dividend amount and payment date, and for mainland-China reporting dates the booking chain (`first_appointed`, `changes`, `actual`). A `null` estimate is a gap, not zero.
+
+### Event types
+
+| `event_type` | Meaning |
+| --- | --- |
+| `earnings` | Reporting date |
+| `dividend_ex` | Ex-dividend date |
+| `record_date` | The date that fixes who may vote or receive a dividend — **not** the ex-date; the two differ by a day or two |
+| `split` | Stock split |
+| `ipo` | Initial public offering |
+| `investor_day` | Investor, analyst or capital-markets day, or a company's own investor conference |
+| `conference_presentation` | Appearance at a broker or industry conference |
+| `shareholder_meeting` | Annual or extraordinary general meeting |
+| `business_update` | A scheduled business update |
+| `ir_diary` | The company's investor-relations calendar listed something for that day that could not be classified — a scheduled release, a quiet period, a page title |
+
+### Date basis
+
+| `date_basis` | How the date was obtained |
+| --- | --- |
+| `vendor_feed` | Market-data schedule |
+| `press_release_headline` | The headline of a company release |
+| `press_release_body` | The sentence of a release body that names the event — where most conference appearances come from |
+| `ir_calendar` | The company's investor-relations calendar |
+| `filing_field` | A structured field of an exchange filing |
+| `filing_pdf` | Read from the filing document |
+| `disclosure_register` | The reporting date a mainland-China issuer booked with its exchange — the strongest date here |
+
+## Company calendar date convention
+
+Rows are returned **oldest first**. Without dates, the window is today to 30 days ahead — or today to **120 days** when you pass `company`, because a company reports once a quarter and a 30-day window would often show nothing. `date_lte` alone keeps today as the lower bound; only an explicit `date_gte` reaches into the past, back to 2019 for `calendar_feed` rows.
+
+## GET /v1/calendar
+
+<ParamField query="company" type="string">
+  Optional issuer: ticker, `company_id` (`cmp_…`), CIK, ISIN or local symbol (`2330.TW`, `6758.T`, `005930.KS`). Every symbol the company is known by is searched. An identifier that matches no company returns `404`.
+</ParamField>
+
+<ParamField query="market" type="string">
+  `JP` returns only Japanese issuers — companies that are Japanese, trade in Tokyo, or were dated by a Japanese filing. `JP` is the only accepted value.
+</ParamField>
+
+<ParamField query="type" type="string">
+  One event type from the table above. Omit for all.
+</ParamField>
+
+<ParamField query="source" type="string">
+  `calendar_feed`, `press_release`, `ir_site` or `filing`. Matches the one source behind the served date, so `source=calendar_feed` returns the dates the feed won, not every date it also carries.
+</ParamField>
+
+<ParamField query="date_basis" type="string">
+  One value from the date-basis table above.
+</ParamField>
+
+<ParamField query="date_gte" type="string">
+  Earliest `event_date`, `YYYY-MM-DD` (default today). `date_lte` sets the ceiling (default today + 30, or + 120 with `company`).
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Rows per page, between 1 and 500. Page through with `cursor`, passing back `next_cursor` unchanged.
+</ParamField>
+
+When `company` is set, the response also carries a `company` block with the resolved `company_id` and every `symbols` entry searched.
+
+## Related datasets
+
+See also [Economic Calendar](/macro/calendar) for macro releases, [News Events](/news/news-events) for what already happened, [Earnings Consensus](/events/earnings-consensus) for the estimates around a reporting date, [Taiwan Investor Conferences](/international/taiwan-investor-conferences) for the full 法人說明會 history with slides, and [US Presentation Decks](/transcripts/us-presentation-decks) for the decks US companies showed at these events.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/calendar?company=2330.TW&limit=2" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```bash Japan shareholder meetings
+curl "https://api.focusalpha.ai/v1/calendar?market=JP&type=shareholder_meeting&source=filing" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "row_key": "a:ad4f6e5819b9804604f3fac2",
+      "event_date": "2026-10-15",
+      "event_type": "investor_day",
+      "company_id": "cmp_008395",
+      "company_name": "Taiwan Semiconductor Manufacturing Company Limited",
+      "primary_ticker": "TSM",
+      "symbol": "2330",
+      "title": "Q3 2026 institutional investor conference - 14:00",
+      "source_kind": "filing",
+      "filing_market": "TW",
+      "link_status": "linked",
+      "date_basis": "filing_field",
+      "announced_on": "2026-09-29",
+      "detail": null
+    },
+    {
+      "row_key": "v:earnings:TSM:2026-10-15",
+      "event_date": "2026-10-15",
+      "event_type": "earnings",
+      "company_id": "cmp_008395",
+      "company_name": "Taiwan Semiconductor Manufacturing Company Limited",
+      "primary_ticker": "TSM",
+      "symbol": "TSM",
+      "title": null,
+      "source_kind": "calendar_feed",
+      "filing_market": null,
+      "link_status": "linked",
+      "date_basis": "vendor_feed",
+      "announced_on": null,
+      "detail": {
+        "eps_estimated": 4.39,
+        "revenue_estimated": 45287550000
+      }
+    }
+  ],
+  "next_cursor": "WyIyMDI2LTEwLTE1IiwidjplYXJuaW5nczpUU006MjAyNi0xMC0xNSJd",
+  "company": {
+    "company_id": "cmp_008395",
+    "symbols": ["TSM", "2330.TW", "TSFA.F", "TSMWF"]
+  },
+  "coverage": {
+    "calendar_feed": {
+      "from": "2019-01-01",
+      "ahead": "reporting dates ~400 days, ex-dividend dates ~30 days, refreshed daily"
+    },
+    "press_release": {
+      "from": "2026-07-23",
+      "note": "headlines and bodies that name a future date"
+    },
+    "ir_site": {
+      "from": "2026-09-24",
+      "note": "diary entries from company IR sites, for the companies whose sites are crawled"
+    },
+    "filing": {
+      "TW": "2026-07-22",
+      "KR": "2026-06-01",
+      "JP": "2026-08-18",
+      "HK": "2026-09-26",
+      "CN": "2026-09-26"
+    }
+  }
+}
+```
+
+</ResponseExample>

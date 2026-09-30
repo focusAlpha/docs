@@ -1,0 +1,164 @@
+---
+title: "Segment Breakouts from Earnings Releases"
+sidebarTitle: "8-K segments"
+description: "How a quarter split across segments, product lines and regions as the earnings release printed it — with the axis and role that say which rows may be added together."
+---
+
+Segment Breakouts are the segment, product-line and geography figures a company printed in its earnings release — the rows that sit **beneath** the consolidated figure. Each observation is one figure for one segment from one release, carrying the resolved `segment_name`, the cut it belongs to, whether it may be added, and the verbatim quote it was read from.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Segment Breakouts For
+
+See how a quarter split across a company's reportable segments, product lines or regions, the day it was announced. Track segment KPIs the financial statements never carry. Compare the as-printed split with the audited segment detail.
+
+## Split on segment_axis Before Summing
+
+<Warning>
+One release routinely prints **several cuts of the same revenue**. Apple prints Products and Services, iPhone and Mac, and Americas, Europe and Greater China — and each cut adds up to the total on its own. Summing a mixed page counts the quarter more than once.
+
+Group by `segment_axis` first. Then use `segment_role` to decide what may be added:
+
+| `segment_role` | May you add it? |
+|---|---|
+| `unit` | Yes |
+| `reconciling` | Yes, **with its sign** — Corporate and Other, Eliminations |
+| `subtotal` | No — it is already the sum of other rows |
+
+An empty axis is its own group and must never be added into a known one.
+</Warning>
+
+## Read segment_name
+
+A release often prints the segment name only in the row label and leaves the segment field empty. `segment_name` resolves it. `segment_as_extracted` keeps the field as extracted and `label_qualifier` the part of the label the name came from.
+
+## Not Every Breakout Is Here, on Purpose
+
+A row counts as a segment only when the release named the segment in its own field. When the name appears only inside the row label, the row cannot be told apart from a wording variant, so it is left out rather than guessed at.
+
+Cisco's Q2 FY26 geographies are the worked case: they are not here. They are reachable through [Reported Earnings Figures](/events/earnings-results) with no `level`.
+
+## Key Segment Breakout Fields
+
+Each row carries the same release and value fields as [Company Measures](/events/8k-company-measures) — `ticker`, `company_id`, `year`, `quarter`, `observed_at`, `doc_id`, `source_ref`, `metric_key`, `basis`, `period`, `period_end`, `label`, `value_text`, `value_low`, `value_high`, `value_unit`, `yoy`, `quote`, `value_is_change` and `unit_check` — plus `segment_name`, `segment_as_extracted`, `label_qualifier`, `segment_axis` and `segment_role`.
+
+Read `value_is_change` before using a number: when true, the figure is a change, not a level.
+
+## Segment Breakouts Coverage
+
+Companies whose releases break a line out and name the segment in its own field. The floor moves as the backfill proceeds — read `coverage.available_from` on the response.
+
+## Segment Breakouts Date Convention
+
+`year` and `quarter` are the fiscal year and quarter of the **release**. `period` is the period the figure is **for**, as the release labelled it. Rows are returned newest release first.
+
+## GET /v1/companies/\{company_id\}/8k-segments
+
+Segment, product and geography breakouts from one company's earnings releases, newest first. The identifier is expanded to every ticker the company is known by.
+
+<ParamField path="company_id" type="string" required>
+  A ticker, `company_id`, CIK or ISIN.
+</ParamField>
+
+<ParamField query="metric_key" type="string">
+  Normalised metric, for example `revenue` or `operating_income`. The pre-normalisation spelling is accepted too.
+</ParamField>
+
+<ParamField query="period" type="string">
+  The period the figure is for, exactly as the release labelled it, for example `Q3-FY26`.
+</ParamField>
+
+<ParamField query="year" type="integer">
+  Fiscal year of the release.
+</ParamField>
+
+<ParamField query="quarter" type="integer">
+  Fiscal quarter of the release, 1 to 4.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Rows per page, between 1 and 1000. Page through with `cursor`.
+</ParamField>
+
+## Related Datasets
+
+See also [Company Measures](/events/8k-company-measures) for the consolidated figures these break down, [Reported Earnings Figures](/events/earnings-results) for every row the release contained, and [Segmented Financials](/financials/segments) for the segment detail in the audited statements — a different, restated record.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/AAPL/8k-segments?metric_key=revenue&period=Q3-FY26&limit=2" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response (second row trimmed)
+{
+  "data": [
+    {
+      "ticker": "AAPL",
+      "company_id": "cmp_000584",
+      "year": 2026,
+      "quarter": 3,
+      "observed_at": "2026-07-30T20:30:28Z",
+      "occurred_on": "2026-07-30",
+      "doc_id": "0000320193-26-000018:EX-99.1",
+      "source_ref": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+      "source_feed": "edgar_8k",
+      "metric_key": "revenue",
+      "metric_key_as_extracted": "revenue",
+      "basis": "",
+      "metric_definition": null,
+      "period": "Q3-FY26",
+      "period_grain": "Q",
+      "period_calendar": "2026Q2",
+      "period_end": "2026-06-27",
+      "period_end_source": "filed_period",
+      "label": "Q3-FY26 Services net sales",
+      "value_text": "$30,739 million",
+      "value_low": "30739000000.0",
+      "value_high": "30739000000.0",
+      "value_unit": "usd",
+      "yoy": null,
+      "value_is_band": false,
+      "value_is_change": false,
+      "value_is_delta": false,
+      "value_not_level": false,
+      "quote": "Services | 30,739",
+      "unit_check": null,
+      "value_scale_note": null,
+      "segment_name": "Services",
+      "segment_as_extracted": "Services",
+      "label_qualifier": "Services",
+      "segment_axis": "product",
+      "segment_role": "unit"
+    },
+    {
+      "ticker": "AAPL",
+      "metric_key": "revenue",
+      "period": "Q3-FY26",
+      "label": "Q3-FY26 iPhone net sales",
+      "value_text": "$54,252 million",
+      "value_low": "54252000000.0",
+      "quote": "iPhone | $54,252",
+      "segment_name": "iPhone",
+      "segment_axis": "product",
+      "segment_role": "unit"
+    }
+  ],
+  "next_cursor": "WyIyMDI2LTA3LTMwVDIwOjMwOjI4WiIsInJldmVudWUiLCJlN2VhY2M3ZWRjYzIxYjM5MTBiYWRlYTc1ZmVhOTlkMSJd",
+  "coverage": {
+    "available_from": "2025-01-02",
+    "available_to": null,
+    "update_frequency": "daily",
+    "history_status": "starts_2025_01_02"
+  }
+}
+```
+
+</ResponseExample>

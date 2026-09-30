@@ -7,7 +7,7 @@ description: "Financial facts for Korean-listed companies as filed to DART, in t
 Korea DART Financials provides financial facts for a Korean-listed company as filed to DART, the Korean regulator's disclosure system. Each observation is one account line for one reporting period, in KRW, carrying the filer's own account concept and label. Coverage runs from 2022 onward.
 
 <Info>
-  **Plan:** Professional and above · **Credits:** 1 per call
+  **Plan:** Free and above · **Credits:** 1 per call
 </Info>
 
 ## What You Can Use Korea DART Financials For
@@ -17,7 +17,7 @@ Read a Korean company's accounts as it actually files them. Build a series for a
 ## These Are the Filer's Own Accounts, Not a Normalised Statement
 
 <Warning>
-There is **no `revenue` field**. Which Korean account is revenue differs by filer and by industry, so this dataset does not pick one.
+There is **no `revenue` field** on the rows. Which Korean account is revenue differs by filer and by industry, so the rows do not pick one.
 
 Each row carries `account_id`, the machine concept — for example `ifrs-full_CostOfSales` or `dart_OperatingIncomeLoss` — and `account_nm`, the filer's own label in Korean.
 
@@ -26,13 +26,28 @@ Each row carries `account_id`, the machine concept — for example `ifrs-full_Co
 
 ## The Korean Reporting Calendar Has No Q2
 
-`report_period` is `annual`, `half`, `q1` or `q3`.
+`report_period` is `annual`, `half`, `q1` or `q3`. The Korean reporting year has a **half-year report and no standalone Q2**. A pipeline that expects four quarterly reports will mis-read the middle of the year.
 
-The Korean reporting year has a **half-year report and no standalone Q2**, and the figures in the half-year report cover six months. A pipeline that expects four quarterly reports will silently mis-scale the middle of the year.
+## An Interim Row Does Not Always Cover the Period Its Name Suggests
+
+<Warning>
+DART prints both a three-month and a year-to-date column in interim reports, the filer decides which to fill, and only the first is served. The two statements behave differently:
+
+- **Income figures** in a `half` or `q3` row are the **single quarter** for most filers, but year-to-date for some. To check, divide the half-year figure by the `q1` figure: about 1 means the quarter alone, about 2 means year-to-date. Or reconcile against the annual report.
+- **Cash-flow figures** in interim rows are **year-to-date**: the half-year cash flow covers six months and the `q3` cash flow covers nine.
+
+Do not assume a `half` row covers six months, and do not assume it covers three.
+</Warning>
+
+## Most Filers Print Only the Combined Income Statement
+
+Most Korean filers print a single statement of profit or loss and other comprehensive income rather than a separate income statement. For them, `statement=income` returns nothing, and the income lines are under `statement=comprehensive_income`. If `income` comes back empty, query `comprehensive_income` before concluding the data is missing.
+
+Two definitions also vary by filer: SG&A may or may not include R&D, and `FinanceCosts` is not the same as interest expense.
 
 ## Consolidated and Separate Are Different Books
 
-`basis` is `consolidated` or `separate`, meaning parent-only. Never mix them in one comparison.
+`basis` is `consolidated` or `separate`, meaning parent-only. Both are filed. Never mix them in one comparison.
 
 ## Key Korea DART Financial Fields
 
@@ -41,6 +56,17 @@ The Korean reporting year has a **half-year report and no standalone Q2**, and t
 Each row carries the amount in the row's `currency`, which is KRW, plus **the two prior periods as filed** in `amount_prior_period` and `amount_two_periods_prior`.
 
 Every row carries `filing_url`, the original DART document behind the figure. Cite that when quoting a number.
+
+## The metrics Block
+
+Next to the rows, the response carries a `metrics` object: derived figures for the company's **latest** period, the same values [Company Screening](/screening/companies/by-fundamentals) filters and sorts on.
+
+- `period`, `grain` and `filed_at` say which period the block describes. It does **not** follow the `year` or `report_period` you asked for.
+- `amounts` — such as `revenue`, `net_income`, `free_cash_flow` and `cash_and_equivalents` — are in whole units of `currency`, with `unit` of `ones`.
+- `ratios` are **fractions**, so 0.2 means 20%, except `days_sales_outstanding` and `operating_cycle`, which are days.
+- `growth` holds year-on-year growth rates, also as fractions, and `flags` holds `is_lossmaking` and `equity_negative`.
+
+A null field in the block means the source does not publish what it needs, not zero. `metrics` itself is null when no fundamentals are held for the company.
 
 ## Korea DART Financials Coverage
 
@@ -52,18 +78,18 @@ A missing older year for a small company means **not yet loaded**, not not filed
 
 ## Korea DART Financials Date Convention
 
-`year` is the business year and is **required**. `report_period` names which of the year's reports the row came from, and as noted the half-year report covers six months rather than three.
+`year` is the business year and is **required**; omitting it returns `400`. `report_period` names which of the year's reports the row came from.
 
 ## Korea DART Financials Sources
 
 Facts are filed by the companies to DART. Account concepts and labels are the filer's own. Nothing is normalised, translated or restated.
 
-## Query Korea DART Financials
+## GET /v1/companies/\{company_id\}/kr/financials
 
-Use the Korea financials endpoint. It accepts a Korean corp code, a suffixed ticker such as `005930.KS`, an ISIN or a `company_id` directly.
+Account-level financial facts for one business year. The route accepts a Korean corp code, a suffixed ticker such as `005930.KS`, an ISIN or a `company_id` directly.
 
 <ParamField path="company_id" type="string" required>
-  A Korean DART corp code, a suffixed ticker, an ISIN or a `company_id`.
+  A Korean DART corp code (8 digits), a suffixed ticker, an ISIN or a `company_id`.
 </ParamField>
 
 <ParamField query="year" type="integer" required>
@@ -82,18 +108,22 @@ Use the Korea financials endpoint. It accepts a Korean corp code, a suffixed tic
   `balance_sheet`, `income`, `comprehensive_income`, `cash_flow` or `changes_in_equity`.
 </ParamField>
 
+<ParamField query="cursor" type="string">
+  `next_cursor` from the previous page.
+</ParamField>
+
 <ParamField query="limit" type="integer" default="200">
-  Rows per page, between 1 and 1000. Page through with `cursor`.
+  Rows per page, between 1 and 1000.
 </ParamField>
 
 ## Related Datasets
 
-See also [Korea DART Report Sections](/international/korea-dart-report-sections) for ownership, shareholders, share structure, investments and debt, and [Exchange Disclosures](/international/exchange-disclosures) for the Korean filing index.
+See also [Korea DART Shareholders](/international/korea-dart-shareholders), [Korea DART Capital](/international/korea-dart-capital) for share structure, dividends, investments and debt, [Korea DART Executive Compensation](/international/korea-dart-executive-compensation), [Korea DART Report Sections](/international/korea-dart-report-sections) for the rules the sections share, and [Exchange Disclosures](/international/exchange-disclosures) for the Korean filing index.
 
 <RequestExample>
 
 ```bash cURL
-curl "https://api.focusalpha.ai/v1/companies/005930.KS/kr/financials?year=2026&report_period=half&basis=consolidated&statement=income" \
+curl "https://api.focusalpha.ai/v1/companies/005930.KS/kr/financials?year=2025&report_period=annual&basis=consolidated&statement=income" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 ```
 
@@ -107,8 +137,8 @@ curl "https://api.focusalpha.ai/v1/companies/005930.KS/kr/financials?year=2026&r
     {
       "corp_code": "00126380",
       "company_id": "cmp_007386",
-      "bsns_year": 2026,
-      "reprt_code": "11013",
+      "bsns_year": 2025,
+      "reprt_code": "11011",
       "fs_div": "CFS",
       "sj_div": "IS",
       "ord": 6,
@@ -116,18 +146,50 @@ curl "https://api.focusalpha.ai/v1/companies/005930.KS/kr/financials?year=2026&r
       "account_nm": "영업이익",
       "account_detail": "-",
       "sj_nm": "손익계산서",
-      "amount": "57232797000000.0",
-      "amount_prior_period": null,
-      "amount_two_periods_prior": null,
+      "amount": "43601051000000.0",
+      "amount_prior_period": "32725961000000.0",
+      "amount_two_periods_prior": "6566976000000.0",
       "currency": "KRW",
-      "rcept_no": "20260515002181",
-      "filing_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260515002181",
-      "report_period": "q1",
+      "rcept_no": "20260310002820",
+      "filing_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820",
+      "report_period": "annual",
       "basis": "consolidated",
       "statement": "income"
     }
   ],
-  "next_cursor": null,
+  "next_cursor": "WyJDRlMiLCJJUyIsNiwiMTEwMTEiLCIyMDI2MDMxMDAwMjgyMCIsImRhcnRfT3BlcmF0aW5nSW5jb21lTG9zcyIsIi0iXQ",
+  "metrics": {
+    "period": "2025-12-31",
+    "grain": "annual",
+    "source": "korea_dart_ifrs",
+    "currency": "KRW",
+    "accounting_standard": "ifrs",
+    "filed_at": "2026-03-10",
+    "stale": false,
+    "unit": "ones",
+    "amounts": {
+      "revenue": 333605938000000,
+      "net_income": 44260956000000,
+      "operating_income": 43601051000000,
+      "free_cash_flow": 37792969000000,
+      "cash_and_equivalents": 57856378000000
+    },
+    "ratios": {
+      "gross_margin": 0.393789228655756,
+      "operating_margin": 0.130696267762476,
+      "return_on_equity": 0.108482621227832,
+      "current_ratio": 2.32761464500948,
+      "payout_ratio": 0.223609788274795
+    },
+    "growth": {
+      "revenue_growth_yoy": 0.108800933136429,
+      "earnings_growth_yoy": 0.316453351400418
+    },
+    "flags": {
+      "is_lossmaking": false,
+      "equity_negative": false
+    }
+  },
   "coverage": {
     "available_from": "2022",
     "available_to": null,

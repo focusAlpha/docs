@@ -1,0 +1,170 @@
+---
+title: "Japan IR Website Disclosures"
+sidebarTitle: "Japan IR website disclosures"
+description: "Everything a Japanese company lists on its own investor-relations website that is not a transcript or a deck: English earnings releases, AGM notices, results-date announcements, news releases and dividends."
+---
+
+Japan IR Website Disclosures is everything a Japanese company lists on its own investor-relations website that is not a transcript or a slide deck: news releases, dividend announcements, forecast revisions, links to its statutory filings, and named kinds such as the earnings release (決算短信) as posted on the company site — often in English, which the exchange feed does not carry — and AGM notices and resolutions.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What you can use Japan IR website disclosures for
+
+Read a Japanese earnings release in English when the company publishes one. Get the AGM notice with the agenda and director slate, and the notice of what the meeting resolved. See when a company says it will report results or hold a briefing. Follow press releases and dividend announcements from the company's own site.
+
+## Subtypes
+
+Named kinds:
+
+| `subtype` | What it is |
+| --- | --- |
+| `results_summary` | The earnings release (決算短信) as posted on the company site, often in English |
+| `agm_convocation` | The AGM notice (招集ご通知) with the agenda and director slate |
+| `agm_resolution` | The notice of resolutions (決議ご通知) |
+| `agm_other` | Other AGM material: Q&A pages, electronic-provision links, responses to proxy advisers |
+| `schedule_notice` | The company announcing when it will report results or hold a briefing |
+| `webcast_link` | A results call or webcast entry with no document posted behind it |
+| `company_event` | Trade shows and product seminars |
+
+Any other `subtype` is the **website's own section** passed through as found — for example `press_release`, `earnings`, `filing`, `dividend` or `other`. `counts.by_subtype` lists the ones this company has, so you can see what exists before filtering.
+
+What a row is was decided from its **title**, not from the section of the website it was listed under; `site_type` keeps the section the site used. Transcripts and slides have their own endpoints: [Japan IR Transcripts](/international/japan-ir-transcripts) and [Japan IR Presentation Decks](/international/japan-ir-presentation-decks).
+
+## Japan IR website coverage
+
+Coverage is a fixed set of about 250 Japanese companies whose investor-relations websites are read continuously — not the whole market. `coverage.companies_covered` gives the current count; `coverage.available_from` and `available_to` give the date range for the company you asked about. History reaches the late 1990s where a site keeps an archive, and only recent years for most.
+
+<Warning>
+`company.in_ir_web_universe: false` means FocusAlpha does not read that company's investor-relations website. It never means the company published nothing.
+</Warning>
+
+The endpoint covers **Japanese companies only**: any other company returns `404`. If the website source cannot be read, the endpoint returns `503` rather than an empty list.
+
+## Key Japan IR website disclosure fields
+
+- `title` and `title_language` (`en` or `ja`) — as the site wrote it, untranslated.
+- `kind` is `ir_web_disclosure`; `subtype` is a named kind or the site's section.
+- `page_url` is the page the entry was found on; `media_urls` are the linked files.
+- `documents` — each linked document's `format` (`pdf` or `html`), `url` and `chars`. `has_text` says whether any text was extracted; about 30% of website rows have none, which means "not extracted", not "empty".
+
+The response also carries `company` (`company_id`, `ir_site_tickers`, `in_ir_web_universe`) and `counts`: `matched`, `in_this_tool`, `by_subtype`, `undated_excluded_by_date_filter` and `truncated_at_source`.
+
+## Japan IR website date convention
+
+Only a real calendar day becomes `date`; `date_status` is `date`, `datetime`, `period_label` (a fiscal period such as `2012-FY`, never turned into a day), `ambiguous` (such as `01/03/19`, not guessed), `invalid` or `missing`, and `date_as_written` keeps the original. Rows come newest first — dated rows, then period-labelled rows, then undated rows. `date_gte` and `date_lte` apply to `date` only, and rows without one are counted in `counts.undated_excluded_by_date_filter`. See [Japan IR Transcripts](/international/japan-ir-transcripts#japan-ir-website-date-convention) for the full table.
+
+Pass `include_text=true` to add each document's extracted `text`, capped at `max_chars`, with `text_truncated`. Take reported figures from [Japan Financials](/international/japan-financials), which reads the tagged values.
+
+## GET /v1/companies/\{company\}/jp/ir-web-disclosures
+
+<ParamField path="company" type="string" required>
+  Tokyo symbol (`6758.T` or `6758`), five-digit EDINET security code, EDINET filer code, ADR symbol (`SONY`), ISIN or `company_id` of a Japanese company.
+</ParamField>
+
+<ParamField query="subtype" type="string">
+  A named kind (`results_summary`, `agm_convocation`, `schedule_notice`, …) or the site's own section (`press_release`, `dividend`, …).
+</ParamField>
+
+<ParamField query="q" type="string">
+  Case-insensitive substring of the title, English or Japanese.
+</ParamField>
+
+<ParamField query="date_gte" type="string">
+  Earliest `date`, `YYYY-MM-DD`; `date_lte` sets the ceiling. Undated rows are excluded and counted.
+</ParamField>
+
+<ParamField query="include_text" type="string" default="false">
+  `true` adds each document's extracted text.
+</ParamField>
+
+<ParamField query="max_chars" type="integer" default="20000">
+  Text cap per document when `include_text=true`, between 1,000 and 200,000.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="50">
+  Rows per page, between 1 and 200. Defaults to 10 when `include_text=true`. Page through with `cursor`, passing back `next_cursor` unchanged.
+</ParamField>
+
+## Related datasets
+
+See also [Japan TDnet Disclosures](/international/disclosures-japan) for the exchange's timely-disclosure wire, [Japan EDINET Disclosures](/international/japan-edinet-disclosures) for the statutory per-resolution AGM vote count, and [Company Calendar](/companies/calendar) (`market=JP`) for upcoming dates.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/6758.T/jp/ir-web-disclosures?subtype=results_summary&limit=1" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "event_id": "df41b88c-d8de-4d5b-b704-1b2c883c2703",
+      "company_id": "cmp_007966",
+      "ticker": "SONY",
+      "date": "2026-07-31",
+      "datetime": null,
+      "period_label": null,
+      "date_status": "date",
+      "date_as_written": "2026-07-31",
+      "title": "Consolidated Financial Results for the First Quarter Ended June 30, 2026",
+      "title_language": "en",
+      "kind": "ir_web_disclosure",
+      "subtype": "results_summary",
+      "site_type": "filing",
+      "page_url": "https://www.sony.com/en/SonyInfo/IR/news/2026.html",
+      "media_urls": [
+        "https://www.sony.com/en/SonyInfo/IR/library/presen/er/archive.html"
+      ],
+      "has_text": true,
+      "documents": [
+        {
+          "format": "html",
+          "url": "https://www.sony.com/en/SonyInfo/IR/library/presen/er/archive.html",
+          "chars": 4110
+        }
+      ]
+    }
+  ],
+  "next_cursor": "WzFd",
+  "company": {
+    "company_id": "cmp_007966",
+    "ir_site_tickers": [
+      "SONY"
+    ],
+    "in_ir_web_universe": true
+  },
+  "counts": {
+    "matched": 4,
+    "in_this_tool": 149,
+    "by_subtype": {
+      "earnings": 91,
+      "filing": 21,
+      "webcast_link": 17,
+      "press_release": 7,
+      "results_summary": 4,
+      "agm_other": 3,
+      "other": 4,
+      "dividend": 1,
+      "company_event": 1
+    },
+    "undated_excluded_by_date_filter": 0,
+    "truncated_at_source": false
+  },
+  "coverage": {
+    "companies_covered": 247,
+    "available_from": "1998-07-29",
+    "available_to": "2026-09-03",
+    "update_frequency": "continuous crawl of each company IR site"
+  }
+}
+```
+
+</ResponseExample>

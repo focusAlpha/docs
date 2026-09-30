@@ -187,6 +187,11 @@ Tools map one-to-one onto the REST API. The model can also call `list_datasets` 
 | Taiwan datasets | `get_taiwan_financials`, `get_taiwan_monthly_revenue`, `get_taiwan_foreign_ownership` | Professional | [Taiwan financials](/international/taiwan-financials) |
 | Korea datasets | `get_korea_financials`, `get_korea_report_sections` | Professional | [Korea financials](/international/korea-dart-financials) |
 | Form 20-F | `get_adr_20f_notes`, `get_adr_20f_data` | Professional | [Form 20-F](/international/form-20f) |
+| Japan datasets | `get_japan_financials`, `get_japan_segments`, `get_japan_officers`, `get_japan_ownership`, `get_japan_report_sections` | All plans | [Japan financials](/international/japan-financials) |
+| Japan IR website | `get_japan_transcript`, `get_japan_presentation_deck`, `get_japan_ir_web_disclosure` | All plans | [Japan IR transcripts](/international/japan-ir-transcripts), [Japan decks](/international/japan-ir-presentation-decks), [Japan IR disclosures](/international/japan-ir-web-disclosures) |
+| Taiwan investor conferences, cash flow and ownership | `get_taiwan_earnings`, `get_taiwan_cashflow`, `get_taiwan_ownership` | All plans | [Taiwan investor conferences](/international/taiwan-investor-conferences) |
+| Hong Kong and mainland China financials | `get_hk_financials`, `get_china_financials`, `get_china_report_timing` | All plans | [Hong Kong financials](/international/hong-kong-financials), [China financials](/international/china-financials) |
+| US presentation decks | `get_us_presentation_deck` | All plans | [US presentation decks](/transcripts/us-presentation-decks) |
 | Company screener | `screen_companies` | Fund | [Company screening](/companies/screening) |
 | Adviser screener | `screen_institutions` | Fund | [Adviser screening](/advisers/screening) |
 | ETF screener | `screen_etfs` | Fund | [ETF screening](/etf/screening) |
@@ -199,7 +204,11 @@ Tools map one-to-one onto the REST API. The model can also call `list_datasets` 
 | Real-time guidance and changes | `get_guidance`, `get_guidance_changes` | Fund | [Guidance](/events/guidance), [Guidance changes](/events/guidance-changes) |
 | Real-time earnings result analysis | `get_8k_earnings_results` | Fund | [Earnings results](/events/earnings-results) |
 | Prediction-market consensus | `get_prediction_markets_quote`, `get_prediction_markets_consensus` | Fund | [Prediction markets](/events/prediction-markets), [Earnings consensus](/events/earnings-consensus) |
-| Real-time international disclosures | `get_international_disclosure` | Fund | [Global disclosures](/international/exchange-disclosures) |
+| Exchange disclosures, all markets | `get_company_disclosures` | All plans | [Global disclosures](/international/exchange-disclosures) |
+| Japan, Hong Kong and mainland China disclosures | `get_japan_disclosure`, `get_hong_kong_disclosure`, `get_mainland_china_disclosure` | All plans | [Japan EDINET](/international/japan-edinet-disclosures), [Hong Kong](/international/hong-kong-disclosures), [Mainland China](/international/china-disclosures) |
+| Company calendar | `get_company_calendar` | All plans | [Company calendar](/companies/calendar) |
+| 8-K company measures and segments | `get_8k_company_measures`, `get_8k_segments` | All plans | [Company measures](/events/8k-company-measures), [8-K segments](/events/8k-segments) |
+| Outside research | `get_research` | All plans | [Research](/events/research) |
 | VC investor search | `search_vc_investors` | Fund | [Venture investors](/advisers/venture-investors) |
 
 Datasets your plan does not include return a clear upgrade message rather than data — the model will tell you which tier a tool needs.

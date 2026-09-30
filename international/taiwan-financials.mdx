@@ -4,10 +4,10 @@ sidebarTitle: "Taiwan financials"
 description: "Quarterly income statements and balance sheets for TWSE and TPEx-listed companies, with both the cumulative filed figure and the single-quarter figure."
 ---
 
-Taiwan Financials provides quarterly financial statements for Taiwan-listed companies on TWSE and TPEx. Each observation is one statement for one fiscal season, in TWD thousands, as filed with the Taiwan exchanges. Coverage starts at 2024 Q1.
+Taiwan Financials provides quarterly financial statements for Taiwan-listed companies on TWSE and TPEx. Each observation is one statement for one fiscal season, in TWD thousands, as filed with the Taiwan exchanges. Coverage starts at 2013 Q1.
 
 <Info>
-  **Plan:** Professional and above · **Credits:** 1 per call
+  **Plan:** Free and above · **Credits:** 1 per call
 </Info>
 
 ## What You Can Use Taiwan Financials For
@@ -40,9 +40,20 @@ The `_q` fields — `revenue_q` and its siblings — are the **single quarter**.
 
 ## Income Rows and Balance Rows Are Different Shapes
 
-`statement` is `income` or `balance`. There is **no cash-flow statement** in this dataset.
+`statement` is `income` or `balance`. There is **no cash-flow statement** in this dataset: the summary tables it is built from print none, and no balance-sheet detail beyond total assets, total liabilities, total equity and share capital. Cash, inventories, PP&E, borrowings, net debt, capex, depreciation and free cash flow come from [Taiwan Cash Flow](/international/taiwan-cash-flow) instead. An empty answer here to a cash question means the wrong endpoint, not missing data.
 
 Balance-sheet rows are point-in-time: never cumulative and never derived. Their income columns are null, and income rows have null balance columns.
+
+## Line Items Come Back Only When You Ask
+
+By default the rows carry the statement **totals**. Pass `line_items=true` to add the detail the filing also prints: cost of revenue, operating expenses, the tax line, the current and non-current split, the equity components, and the loan and deposit lines that banks file instead of a classified balance sheet. Most of these are null for any one industry.
+
+An empty cost of revenue without `line_items=true` is the flag, not missing data.
+
+Two line items need care:
+
+- `gross_profit` is struck **after** the intercompany elimination lines. Revenue less cost of revenue reaches `gross_profit_before_elimination`.
+- Banks and financial holdings filed the income tax line with the **opposite sign** before 2018. Read `income_tax_basis` rather than subtracting the tax line blindly.
 
 ## Taiwan Financials Date Convention
 
@@ -52,13 +63,28 @@ Balance-sheet rows are point-in-time: never cumulative and never derived. Their 
 
 Amounts are **TWD thousands**. The response states `currency` and `unit` explicitly — read them rather than assuming a scale.
 
+<Warning>
+The per-share fields — `eps_basic_ytd`, `eps_basic_q` and `book_value_per_share` — are in **plain TWD per share**, not thousands. TSMC's `eps_basic_ytd` of `49.33` is NT$49.33. Applying `unit` to every number overstates EPS a thousandfold.
+</Warning>
+
+## The metrics Block
+
+Next to the rows, the response carries a `metrics` object: derived figures for the company's **latest** period, the same values [Company Screening](/screening/companies/by-fundamentals) filters and sorts on.
+
+- `period` and `grain` say which period the block describes. It does **not** follow the `year` or `season` you asked for.
+- `amounts` are in **whole TWD**, with `unit` of `ones` — a different scale from the rows beside them, which are in thousands.
+- `ratios` are **fractions**, so 0.2 means 20%, except `days_sales_outstanding` and `operating_cycle`, which are days.
+- `growth` holds year-on-year growth rates, also as fractions, and `flags` holds `is_lossmaking` and `equity_negative`.
+
+A null field in the block means the source does not publish what it needs, not zero: Taiwan publishes no receivables balance and no interest expense, so the fields built on them are null for every Taiwan company. `metrics` itself is null when no fundamentals are held for the company.
+
 ## Taiwan Financials Sources
 
 Statements are filed by the companies with the Taiwan exchanges. The `_ytd` values are as filed. The `_q` values are computed by FocusAlpha except in season 1, and `quarter_basis` says which case each row is.
 
-## Query Taiwan Financials
+## GET /v1/companies/\{company_id\}/tw/financials
 
-Use the Taiwan financials endpoint. It accepts a Taiwan security code such as `2330`, a suffixed ticker such as `2330.TW`, an ISIN or a `company_id` directly — there is no need to resolve the identifier first.
+Quarterly income statements and balance sheets, newest first. The route accepts a Taiwan security code such as `2330`, a suffixed ticker such as `2330.TW`, an ISIN or a `company_id` directly — there is no need to resolve the identifier first.
 
 <ParamField path="company_id" type="string" required>
   A Taiwan security code, a suffixed ticker, an ISIN or a `company_id`.
@@ -76,13 +102,21 @@ Use the Taiwan financials endpoint. It accepts a Taiwan security code such as `2
   TWSE season, 1 to 4.
 </ParamField>
 
+<ParamField query="line_items" type="boolean" default="false">
+  `true` adds the line-item detail described above.
+</ParamField>
+
+<ParamField query="cursor" type="string">
+  `next_cursor` from the previous page.
+</ParamField>
+
 <ParamField query="limit" type="integer" default="40">
-  Rows per page, between 1 and 1000. Page through with `cursor`.
+  Rows per page, between 1 and 1000.
 </ParamField>
 
 ## Related Datasets
 
-See also [Taiwan Monthly Revenue](/international/taiwan-monthly-revenue) for the monthly filing that leads these statements, [Taiwan Foreign Ownership](/international/taiwan-foreign-ownership), and [Company Registry](/companies/registry) for the identifiers.
+See also [Taiwan Cash Flow](/international/taiwan-cash-flow) for the cash-flow statement and balance-sheet detail, [Taiwan Monthly Revenue](/international/taiwan-monthly-revenue) for the monthly filing that leads these statements, [Taiwan Foreign Ownership](/international/taiwan-foreign-ownership), [Taiwan Ownership](/international/taiwan-ownership), and [Company Registry](/companies/registry) for the identifiers.
 
 <RequestExample>
 
@@ -121,17 +155,48 @@ curl "https://api.focusalpha.ai/v1/companies/2330/tw/financials?statement=income
       "net_income_q": "706780923.00",
       "eps_basic_q": "27.25",
       "quarter_basis": "derived_from_ytd",
-      "report_date": "2026-09-01"
+      "report_date": "2026-09-30"
     }
   ],
-  "next_cursor": null,
+  "next_cursor": "WzIwMjYsMiwiaW5jb21lIiwiMjMzMCJd",
   "currency": "TWD",
   "unit": "thousands",
+  "metrics": {
+    "period": "2025-12-31",
+    "grain": "annual",
+    "source": "taiwan_mops_ifrs",
+    "currency": "TWD",
+    "accounting_standard": "ifrs",
+    "filed_at": null,
+    "stale": false,
+    "unit": "ones",
+    "amounts": {
+      "revenue": 3809054272000,
+      "net_income": 1717882627000,
+      "free_cash_flow": 1002565096000,
+      "book_value_per_share": 208.99,
+      "receivables": null
+    },
+    "ratios": {
+      "gross_margin": 0.598913487730951,
+      "operating_margin": 0.508286713379756,
+      "return_on_equity": 0.353905572346055,
+      "interest_coverage": null
+    },
+    "growth": {
+      "revenue_growth_yoy": 0.31605021584818,
+      "earnings_growth_yoy": 0.464186410831425
+    },
+    "flags": {
+      "is_lossmaking": false,
+      "equity_negative": false
+    }
+  },
   "coverage": {
-    "available_from": "2024-03-31",
+    "available_from": "2013-03-31",
     "available_to": null,
     "update_frequency": "quarterly",
-    "history_status": "complete_from_2024q1"
+    "history_status": "complete_from_2013q1"
   }
 }
 ```

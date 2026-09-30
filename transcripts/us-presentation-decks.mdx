@@ -1,0 +1,167 @@
+---
+title: "US Presentation Decks"
+sidebarTitle: "US presentation decks"
+description: "The slides US companies showed at earnings calls, broker conferences and investor days, read from each company's investor-relations website."
+---
+
+US Presentation Decks are the slide decks a US company posts on its own investor-relations website: earnings-call presentations, broker-conference and investor-day decks, standing "Investor Presentation" decks, and the financial supplements posted alongside a results call. Each row is one document, with the event it was posted under, a link to the file, and — on request — its extracted text.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+A deck is at most an 8-K exhibit on the day of a call, and a broker-conference deck is usually filed nowhere, so the company's investor-relations website is often the only place these slides exist.
+
+## What you can use US presentation decks for
+
+Read the charts and KPIs management chose to show on a results call, next to what they [said on it](/transcripts/earnings-call-transcripts). Follow how a company pitches itself at broker conferences between earnings. Compare an investor-day deck with the targets in the company's later [guidance](/events/guidance). Pull the financial supplement a company posts with its results instead of rebuilding its tables.
+
+## What is and is not a deck
+
+A document is served here only when its **text** reads as a deck — the event title alone cannot tell, because one "Q2 Earnings Conference Call" page may carry the slides, the earnings release, the call notice and SEC filings together. Only the slides and the financial supplement are returned; releases, notices, transcripts and filings posted on the same page are not.
+
+The typing is not perfect: an audit of 60 rows found 51 real decks or supplements, with the rest being results tables, press releases, prepared remarks or a filing that passed the text rules. `classifier_version` on each row says which rule set typed it.
+
+## US presentation deck coverage
+
+Coverage is a fixed set of about 1,470 US companies whose investor-relations websites are read continuously — not the whole market. The response's `coverage.companies_covered` gives the current count. History is as deep as each site's own archive; `coverage.available_from` and `available_to` give the range for the company you asked about.
+
+<Warning>
+`company.in_ir_web_universe: false` means FocusAlpha does not read that company's investor-relations website. It never means the company posted no decks.
+</Warning>
+
+The endpoint covers **US companies only**. A non-US company returns `404`; for other markets see [Global Exchange Disclosures](/international/exchange-disclosures).
+
+## Key US presentation deck fields
+
+- `event_title` and `event_id` — the event the document was posted under; `page_url` is the page it was found on and `url` is the file itself. The same file can be posted under more than one event page, so two rows can share one `url`.
+- `call_type` — what kind of event the document came from, read from the event title: `earnings` (results calls), `conference` (broker conferences, fireside chats, investor days and analyst meetings) or `other` (a bare "Investor Presentation", deal or partnership calls).
+- `subtype` — `slides` (the presentation) or `financial_supplement` (supplemental tables or a fact book).
+- `format` — the file format, such as `pdf`. `chars` is the length of the extracted text.
+- `text` and `text_truncated` — present only when you pass `include_text=true`.
+
+The response also carries a `counts` block: `matched` for your filters, `in_this_tool` for all of this company's decks, and `by_subtype` / `by_call_type` breakdowns, so you can see what exists before filtering.
+
+## US presentation deck date convention
+
+Dates are the **event's**, as the website wrote them, and only a real calendar day becomes `date`. `date_status` says what the site gave:
+
+| `date_status` | Meaning |
+| --- | --- |
+| `date` / `datetime` | A real day (`datetime` also carries a time) |
+| `period_label` | A fiscal period such as `2019-H2`, kept in `period_label` and never turned into a day |
+| `ambiguous` | A day/month-ambiguous numeric date such as `01/03/19`, not guessed |
+| `invalid` / `missing` | No usable date |
+
+`date_as_written` keeps the original. Rows are returned newest first: dated rows, then rows with only a `period_label`, then undated rows.
+
+`date_gte` and `date_lte` apply to `date` only. Rows without one are dropped from a ranged answer and counted in `counts.undated_excluded_by_date_filter`, so a ranged result never silently means "of the dated ones".
+
+## US presentation deck text
+
+Pass `include_text=true` to add the extracted text of each deck, capped at `max_chars` per row. Text is extracted from the PDF, so slides read as fragments and tables lose their layout: quote it, but take reported figures from the [financial statements](/financials/income-statements) or [reported earnings figures](/events/earnings-results).
+
+## When a result looks short
+
+- `counts.pending_classification` greater than zero means some of this company's documents were just found and are not typed yet; they appear once typed.
+- `counts.truncated_at_source: true` means the company's archive was larger than one read returns.
+- A date range drops undated rows — check `counts.undated_excluded_by_date_filter`.
+
+## GET /v1/companies/\{company\}/us/ir-presentation-decks
+
+<ParamField path="company" type="string" required>
+  Ticker (`META`), `company_id` (`cmp_…`), CIK or ISIN of a US company.
+</ParamField>
+
+<ParamField query="call_type" type="string">
+  `earnings`, `conference` or `other`. Omit for all.
+</ParamField>
+
+<ParamField query="subtype" type="string">
+  `slides` or `financial_supplement`. Any other value returns `400`.
+</ParamField>
+
+<ParamField query="q" type="string">
+  Case-insensitive substring of the event title, e.g. `investor day`.
+</ParamField>
+
+<ParamField query="date_gte" type="string">
+  Earliest event date, `YYYY-MM-DD`; `date_lte` sets the ceiling. Undated rows are excluded and counted.
+</ParamField>
+
+<ParamField query="include_text" type="string" default="false">
+  `true` adds each deck's extracted text.
+</ParamField>
+
+<ParamField query="max_chars" type="integer" default="20000">
+  Text cap per row when `include_text=true`, between 1,000 and 200,000.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="50">
+  Rows per page, between 1 and 200. Defaults to 10 when `include_text=true`. Page through with `cursor`, passing back `next_cursor` unchanged.
+</ParamField>
+
+## Related datasets
+
+See also [Earnings Call Transcripts](/transcripts/earnings-call-transcripts) for what was said on the calls these decks accompanied, [Semantic Retrieval](/transcripts/semantic-retrieval) to search that text by meaning, [Company Calendar](/companies/calendar) for upcoming investor days and conference appearances, and [8-K Exhibits](/events/8k-exhibits) for the documents a company did furnish to the SEC.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/META/us/ir-presentation-decks?limit=1" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "document_id": "9338da01-e0b9-4002-a837-a32d496cc4fb",
+      "event_id": "0e603ad6-1e1f-4319-89ad-0bec156394dc",
+      "company_id": "cmp_005628",
+      "ticker": "META",
+      "date": "2026-07-29",
+      "datetime": null,
+      "period_label": null,
+      "date_status": "date",
+      "date_as_written": "2026-07-29",
+      "event_title": "Meta Reports Second Quarter 2026 Results",
+      "call_type": "earnings",
+      "subtype": "slides",
+      "site_type": "earnings",
+      "format": "pdf",
+      "url": "https://s21.q4cdn.com/399680738/files/doc_financials/2026/q2/Earnings-Presentation-Q2-2026.pdf",
+      "page_url": "https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-to-Announce-Second-Quarter-2026-Results/default.aspx",
+      "chars": 19848,
+      "classifier_version": 2
+    }
+  ],
+  "next_cursor": "WzFd",
+  "company": {
+    "company_id": "cmp_005628",
+    "ir_site_tickers": ["META"],
+    "in_ir_web_universe": true
+  },
+  "counts": {
+    "matched": 45,
+    "in_this_tool": 45,
+    "by_subtype": { "slides": 45 },
+    "by_call_type": { "earnings": 45 },
+    "undated_excluded_by_date_filter": 0,
+    "pending_classification": 0,
+    "truncated_at_source": false
+  },
+  "coverage": {
+    "companies_covered": 1468,
+    "available_from": "2016-07-27",
+    "available_to": "2026-07-29",
+    "update_frequency": "continuous crawl of each company IR site"
+  }
+}
+```
+
+</ResponseExample>
