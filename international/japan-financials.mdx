@@ -1,0 +1,210 @@
+---
+title: "Japan Financials"
+sidebarTitle: "Japan financials"
+description: "Financial facts for Japanese-listed companies as tagged in their EDINET annual and half-year reports and their TDnet earnings releases, plus a derived-metrics block for the latest period."
+---
+
+Japan Financials provides the financial facts a Japanese-listed company tagged in its own filings: the annual securities report (有価証券報告書) and half-year report (半期報告書) filed to EDINET, the Financial Services Agency's filing system, and the earnings release (決算短信) filed to TDnet, the Tokyo Stock Exchange's timely-disclosure network. Each row is one tagged fact for one period, with a link to the filing it came from. Every response also carries a `metrics` block with derived ratios for the company's latest period.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What you can use Japan financials for
+
+Read a Japanese company's accounts as it actually tagged them, including its five-year key-indicator table. Get a Japanese quarter, which since 2024 exists only in the TDnet earnings release. Trace any figure back to the original EDINET or TDnet document. Read the latest-period margins, returns and liquidity ratios without computing them yourself.
+
+## These are the filer's own facts, not a normalised statement
+
+<Warning>
+There is **no `revenue` field**. Which element is revenue differs by accounting standard and by filer: Toyota tags `SalesRevenuesIFRS`, Sony `NetSalesIFRS`, a Japanese-GAAP industrial `NetSales`, a bank `OrdinaryIncomeBNK`.
+
+**Match on `element_id`**, using the `element` parameter as a substring search. `label_ja` is the filer's own Japanese label and is not reliable to match on.
+</Warning>
+
+`element_id` keeps its namespace prefix, and the prefix tells you what you are holding:
+
+| Prefix | What it is |
+| --- | --- |
+| `jppfs_cor:` | Japanese-GAAP statements (consolidated or parent-only) |
+| `jpigp_cor:` | IFRS statements |
+| `jpcrp_cor:` | The annual report's own body: key indicators, cover page, headcounts, ratios |
+| `tse-ed-t:` | TDnet earnings-release facts |
+
+A company-specific prefix (for example `jpcrp030000-asr_E02144-000:`) marks an element the filer defined itself.
+
+## Two sources, and `source` says which
+
+- `edinet` — the statutory annual and half-year reports, plus quarterly reports filed before the quarterly report was abolished in 2024. EDINET has carried **no quarters since 2024**.
+- `tdnet` — the company's own earnings release. This is the only place a recent Japanese quarter exists.
+
+Both come back by default; pass `source` to keep one.
+
+<Warning>
+**TDnet values are cumulative from the start of the fiscal year**, not the quarter alone: a second-quarter release prints the first six months. `period_grain` says which (`3M`, `6M`, `9M` or `FY`) and is null on EDINET rows. Subtract two grains to get a single quarter, and never compare a `6M` figure with a `3M` one.
+</Warning>
+
+`report_period` maps to both sources: `annual` is the annual report or full-year release, `half` the half-year report or second-quarter release, and `quarterly` a pre-2024 quarterly report or a first- or third-quarter release.
+
+## Consolidated, parent-only and `other`
+
+`basis` follows the **taxonomy a fact was tagged in**, not the accounts it describes. Only the Japanese-GAAP statement taxonomy (`jppfs_cor:`) marks consolidated versus parent-only.
+
+<Warning>
+An IFRS filer tags its statements in `jpigp_cor:`, which carries no consolidation mark, so those rows come back with basis `other`. Filtering on `basis=consolidated` returns **nothing** for Sony's or Toyota's consolidated revenue. For an IFRS filer, read the `jpigp_cor:` elements, which are the consolidated accounts by construction; its `jppfs_cor:` rows are the parent-only ones.
+</Warning>
+
+On EDINET rows `basis` is returned as `Consolidated`, `NonConsolidated` or `Other`; on TDnet rows it is `consolidated` or `non_consolidated`. The filter parameter takes the lowercase form for both.
+
+The key indicators (経営指標等, `jpcrp_cor:…SummaryOfBusinessResults`) appear twice per year under the same `element_id`: the bare context (`context_id` such as `CurrentYearDuration`) is the consolidated figure, and `…_NonConsolidatedMember` is the parent-only one. A `context_id` ending in a `…ReportableSegmentMember` is that segment's figure, not the group's. Read `context_id` before taking a value.
+
+## Key Japan financial fields
+
+- `value_num` holds a numeric fact and `value_text` anything untagged as a number; there is no combined `value` column.
+- `unit` is the currency or unit of the row — usually `JPY`, but a filer can tag the same fact in more than one currency, so read it before comparing.
+- `rel_period` is the filing's own word for which period a fact belongs to: `当期` (current), `前期` (prior), up to `四期前` (four years back). One annual report carries five years of key indicators, so one call gives history. A duration and an instant use different words — `当期` is the year, `当期末` its closing date — and `is_point_in_time` says which kind a row is. TDnet rows use English values such as `current`.
+- `doc_id`, `doc_description`, `filed_on` and `filing_url` identify the source document. `accounting_standard` is set on TDnet rows.
+
+Japanese-GAAP `ResearchAndDevelopmentExpensesSGA` is already inside SG&A — a breakdown line, not an addition to it.
+
+## Amendments
+
+An amended report (訂正報告書) restates figures. By default you get the **corrected** value; pass `include_superseded=true` to see the original as well.
+
+## The metrics block
+
+Every response carries a top-level `metrics` object with derived figures for the company's **latest** period: liquidity (`current_ratio`, `quick_ratio`, `cash_ratio`, `operating_cash_flow_ratio`), efficiency, leverage and coverage, margins, returns and year-on-year growth. These are the same numbers the [company screen](/screening/companies/by-fundamentals) filters and sorts on.
+
+- `metrics.period` says which period it describes. It does **not** follow the `year`, `period_end` or `report_period` filters on the rows beside it.
+- `metrics.amounts` are in whole units of `metrics.currency` (`unit: "ones"`), which is not always the scale of the statement rows.
+- `metrics.ratios` are fractions (`0.2` = 20%), except `days_sales_outstanding` and `operating_cycle`, which are days.
+- A null field means the input is not published for this market; `metrics: null` means FocusAlpha holds no fundamentals for the company at all.
+
+## Japan financials coverage
+
+About 3,800 Japanese-listed companies. Every response carries a measured `coverage` block: `available_from` and `available_to` are the earliest and latest filing loaded, `companies_covered` is how many companies have facts, and `companies_tracked` is the Japanese universe they are measured against. Older years are still being added, so read `coverage.available_from` rather than assuming a start year. `history_status` reads `all_tracked_filers_loaded`, `backfill_in_progress_majority_loaded` or `largest_cap_first_backfill_in_progress`; while a backfill is in progress, a missing smaller company means not yet loaded, not not filed.
+
+There is **no forward guidance** here: EDINET filings carry no earnings forecast, and the forecast half of the earnings release is served by [Management Guidance](/events/guidance).
+
+## GET /v1/companies/\{company\}/jp/financials
+
+<ParamField path="company" type="string" required>
+  Tokyo symbol (`6758.T` or `6758`), five-digit EDINET security code (`67580`), EDINET filer code (`E01777`), ADR symbol (`SONY`), ISIN or `company_id`.
+</ParamField>
+
+<ParamField query="source" type="string" default="all">
+  `edinet`, `tdnet` or `all`.
+</ParamField>
+
+<ParamField query="report_period" type="string">
+  `annual`, `half` or `quarterly`.
+</ParamField>
+
+<ParamField query="basis" type="string">
+  `consolidated`, `non_consolidated` or `other`. `other` returns EDINET rows only.
+</ParamField>
+
+<ParamField query="element" type="string">
+  Substring of `element_id`, e.g. `NetSales`, `OperatingIncome`, `Assets`.
+</ParamField>
+
+<ParamField query="year" type="integer">
+  Calendar year of the period end, between 2000 and 2100.
+</ParamField>
+
+<ParamField query="period_end" type="string">
+  Exact period end, `YYYY-MM-DD`.
+</ParamField>
+
+<ParamField query="include_superseded" type="string" default="false">
+  `true` also returns figures a later amendment restated.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="200">
+  Rows per page, between 1 and 1000. Rows are ordered newest period first; page through with `cursor`, passing back `next_cursor` unchanged.
+</ParamField>
+
+## Related datasets
+
+See also [Japan Segments](/international/japan-segments) for the business-segment breakdown, [Japan Report Sections](/international/japan-report-sections) for the annual report's narrative, [Japan TDnet Disclosures](/international/disclosures-japan) for the earnings releases themselves, and [Management Guidance](/events/guidance) for Japanese forecasts.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/6758.T/jp/financials?source=edinet&report_period=annual&element=NetSalesIFRS&year=2026&limit=1" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "company_id": "cmp_007966",
+      "doc_id": "S100YE2C",
+      "source": "edinet",
+      "doc_type_code": "120",
+      "element_id": "jpigp_cor:NetSalesIFRS",
+      "label_ja": "売上高（IFRS）",
+      "basis": "Other",
+      "rel_period": "当期",
+      "period_start": "2025-04-01",
+      "period_end": "2026-03-31",
+      "period_grain": null,
+      "is_point_in_time": false,
+      "unit": "JPY",
+      "value_num": "12479620000000.0",
+      "value_text": null,
+      "filed_on": "2026-06-18",
+      "doc_description": "有価証券報告書－第109期(2025/04/01－2026/03/31)",
+      "filing_url": "https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100YE2C.pdf",
+      "accounting_standard": null,
+      "context_id": "CurrentYearDuration"
+    }
+  ],
+  "next_cursor": "WyIyMDI2LTAzLTMxIiwianBpZ3BfY29yOk5ldFNhbGVzSUZSUyIsIlMxMDBZRTJDIl0",
+  "coverage": {
+    "available_from": "2017-06-20",
+    "available_to": "2026-09-29",
+    "update_frequency": "daily",
+    "history_status": "all_tracked_filers_loaded",
+    "companies_covered": 3778,
+    "companies_tracked": 3791
+  },
+  "metrics": {
+    "period": "2026-03-31",
+    "grain": "annual",
+    "source": "japan_edinet",
+    "currency": "JPY",
+    "accounting_standard": "ifrs",
+    "filed_at": "2026-06-18",
+    "stale": false,
+    "unit": "ones",
+    "amounts": {
+      "revenue": 12479620000000,
+      "operating_income": 1447507000000,
+      "total_assets": 15683490000000,
+      "cash_and_equivalents": 2208879000000
+    },
+    "ratios": {
+      "gross_margin": 0.308053850998668,
+      "operating_margin": 0.115989669557246,
+      "current_ratio": 1.18228403314056,
+      "days_sales_outstanding": null
+    },
+    "growth": {
+      "revenue_growth_yoy": 0.036951064972031,
+      "operating_income_growth_yoy": 0.133845617580593
+    },
+    "flags": {
+      "is_lossmaking": true,
+      "equity_negative": false
+    }
+  }
+}
+```
+
+</ResponseExample>

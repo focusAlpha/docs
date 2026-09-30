@@ -1,50 +1,54 @@
 ---
 title: "Korea DART Report Sections"
 sidebarTitle: "Korea report sections"
-description: "Sections of a Korean company's DART periodic report: ownership filings, the shareholder register, share structure, investments in other companies, and debt."
+description: "The seven sections of a Korean company's DART periodic report served by the API — ownership filings, the shareholder register, share structure, dividends, investments, debt and executive pay — and the rules they share."
 ---
 
-Korea DART Report Sections serves the individual sections of a Korean company's DART periodic report. Each observation is one row of one section, filed to DART in Korean. Five sections are available, each addressed by name, and every row links back to the original DART document.
+Korea DART Report Sections serves individual sections of a Korean company's DART periodic report. Each observation is one row of one section, filed to DART in Korean. Seven sections are available, each at its own route under the company's `kr` path, and every row links back to the original DART document.
 
 <Info>
-  **Plan:** Professional and above · **Credits:** 1 per call
+  **Plan:** Free and above · **Credits:** 1 per call
 </Info>
 
-## What You Can Use Korea Report Sections For
+## The Seven Korea Report Sections
 
-Read a Korean company's shareholder register and insider filings. Track treasury shares and capital changes. See the stakes a company holds in other companies, with book value and the investee's own assets and net income. Build a debt maturity profile from bonds and commercial paper.
+Each section has its own page with fields, examples and caveats.
 
-## The Five Korea Report Sections
-
-`ownership` carries insider and 5%-holder filings. It is **event-based** rather than annual, so it is filtered with `date_gte` and `date_lte`, and its `kind` values are `insider` and `major_5pct`.
-
-`shareholders` is the annual register. `kind` values are `major`, `minority` and `major_change`.
-
-`share-structure` carries issued, treasury and outstanding shares. `kind` values are `total`, `treasury` and `capital_change`.
-
-`investments` carries stakes held in other companies, with book value and the investee's own assets and net income.
-
-`debt` carries bonds and commercial paper with maturity buckets. `kind` values are `corp_bond_issue`, `cp`, `corp_bond`, `short_bond`, `hybrid` and `contingent`.
+| Section | Route | `kind` values | Filtered by | Page |
+|---|---|---|---|---|
+| Ownership | `/kr/ownership` | `insider`, `major_5pct` | `date_gte`, `date_lte` | [Korea DART Shareholders](/international/korea-dart-shareholders) |
+| Shareholders | `/kr/shareholders` | `major`, `minority`, `major_change` | `year` | [Korea DART Shareholders](/international/korea-dart-shareholders) |
+| Share structure | `/kr/share-structure` | `total`, `treasury`, `capital_change` | `year` | [Korea DART Capital](/international/korea-dart-capital) |
+| Dividends | `/kr/dividends` | none | `year` | [Korea DART Capital](/international/korea-dart-capital) |
+| Investments | `/kr/investments` | none | `year` | [Korea DART Capital](/international/korea-dart-capital) |
+| Debt | `/kr/debt` | `corp_bond_issue`, `cp`, `corp_bond`, `short_bond`, `hybrid`, `contingent` | `year` | [Korea DART Capital](/international/korea-dart-capital) |
+| Executive compensation | `/kr/executive-compensation` | none | `year` | [Korea DART Executive Compensation](/international/korea-dart-executive-compensation) |
 
 ## Kind Is Not Decoration
 
 <Warning>
 The forms behind one section have **different reporting rules**, so rows of different kinds are not comparable and must not be summed together.
 
-Filter to one `kind` before aggregating anything.
+Filter to one `kind` before aggregating anything. On debt, `kind` matches the row's `debt_type` field. Passing `kind` to a section that has none returns `404`.
 </Warning>
 
 ## Some Rows Are the Filer's Own Subtotals
 
 <Warning>
-Some rows are the filer's **subtotal lines** — named 계 or 합계 — rather than individual entries.
+Some rows are the filer's **subtotal lines** — named 계, 합계 or 합 계 — rather than individual entries.
 
 Check for them before summing a section, or the total will be counted twice.
 </Warning>
 
 ## Korea Report Sections Date Convention
 
-`year` applies to every section **except** `ownership`, which is dated rather than annual and takes `date_gte` and `date_lte` instead.
+`year` applies to every section **except** `ownership`, which is dated rather than annual and takes `date_gte` and `date_lte` instead. The other six sections reject `date_gte` and `date_lte` with `400`.
+
+Rows from the periodic report carry `bsns_year` and `report_period`, which is `annual`, `half`, `q1` or `q3`. There is no `report_period` filter on the section routes, so read it on each row.
+
+## Korea Report Sections Paging
+
+Rows are returned newest filing first. Pass `next_cursor` back as `cursor` to get the next page. Rows of different kinds can share a position inside one filing, so a page boundary can drop rows when you page through several kinds together. Filter to one `kind`, or ask for a `limit` large enough to take the whole table in one page.
 
 ## Korea Report Sections Language and Sourcing
 
@@ -52,29 +56,15 @@ Text fields are the filing's own Korean and are not translated.
 
 Every row carries `filing_url`, the original DART document the figure came from. Cite that when quoting a number.
 
+## Korea Report Sections Coverage
+
+<Warning>
+Coverage is 2022 onward and is still backfilling, newest year and largest cap first. A missing older year for a small company means **not yet loaded**, not not filed.
+</Warning>
+
 ## Query Korea Report Sections
 
-Use the Korea section endpoints. Each section is its own route under the company's `kr` path. The endpoints accept a Korean corp code, a suffixed ticker, an ISIN or a `company_id` directly.
-
-<ParamField path="company_id" type="string" required>
-  A Korean DART corp code, a suffixed ticker such as `005930.KS`, an ISIN or a `company_id`.
-</ParamField>
-
-<ParamField query="kind" type="string">
-  The section's own row kind, as listed above. Not accepted on `investments`.
-</ParamField>
-
-<ParamField query="year" type="integer">
-  Report year. Accepted on every section except `ownership`.
-</ParamField>
-
-<ParamField query="date_gte" type="string">
-  Earliest report date, `YYYY-MM-DD`. `date_lte` sets the ceiling. **`ownership` only** — it is the one dated section.
-</ParamField>
-
-<ParamField query="limit" type="integer">
-  Rows per page, between 1 and 1000. Page through with `cursor`.
-</ParamField>
+Every section route accepts a Korean DART corp code (8 digits), a suffixed ticker such as `005930.KS`, an ISIN or a `company_id` in the path. `cursor` and `limit` (1 to 1000, default 100) work on every section. See each section's page for its full parameter list.
 
 ## Related Datasets
 

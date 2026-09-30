@@ -1,0 +1,120 @@
+---
+title: "Korea DART Executive Compensation"
+sidebarTitle: "Korea executive pay"
+description: "What each named executive of a Korean-listed company was paid, as disclosed in its DART periodic report: person, title and total remuneration in KRW."
+---
+
+Korea DART Executive Compensation serves the individual pay disclosure from a Korean company's DART periodic report. Each observation is one named person in one report, with their title and total remuneration in KRW. Coverage runs from 2022 onward, and every row links back to the original DART document.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Korea Executive Compensation For
+
+See who the highest-paid people at a Korean company are and what they were paid. Follow one executive's pay across years. Compare the pay of a company's representative directors against its results in [Korea DART Financials](/international/korea-dart-financials).
+
+## Only Individuals Above the Disclosure Threshold Appear
+
+Korean filers disclose pay individually only for people who cross the regulator's disclosure threshold. When nobody crosses it, the filer prints an empty table. Rows with no person and no amount are **not returned**, so an empty result for a year means the filer named nobody, not that pay was zero.
+
+## Key Korea Executive Compensation Fields
+
+`person_name` is the individual. `position` is their title as printed in the filing, in Korean and not translated, and can include line breaks and a former title — for example `부회장\n(前대표이사)`, vice chairman and former representative director. Former executives such as advisers (고문) also appear.
+
+`total_compensation` is the total remuneration for the period, in the row's `currency`, which is KRW. It arrives as a string, exactly as filed.
+
+Every row carries `rcept_no`, the DART receipt number, and `filing_url`, the original DART document. Cite that when quoting a number.
+
+## Korea Executive Compensation Date Convention
+
+`bsns_year` is the business year and `report_period` is `annual`, `half`, `q1` or `q3`. Filter with `year`. There is no `report_period` filter, so read it on each row, and do not compare a half-year figure against a full year.
+
+The endpoint does not accept `date_gte` or `date_lte`, and it has no `kind`.
+
+Rows are returned newest filing first.
+
+## Korea Executive Compensation Coverage
+
+<Warning>
+Coverage is 2022 onward and is still backfilling, newest year and largest cap first. A missing older year for a small company means **not yet loaded**, not not filed.
+</Warning>
+
+## GET /v1/companies/\{company_id\}/kr/executive-compensation
+
+Named-executive pay, newest filing first.
+
+<ParamField path="company_id" type="string" required>
+  A Korean DART corp code (8 digits), a suffixed ticker such as `005930.KS`, an ISIN or a `company_id`.
+</ParamField>
+
+<ParamField query="year" type="integer">
+  Business year.
+</ParamField>
+
+<ParamField query="cursor" type="string">
+  `next_cursor` from the previous page.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Rows per page, between 1 and 1000.
+</ParamField>
+
+## Related Datasets
+
+See also [Korea DART Shareholders](/international/korea-dart-shareholders) for executives' own shareholdings, [Korea DART Capital](/international/korea-dart-capital), [Korea DART Report Sections](/international/korea-dart-report-sections) for the rules every section shares, and [Executive Compensation](/ownership/executive-compensation) for US proxy-statement pay.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/005930.KS/kr/executive-compensation?year=2025" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "company_id": "cmp_007386",
+      "corp_code": "00126380",
+      "bsns_year": 2025,
+      "reprt_code": "11011",
+      "seq": 3,
+      "rcept_no": "20260310002820",
+      "person_name": "한종희",
+      "position": "부회장\n(前대표이사)",
+      "total_compensation": "13407000000.0",
+      "currency": "KRW",
+      "filing_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820",
+      "report_period": "annual"
+    },
+    {
+      "company_id": "cmp_007386",
+      "corp_code": "00126380",
+      "bsns_year": 2025,
+      "reprt_code": "11011",
+      "seq": 2,
+      "rcept_no": "20260310002820",
+      "person_name": "노태문",
+      "position": "대표이사",
+      "total_compensation": "6125000000.0",
+      "currency": "KRW",
+      "filing_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820",
+      "report_period": "annual"
+    }
+  ],
+  "next_cursor": null,
+  "coverage": {
+    "available_from": "2022",
+    "available_to": null,
+    "update_frequency": "daily",
+    "history_status": "backfill_in_progress"
+  }
+}
+```
+
+</ResponseExample>

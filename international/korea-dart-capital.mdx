@@ -1,0 +1,410 @@
+---
+title: "Korea DART Capital"
+sidebarTitle: "Korea capital and debt"
+description: "A Korean company's capital as printed in its DART periodic report: share structure and treasury shares, the dividend table, stakes in other companies, and bonds with maturity buckets."
+---
+
+Korea DART Capital covers four sections of a Korean company's DART periodic report: share structure, dividends, investments in other companies, and debt. Each has its own endpoint under the company's `kr` path. Each row is one line of one table in one report, in the filing's own Korean, and every row links back to the original DART document. Coverage runs from 2022 onward.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Korea Capital For
+
+Track issued, treasury and outstanding shares, and the buybacks and cancellations that move them. Read the dividend per share, payout ratio and yield a company reported for the year. List the stakes a company holds in other companies, with book value and each investee's own assets and net income. Build a debt maturity profile from bonds and commercial paper.
+
+## Share Structure
+
+`/kr/share-structure` has three kinds.
+
+`total` is the share count table. `category` names the row: 보통주 for common, 우선주 for preferred, 합계 for the total, and 비고 for the notes line. Each row carries `authorized_shares`, `cumulative_issued_shares`, `cumulative_reduced_shares` and its breakdown, `issued_shares`, `treasury_shares` and `shares_outstanding`.
+
+`treasury` is treasury-share movement for the period: `beginning_treasury_shares`, `treasury_acquired`, `treasury_disposed`, `treasury_retired` and `ending_treasury_shares`, per `stock_class`.
+
+`capital_change` lists changes to share capital, with `change_date`, `change_method`, `change_stock_class`, `change_shares`, `par_value` and `issue_or_reduction_price`. A row of `-` values means the filer reported no change.
+
+<Warning>
+The treasury table prints detail, subtotal and total lines, and **no field on the row says which line it is**. The same ending balance repeats on several rows, so summing `ending_treasury_shares` counts it more than once.
+
+For the treasury count, read `treasury_shares` on the `total` rows instead.
+</Warning>
+
+## Dividends Are a Table of Items, Not a Calendar
+
+`/kr/dividends` is the annual dividend table from the periodic report. Each row is **one line item**, named in Korean in `item_ko`: cash dividend per share, dividend yield, payout ratio, total cash dividends, net income, earnings per share and par value.
+
+It has **no ex-dividend date and no payment date**. It is not a dividend calendar.
+
+`share_class` separates common (보통주) and preferred (우선주) where the item is per share. It is `-` for company-level items.
+
+## The Dividend Unit Is Written Inside the Item Name
+
+<Warning>
+The scale of each figure is part of the Korean item name: 원 for won, 백만원 for millions of won, % for percent, and 주 for shares.
+
+Read `unit` and `unit_multiplier` on every row. `unit` is the kind of figure, for example `KRW`, `pct` or `shares`. `unit_multiplier` is the scale: a row with `unit_multiplier` of `1000000` is stated in millions of won. `value_num` is the figure as filed, **before** that multiplier. Reading a millions-of-won total as won is an error of six orders of magnitude.
+</Warning>
+
+`value_num` is the figure as a number. `value_text` keeps it exactly as printed, including `-` for an item the filer left blank, in which case `value_num` is null. `value_prior_num` is the prior period's figure from the same table.
+
+## Investments in Other Companies
+
+`/kr/investments` lists the stakes the company holds in other companies. Each row names the `investee_name` and `investment_purpose`, with `initial_acquisition_date` and `initial_acquisition_amount`, holdings at the start and end of the period in `beginning_shares`, `beginning_pct`, `beginning_book_value`, `ending_shares`, `ending_pct` and `ending_book_value`, the movement in `period_shares_change`, `acquisition_disposal_amount` and `valuation_gain_loss`, and the investee's own `investee_total_assets` and `investee_net_income`.
+
+This section has no `kind`. Passing `kind` returns `404`.
+
+## Debt
+
+`/kr/debt` covers bonds and commercial paper. The `kind` parameter filters on the row's **`debt_type`** field.
+
+`corp_bond_issue` is the issuance ledger. Each row is one issue, with `security_type`, `issuer`, `issue_date`, `maturity_date`, `face_value_total`, `interest_rate`, `rating_agency`, `repayment_status`, `issue_method` and `lead_manager`. Dates and rates are text as filed, such as `1997.10.02` and `7.70%`.
+
+`cp`, `short_bond`, `corp_bond`, `hybrid` and `contingent` are outstanding-balance tables: commercial paper, short-term bonds, corporate bonds, hybrid securities and contingent convertible securities. Each carries `total_outstanding`, `issue_limit` and `remaining_limit` where the table has them, and the balance split into maturity buckets such as `maturity_under_1_year`, `maturity_1_to_2_years` and `maturity_over_10_years`.
+
+<Warning>
+Different debt tables use **different bucket sets**, and some buckets overlap: `maturity_1_to_5_years` and `maturity_over_3_years` sit alongside the single-year buckets. Never add every bucket column together.
+
+A balance table can also print both its component rows and their total. Check that the rows of one `debt_type` reconcile before summing them.
+</Warning>
+
+## Filter to One Kind Before Summing
+
+<Warning>
+The tables behind one section follow different reporting rules, so rows of different kinds must not be summed together. Filter to one `kind` first.
+
+Some rows are the filer's own **subtotal lines**, named 계, 합계 or 합 계. For example, the investments table ends in a 합계 row and the bond issuance ledger in a 합 계 row. Drop them before adding up a table.
+</Warning>
+
+## Key Korea Capital Fields
+
+Amounts are in KRW, except in the dividend table, where `unit_multiplier` sets the scale. Share counts are counts. Percentages are on a **0-to-100 scale**. Numbers arrive as strings, exactly as filed.
+
+Every row carries `rcept_no`, the DART receipt number, and `filing_url`, the original DART document. Cite that when quoting a number.
+
+## Korea Capital Date Convention
+
+Rows carry `bsns_year`, the business year, and `report_period`, which is `annual`, `half`, `q1` or `q3`. `settlement_date` is the balance date the table describes. Filter with `year`. There is no `report_period` filter, so read it on each row.
+
+These endpoints do not accept `date_gte` or `date_lte`; passing them returns `400`.
+
+Rows are returned newest filing first.
+
+## Korea Capital Coverage
+
+<Warning>
+Coverage is 2022 onward and is still backfilling, newest year and largest cap first. A missing older year for a small company means **not yet loaded**, not not filed.
+</Warning>
+
+## Page Through One Kind at a Time
+
+Pass `next_cursor` back as `cursor` to get the next page. Rows of different kinds can share a position inside one filing, so a page boundary can drop rows when you page through several kinds together. Filter to one `kind`, or ask for a `limit` large enough to take a year's table in one page.
+
+## GET /v1/companies/\{company_id\}/kr/share-structure
+
+Share count, treasury-share and capital-change tables, newest filing first.
+
+<ParamField path="company_id" type="string" required>
+  A Korean DART corp code (8 digits), a suffixed ticker such as `005930.KS`, an ISIN or a `company_id`.
+</ParamField>
+
+<ParamField query="kind" type="string">
+  `total`, `treasury` or `capital_change`. All three by default.
+</ParamField>
+
+<ParamField query="year" type="integer">
+  Business year.
+</ParamField>
+
+<ParamField query="cursor" type="string">
+  `next_cursor` from the previous page.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Rows per page, between 1 and 1000.
+</ParamField>
+
+## GET /v1/companies/\{company_id\}/kr/dividends
+
+The dividend table, one row per line item, newest filing first.
+
+<ParamField path="company_id" type="string" required>
+  A Korean DART corp code (8 digits), a suffixed ticker such as `005930.KS`, an ISIN or a `company_id`.
+</ParamField>
+
+<ParamField query="year" type="integer">
+  Business year.
+</ParamField>
+
+<ParamField query="cursor" type="string">
+  `next_cursor` from the previous page.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Rows per page, between 1 and 1000.
+</ParamField>
+
+## GET /v1/companies/\{company_id\}/kr/investments
+
+Stakes held in other companies, newest filing first.
+
+<ParamField path="company_id" type="string" required>
+  A Korean DART corp code (8 digits), a suffixed ticker such as `005930.KS`, an ISIN or a `company_id`.
+</ParamField>
+
+<ParamField query="year" type="integer">
+  Business year.
+</ParamField>
+
+<ParamField query="cursor" type="string">
+  `next_cursor` from the previous page.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Rows per page, between 1 and 1000.
+</ParamField>
+
+## GET /v1/companies/\{company_id\}/kr/debt
+
+The bond issuance ledger and outstanding-balance tables, newest filing first.
+
+<ParamField path="company_id" type="string" required>
+  A Korean DART corp code (8 digits), a suffixed ticker such as `005930.KS`, an ISIN or a `company_id`.
+</ParamField>
+
+<ParamField query="kind" type="string">
+  `corp_bond_issue`, `cp`, `corp_bond`, `short_bond`, `hybrid` or `contingent`. Matches the row's `debt_type`. All six by default.
+</ParamField>
+
+<ParamField query="year" type="integer">
+  Business year.
+</ParamField>
+
+<ParamField query="cursor" type="string">
+  `next_cursor` from the previous page.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Rows per page, between 1 and 1000.
+</ParamField>
+
+## Related Datasets
+
+See also [Korea DART Shareholders](/international/korea-dart-shareholders) for who owns the company, [Korea DART Executive Compensation](/international/korea-dart-executive-compensation), [Korea DART Financials](/international/korea-dart-financials) for the accounts, and [Korea DART Report Sections](/international/korea-dart-report-sections) for the rules every section shares.
+
+<RequestExample>
+
+```bash Dividends
+curl "https://api.focusalpha.ai/v1/companies/005930.KS/kr/dividends?year=2025" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```bash Share structure
+curl "https://api.focusalpha.ai/v1/companies/005930.KS/kr/share-structure?kind=total&year=2025" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```bash Investments
+curl "https://api.focusalpha.ai/v1/companies/005930.KS/kr/investments?year=2025" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```bash Debt
+curl "https://api.focusalpha.ai/v1/companies/005930.KS/kr/debt?kind=corp_bond_issue&year=2025" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Dividends
+{
+  "data": [
+    {
+      "company_id": "cmp_007386",
+      "corp_code": "00126380",
+      "bsns_year": 2025,
+      "reprt_code": "11011",
+      "seq": 11,
+      "rcept_no": "20260310002820",
+      "item_ko": "주당 현금배당금(원)",
+      "share_class": "보통주",
+      "unit": "KRW",
+      "unit_multiplier": 1,
+      "value_num": "1668",
+      "value_text": "1,668",
+      "value_prior_num": "1446",
+      "filing_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820",
+      "report_period": "annual"
+    },
+    {
+      "company_id": "cmp_007386",
+      "corp_code": "00126380",
+      "bsns_year": 2025,
+      "reprt_code": "11011",
+      "seq": 4,
+      "rcept_no": "20260310002820",
+      "item_ko": "현금배당금총액(백만원)",
+      "share_class": "-",
+      "unit": "KRW",
+      "unit_multiplier": 1000000,
+      "value_num": "11107906",
+      "value_text": "11,107,906",
+      "value_prior_num": "9810767",
+      "filing_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820",
+      "report_period": "annual"
+    }
+  ],
+  "next_cursor": null,
+  "coverage": {
+    "available_from": "2022",
+    "available_to": null,
+    "update_frequency": "daily",
+    "history_status": "backfill_in_progress"
+  }
+}
+```
+
+```json Share structure
+{
+  "data": [
+    {
+      "company_id": "cmp_007386",
+      "corp_code": "00126380",
+      "bsns_year": 2025,
+      "reprt_code": "11011",
+      "kind": "total",
+      "seq": 0,
+      "corp_name": "삼성전자",
+      "rcept_no": "20260310002820",
+      "category": "보통주",
+      "stock_class": null,
+      "change_stock_class": null,
+      "authorized_shares": "20000000000",
+      "cumulative_issued_shares": "7780466850",
+      "cumulative_reduced_shares": "1860828928",
+      "capital_reduction_shares": null,
+      "retired_from_profit_shares": "1860828928",
+      "redeemed_shares": null,
+      "other_reduced_shares": null,
+      "issued_shares": "5919637922",
+      "treasury_shares": "91828987",
+      "shares_outstanding": "5827808935",
+      "change_date": null,
+      "change_method": null,
+      "change_shares": null,
+      "par_value": null,
+      "issue_or_reduction_price": null,
+      "beginning_treasury_shares": null,
+      "treasury_acquired": null,
+      "treasury_disposed": null,
+      "treasury_retired": null,
+      "ending_treasury_shares": null,
+      "settlement_date": "2025-12-31",
+      "remarks": null,
+      "filing_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820",
+      "report_period": "annual"
+    }
+  ],
+  "next_cursor": null,
+  "coverage": {
+    "available_from": "2022",
+    "available_to": null,
+    "update_frequency": "daily",
+    "history_status": "backfill_in_progress"
+  }
+}
+```
+
+```json Investments
+{
+  "data": [
+    {
+      "company_id": "cmp_007386",
+      "corp_code": "00126380",
+      "bsns_year": 2025,
+      "reprt_code": "11011",
+      "seq": 131,
+      "corp_name": "삼성전자",
+      "rcept_no": "20260310002820",
+      "investee_name": "SAPL",
+      "investment_purpose": "경영참여",
+      "initial_acquisition_date": "2006.07.01",
+      "initial_acquisition_amount": "793000000",
+      "beginning_shares": "877133000",
+      "beginning_pct": "100.0",
+      "beginning_book_value": "981483000000",
+      "period_shares_change": null,
+      "acquisition_disposal_amount": null,
+      "valuation_gain_loss": null,
+      "ending_shares": "877133000",
+      "ending_pct": "100.0",
+      "ending_book_value": "981483000000",
+      "investee_total_assets": "35742415000000",
+      "investee_net_income": "5296559000000",
+      "settlement_date": "2025-12-31",
+      "filing_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820",
+      "report_period": "annual"
+    }
+  ],
+  "next_cursor": "20260310002820:131",
+  "coverage": {
+    "available_from": "2022",
+    "available_to": null,
+    "update_frequency": "daily",
+    "history_status": "backfill_in_progress"
+  }
+}
+```
+
+```json Debt
+{
+  "data": [
+    {
+      "company_id": "cmp_007386",
+      "corp_code": "00126380",
+      "bsns_year": 2025,
+      "reprt_code": "11011",
+      "debt_type": "corp_bond_issue",
+      "seq": 0,
+      "corp_name": "삼성전자",
+      "rcept_no": "20260310002820",
+      "security_type": "회사채",
+      "issuer": "삼성전자㈜",
+      "issue_date": "1997.10.02",
+      "maturity_date": "2027.10.01",
+      "face_value_total": "143490000000",
+      "interest_rate": "7.70%",
+      "rating_agency": "AA-(S&P), \nAa2(Moody's)",
+      "repayment_status": "일부상환",
+      "issue_method": "공모",
+      "lead_manager": "Goldman\nSachs 등",
+      "total_outstanding": null,
+      "issue_limit": null,
+      "remaining_limit": null,
+      "maturity_under_1_year": null,
+      "maturity_1_to_2_years": null,
+      "maturity_2_to_3_years": null,
+      "maturity_3_to_4_years": null,
+      "maturity_4_to_5_years": null,
+      "maturity_1_to_5_years": null,
+      "maturity_5_to_10_years": null,
+      "maturity_over_10_years": null,
+      "maturity_over_3_years": null,
+      "settlement_date": "2025-12-31",
+      "filing_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820",
+      "report_period": "annual"
+    }
+  ],
+  "next_cursor": null,
+  "coverage": {
+    "available_from": "2022",
+    "available_to": null,
+    "update_frequency": "daily",
+    "history_status": "backfill_in_progress"
+  }
+}
+```
+
+</ResponseExample>

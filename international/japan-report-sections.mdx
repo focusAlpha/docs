@@ -1,0 +1,114 @@
+---
+title: "Japan Report Sections"
+sidebarTitle: "Japan report sections"
+description: "The narrative sections of Japanese annual and half-year reports filed to EDINET — MD&A, risk factors, strategy, governance — as full Japanese text."
+---
+
+Japan Report Sections provides the narrative sections of a Japanese-listed company's annual securities report (有価証券報告書) and half-year report, as filed to EDINET. This is where management explains the year, and for most Japanese companies it exists in no other machine-readable form. Each row is one section of one report, with its length and, unless you ask for the index only, its full text.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What you can use Japan report sections for
+
+Read the MD&A, including the operating-profit bridge management describes in prose. Compare this year's risk factors with last year's. Pull the strategy section to see which problems management says it must solve. Read the cross-shareholding disclosure, a live governance issue in Japan.
+
+## Sections worth knowing
+
+Pass any of these as a substring to `section`:
+
+| `section` | What it is |
+| --- | --- |
+| `ManagementAnalysis` | MD&A (経営者による財政状態、経営成績及びキャッシュ・フローの状況の分析) — tens of thousands of characters for a large filer |
+| `BusinessRisks` | Risk factors (事業等のリスク), the counterpart of 10-K Item 1A |
+| `BusinessPolicy` | Strategy and issues to address (経営方針、経営環境及び対処すべき課題等) |
+| `CorporateGovernance` | Corporate governance |
+| `InformationAboutOfficers` | Officers (役員の状況) |
+| `Audits` | Audit (監査の状況) |
+| `Sustainability` | Sustainability |
+| `CompanyHistory` | Company history (沿革) |
+| `InformationAboutEmployees` | Employees |
+| `NotesSignificantEventsAfterReportingPeriod` | Subsequent events (重要な後発事象) |
+| `ShareholdingsTextBlock` | Shareholdings, including cross-shareholdings (株式の保有状況) |
+
+The `section` field on each row is the full element name, for example `BusinessRisksTextBlock`, and `label_ja` is the Japanese heading.
+
+## The text is Japanese and has no line breaks
+
+<Warning>
+The text is **Japanese and not translated**. It is clean plain text with no markup, but it has **no line breaks**: the filing's tables are flattened into one run of characters, so figures inside a section run together with no separator. Read it as prose, and take every number from [Japan Financials](/international/japan-financials) or [Japan Segments](/international/japan-segments), which read the tagged values.
+</Warning>
+
+Use `index_only=true` to list the sections a filing has, with `n_chars` for each, before pulling a large body.
+
+## Japan report sections coverage
+
+Sections come from annual and half-year reports only, so a period with no loaded report has none. Rows are ordered newest report first, longest section first. These results are not paged — `next_cursor` is always null — so select a report with `period_end` and a section with `section`. Every response carries a measured `coverage` block.
+
+## GET /v1/companies/\{company\}/jp/report-sections
+
+<ParamField path="company" type="string" required>
+  Tokyo symbol (`6758.T` or `6758`), five-digit EDINET security code, EDINET filer code, ADR symbol (`SONY`), ISIN or `company_id`.
+</ParamField>
+
+<ParamField query="section" type="string">
+  Substring of the section's element name, e.g. `BusinessRisks` or `ManagementAnalysis` — not the Japanese heading.
+</ParamField>
+
+<ParamField query="period_end" type="string">
+  Exact fiscal period end of the report, `YYYY-MM-DD`.
+</ParamField>
+
+<ParamField query="index_only" type="string" default="false">
+  `true` lists sections with character counts only, no body text.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="20">
+  Maximum rows, between 1 and 100.
+</ParamField>
+
+## Related datasets
+
+See also [Japan Financials](/international/japan-financials) for the tagged figures, [Japan Officers](/international/japan-officers) for the officer roster as structured rows, and [Korea DART Report Sections](/international/korea-dart-report-sections) for the Korean equivalent.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/6758.T/jp/report-sections?section=BusinessRisks&limit=1" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "company_id": "cmp_007966",
+      "doc_id": "S100YE2C",
+      "doc_type_code": "120",
+      "section": "BusinessRisksTextBlock",
+      "label_ja": "事業等のリスク [テキストブロック]",
+      "n_chars": 20693,
+      "period_end": "2026-03-31",
+      "filed_on": "2026-06-18",
+      "filing_url": "https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100YE2C.pdf",
+      "text": "３【事業等のリスク】　有価証券報告書に記載した事業の状況、経理の状況等に関する事項のうち、投資者の判断に重要な影響を及ぼす可能性のある事項には、以下のようなものがあると考えています。…"
+    }
+  ],
+  "next_cursor": null,
+  "coverage": {
+    "available_from": "2017-06-20",
+    "available_to": "2026-09-29",
+    "update_frequency": "annual",
+    "history_status": "all_tracked_filers_loaded",
+    "companies_covered": 3778,
+    "companies_tracked": 3791
+  }
+}
+```
+
+</ResponseExample>

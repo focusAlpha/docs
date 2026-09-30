@@ -4,10 +4,10 @@ sidebarTitle: "Taiwan monthly revenue"
 description: "Monthly revenue filed by every Taiwan-listed company about ten days after month end, with month-on-month, year-on-year and year-to-date figures."
 ---
 
-Taiwan Monthly Revenue provides the monthly revenue every Taiwan-listed company files. Each observation is one month for one company, in TWD thousands, with month-on-month and year-on-year percentages and the year-to-date cumulative. History runs from 2013-01.
+Taiwan Monthly Revenue provides the monthly revenue every Taiwan-listed company files. Each observation is one month for one company, in TWD thousands, with month-on-month and year-on-year percentages and the year-to-date cumulative. History runs from 2001-06.
 
 <Info>
-  **Plan:** Professional and above · **Credits:** 1 per call
+  **Plan:** Free and above · **Credits:** 1 per call
 </Info>
 
 This is Taiwan's distinctive disclosure: every listed company files revenue every month, roughly ten days after month end — years before the equivalent is known in most other markets.
@@ -28,6 +28,14 @@ The two therefore do not reconcile exactly, and a difference between them is the
 
 `revenue` is the month's revenue. The month-on-month and year-on-year percentages are on a **0-to-100 scale**, not as fractions. The year-to-date field is the cumulative figure for the fiscal year so far.
 
+## Before 2013 the Year-to-Date Resets in the Company's Own Fiscal Year
+
+<Warning>
+Before 2013, `revenue_ytd` accumulates over each company's own **fiscal** year, not the calendar year. Taiwan allowed non-calendar fiscal years until the 2013 IFRS transition, so the month the cumulative resets differs by company, and a January row is not necessarily the first month of its cumulative.
+</Warning>
+
+The emerging board (`market` of `emerging`) also changes at the source: 186 emerging-board companies filed monthly revenue for 2012-12 and 33 for 2013-01. That is a real change, not a gap, so an emerging-board aggregate is not comparable across that boundary.
+
 ## Taiwan Monthly Revenue Date Convention
 
 Rows are keyed by month and returned newest month first. `month_gte` and `month_lte` take `YYYY-MM`.
@@ -42,9 +50,9 @@ Amounts are **TWD thousands**.
 
 Figures are filed by the companies themselves under the Taiwan monthly revenue disclosure requirement. The percentages are as filed alongside the revenue figure.
 
-## Query Taiwan Monthly Revenue
+## GET /v1/companies/\{company_id\}/tw/monthly-revenue
 
-Use the Taiwan monthly revenue endpoint. It accepts a Taiwan security code, a suffixed ticker, an ISIN or a `company_id` directly.
+Monthly revenue, newest month first. The route accepts a Taiwan security code, a suffixed ticker, an ISIN or a `company_id` directly.
 
 <ParamField path="company_id" type="string" required>
   A Taiwan security code such as `2330`, a suffixed ticker, an ISIN or a `company_id`.
@@ -54,13 +62,17 @@ Use the Taiwan monthly revenue endpoint. It accepts a Taiwan security code, a su
   Earliest month, `YYYY-MM`. `month_lte` sets the ceiling.
 </ParamField>
 
+<ParamField query="cursor" type="string">
+  `next_cursor` from the previous page.
+</ParamField>
+
 <ParamField query="limit" type="integer" default="100">
-  Rows per page, between 1 and 1000. Page through with `cursor`.
+  Rows per page, between 1 and 1000.
 </ParamField>
 
 ## Related Datasets
 
-See also [Taiwan Financials](/international/taiwan-financials) for the consolidated quarterly statements, [Taiwan Foreign Ownership](/international/taiwan-foreign-ownership), and [Company Screening](/companies/screening), which carries `tw_revenue_yoy_pct` as a cross-company filter.
+See also [Taiwan Financials](/international/taiwan-financials) for the consolidated quarterly statements, [Taiwan Cash Flow](/international/taiwan-cash-flow), [Taiwan Foreign Ownership](/international/taiwan-foreign-ownership), and [Company Screening](/companies/screening), which carries `tw_revenue_yoy_pct` as a cross-company filter.
 
 <RequestExample>
 
@@ -98,7 +110,7 @@ curl "https://api.focusalpha.ai/v1/companies/2330/tw/monthly-revenue?month_gte=2
   "currency": "TWD",
   "unit": "thousands",
   "coverage": {
-    "available_from": "2013-01",
+    "available_from": "2001-06",
     "available_to": null,
     "update_frequency": "monthly",
     "history_status": "complete"

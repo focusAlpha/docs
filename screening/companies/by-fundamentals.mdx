@@ -7,7 +7,7 @@ description: "Filter companies by market cap in USD, valuation multiples, margin
 Screening companies by fundamentals bounds a universe of roughly 25,000 listed companies on size, valuation, profitability, leverage, growth and momentum. Sizes are converted to US dollars so they compare across countries; ratio filters follow strict unit and null conventions so a ranking never quietly puts a loss-maker at the top of a "cheap" list.
 
 <Info>
-  **Plan:** Fund · **Credits:** 1 per call; screen facets are free
+  **Plan:** Free and above · **Credits:** 1 per call; screen facets are free
 </Info>
 
 ## The Size and Identity Filters
@@ -28,9 +28,34 @@ Screening companies by fundamentals bounds a universe of roughly 25,000 listed c
 
 ## The Profitability, Leverage and Growth Filters
 
-`gross_margin`, `operating_margin`, `net_margin`, `return_on_equity` — all fractions (`0.2` = 20%) with `_gte`/`_lte` bounds. `debt_to_equity_gte`/`_lte` bounds total debt over shareholders' equity. `revenue_growth_yoy` and `eps_growth_yoy` are fractions against the **same period one year earlier**.
+`gross_margin`, `operating_margin`, `net_margin`, `return_on_equity`, `return_on_assets` and `return_on_invested_capital` — all fractions (`0.2` = 20%) with `_gte`/`_lte` bounds. `debt_to_equity_gte`/`_lte` bounds total debt over shareholders' equity. `payout_ratio` is dividends over earnings, as a fraction.
+
+Growth is year-on-year, as fractions against the **same period one year earlier**: `revenue_growth_yoy`, `eps_growth_yoy`, `earnings_growth_yoy`, `free_cash_flow_growth_yoy`, `book_value_growth_yoy`, `operating_income_growth_yoy` and `ebitda_growth_yoy`. A growth rate is null when the year-ago base was zero or negative.
 
 Gross and operating margin are **null for banks, insurers and REITs by design** — the concepts do not apply and no substitute is invented. Filter those sectors on `net_margin` or `return_on_equity` instead of reading the nulls as missing data.
+
+Two of these ratios are **guarded**, so they are null in cases where a number could be computed but would mislead:
+
+- `payout_ratio` is null on a loss rather than negative. Values above 1 are kept — paying out more than the year's earnings is real.
+- `return_on_invested_capital` is null where cash exceeds debt plus equity, where pretax income is not positive, and where the tax charge exceeds pretax income.
+
+## The Liquidity, Efficiency and Coverage Filters
+
+Each takes `_gte`/`_lte` bounds:
+
+- **Liquidity**, as multiples of current liabilities: `current_ratio`, `quick_ratio` (drops inventory), `cash_ratio` (cash only) and `operating_cash_flow_ratio`.
+- **Efficiency**: `asset_turnover`, `inventory_turnover`, `receivables_turnover` and `working_capital_turnover` are times per year; `days_sales_outstanding` and `operating_cycle` are **days**, not fractions — `days_sales_outstanding_lte=45` is "collects inside 45 days".
+- **Leverage and coverage**: `debt_to_assets` is a fraction and may exceed 1 for a company with negative equity. `interest_coverage` is operating income over interest expense, and is null — not infinite — where a company reports no interest expense.
+
+Every ratio filter above is also a `sort` value, so you can rank on the axis you screened on.
+
+<Note>
+The turnover denominators are not yet the same everywhere: Korea and Taiwan average the opening and closing balance, mainland China and Hong Kong use the closing balance alone. The difference is a few percent for a fast-growing balance sheet and none for a steady one.
+</Note>
+
+## Amounts Are Returned but Not Filterable
+
+`ebitda`, `revenue`, `net_income`, `inventory`, `current_assets`, `interest_expense` and the other amounts on the row are in the **company's own reporting currency** — `fundamentals_currency` says which. A threshold like "EBITDA above one billion" would sweep in every KRW and JPY filer, so these columns have no filter and no sort. Screen on the unit-free ratios, or on `market_cap_usd` for size.
 
 ## The Momentum Filters
 
@@ -38,7 +63,34 @@ Gross and operating margin are **null for banks, insurers and REITs by design** 
 
 ## Coverage: Any Ratio Filter Narrows the Universe
 
-Valuation and fundamentals cover a tracked cohort, not every listed company — `has_fundamentals=true` asks what is screenable at all, and the free facets endpoint reports the count. Any ratio filter silently narrows the screen to that cohort, so "the cheapest companies in the world on PE" really means "the cheapest of the companies we hold statements for". A null margin means *not tracked in this source*, never *this company has no financials*. `fundamentals_stale=true` finds companies whose newest period is over two years old — those rows carry **no** price ratio at all, because today's price over 2009 earnings would rank as the cheapest stock on the exchange.
+Valuation and fundamentals reach about **20,490 companies — roughly 68% of the screen** — from six sources. `fundamentals_source` on each row says which one it came from:
+
+| `fundamentals_source` | Market | Companies | Grain |
+|---|---|---|---|
+| `sec_us_gaap` | US SEC filers (a tracked cohort) | ~3,790 | TTM where the filer reports quarterly, otherwise annual |
+| `china_cas` | Mainland A-shares | ~5,590 | Annual |
+| `japan_edinet` | Japanese statutory annual reports | ~3,770 | Annual |
+| `korea_dart_ifrs` | Korean DART annual reports | ~2,675 | Annual |
+| `hongkong_hkfrs` | Hong Kong results announcements | ~2,343 | Annual |
+| `taiwan_mops_ifrs` | Taiwan summary financials | ~2,328 | Annual |
+
+Where a company appears in more than one source, SEC wins, so ADRs keep their US-GAAP numbers; an A-share annual wins over the Hong Kong announcement for the ~148 companies listed in both places.
+
+`has_fundamentals=true` asks what is screenable at all, and the free facets endpoint reports the count. Any ratio filter silently narrows the screen to that cohort, so "the cheapest companies in the world on PE" really means "the cheapest of the companies we hold statements for". A null is *missing data in that source*, never *this company has no financials* and never a zero.
+
+**Each source is missing what it does not publish**, so filtering on a field also narrows to the markets that carry it:
+
+- `dividend_yield`, `payout_ratio`, `debt_to_equity` and `return_on_invested_capital` are null for **every** Taiwanese and A-share row. Korea carries dividends and debt for part of its companies.
+- `return_on_invested_capital` reaches Japan (~2,584), the US (~1,897), Hong Kong (~1,127) and Korea (~895).
+- `ebitda` reaches Japan (~3,561), the US (~2,660), Taiwan (~2,284), Hong Kong (~2,248) and Korea (~353), and is null for every A-share row. The Korean figure is small on purpose: a filer whose depreciation is split across several lines is left null rather than partially summed.
+- The four liquidity ratios are null for every A-share row, which carries no current-asset or current-liability total.
+- `receivables_turnover`, `days_sales_outstanding`, `operating_cycle` and `interest_coverage` are null for every Taiwanese row: the source has no receivables balance and no interest-expense line.
+- Japanese rows are read from full statements and carry every ratio column. Consolidated and parent-only accounts are never mixed in one row.
+- Hong Kong reports in eleven currencies, more CNY than HKD. Read `fundamentals_currency` before comparing amounts.
+
+A null `pe_ttm` or `pb` on a Korean, Taiwanese or A-share row is usually a missing **market cap** rather than a loss, because the price ratios need `market_cap_usd`.
+
+`fundamentals_stale=true` finds companies whose newest period is over two years old — those rows carry **no** price ratio at all, because today's price over 2009 earnings would rank as the cheapest stock on the exchange.
 
 `fundamentals_grain` says whether numbers are TTM or latest-annual; `fundamentals_filed_at` is when the market could first know them.
 

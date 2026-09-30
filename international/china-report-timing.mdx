@@ -1,0 +1,116 @@
+---
+title: "Mainland China Report Timing"
+sidebarTitle: "China report timing"
+description: "When each mainland-China periodic report first became public — the timestamp to pair with the numbers for anything point-in-time."
+---
+
+Mainland China Report Timing answers one question: when did a Shanghai-, Shenzhen- or Beijing-listed company's periodic report first become public? Each observation is one company and one period end, newest first, from 2023 onward, carrying the timestamp of the **earliest** announcement that published the report.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use China Report Timing For
+
+Build a backtest that only sees A-share numbers after the market did. Measure how long after period end a company reports. Pair each row of [Mainland China Financials](/international/china-financials) with the moment it became public.
+
+## Why the Date on a Statement Row Is Not Enough
+
+<Warning>
+For Asian markets, the date that travels with standardized statement data is routinely the **period end**, or the date of a later filing that repeated the period as a comparative — not the publication date.
+
+A backtest built on that date sees the numbers months before the market did. Use `first_announced_at` from this endpoint, or `disclosed_at` on the financials row, which carries the same timestamp.
+</Warning>
+
+## The Earliest Filing Wins
+
+A periodic report is filed as several announcements — the main text, the summary and sometimes an English version. `first_announced_at` is the earliest of them, which is the moment the numbers became public. `doc_count` says how many announcements carried the report, and `announcement_id` names the one the timestamp came from, so you can look it up in [Mainland China Disclosures](/international/china-disclosures).
+
+## A Midnight Timestamp Is Not a Time
+
+<Warning>
+When `has_clock_time` is false, the index gave a date and no clock — it does this for anything filed on a non-trading day. `first_announced_at` is then midnight Beijing time, which reads as `16:00Z` on the previous day in UTC. That is the absence of a time, not an announcement at 4 p.m.
+
+`announced_on` is the Beijing calendar day and is always safe to use.
+</Warning>
+
+## Key China Report Timing Fields
+
+Each row carries `sec_code`, `company_id`, `sec_name`, `period_end`, `first_announced_at`, `announced_on`, `has_clock_time`, `doc_count` and `announcement_id`.
+
+## China Report Timing Coverage
+
+Coverage runs from 2023-01 onward, the start of the announcement archive, and updates daily.
+
+## China Report Timing Sources
+
+Timestamps are read from cninfo, the disclosure site the Chinese securities regulator designates.
+
+## GET /v1/companies/\{company_id\}/cn/report-timing
+
+When each periodic report of one company first became public, newest period first.
+
+<ParamField path="company_id" type="string" required>
+  A six-digit security code (`600519`), a suffixed ticker (`600519.SS`, `000333.SZ`, `920680.BJ`), an ISIN or a `company_id`.
+</ParamField>
+
+<ParamField query="year" type="integer">
+  Calendar year of the period end.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="40">
+  Rows per page, between 1 and 200.
+</ParamField>
+
+## Related Datasets
+
+See also [Mainland China Financials](/international/china-financials) for the numbers these timestamps belong to, and [Mainland China Disclosures](/international/china-disclosures) for every announcement, one row each.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/600519.SS/cn/report-timing?limit=2" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "sec_code": "600519",
+      "company_id": "cmp_022919",
+      "sec_name": "贵州茅台",
+      "period_end": "2026-06-30",
+      "first_announced_at": "2026-08-14T16:00:00.000Z",
+      "announced_on": "2026-08-15",
+      "has_clock_time": false,
+      "doc_count": "2",
+      "announcement_id": "1225475860"
+    },
+    {
+      "sec_code": "600519",
+      "company_id": "cmp_022919",
+      "sec_name": "贵州茅台",
+      "period_end": "2026-03-31",
+      "first_announced_at": "2026-04-24T16:00:00.000Z",
+      "announced_on": "2026-04-25",
+      "has_clock_time": false,
+      "doc_count": "1",
+      "announcement_id": "1225187851"
+    }
+  ],
+  "next_cursor": null,
+  "coverage": {
+    "available_from": "2023-01-03",
+    "available_to": null,
+    "update_frequency": "daily",
+    "history_status": "backfilled_from_2023_01"
+  }
+}
+```
+
+</ResponseExample>

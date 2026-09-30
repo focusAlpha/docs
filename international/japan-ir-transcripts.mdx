@@ -1,0 +1,161 @@
+---
+title: "Japan IR Transcripts"
+sidebarTitle: "Japan IR transcripts"
+description: "What Japanese companies' management said, as published on their own investor-relations websites: briefing and call transcripts, speaker scripts, and the company's Q&A records."
+---
+
+Japan IR Transcripts are the records of what a Japanese company's management said, as the company published them on its own investor-relations website: results-briefing and conference-call transcripts, the speaker script published with a deck, and the Q&A record of briefings, small meetings and investor dialogues. Japanese companies rarely hold a US-style earnings call with a word-for-word transcript, so this is usually the only record of what was said and asked.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What you can use Japan IR transcripts for
+
+Read what management told analysts after results, in the company's own published words. Find the questions investors asked at a segment small meeting. Compare this quarter's answers on a topic with last quarter's. Pair a transcript with the [deck](/international/japan-ir-presentation-decks) shown at the same briefing.
+
+## Verbatim or the company's summary
+
+<Warning>
+Read `subtype` before quoting. `verbatim` is the words as spoken or scripted (transcripts, "Presentation Handout with Script", "Material with Speech Text"). `qa_summary` is the **company's own condensed account** of the questions and answers (要旨, "Main Q&A", "Q&A Summary") — about 70% of rows — and must be quoted as the company's summary, not as a speaker's words.
+</Warning>
+
+What a row is was decided from its **title**, not from the section of the website it was listed under — sites file Q&A transcripts under "earnings" and trade shows under "conference". `site_type` keeps the section the site used.
+
+## Japan IR website coverage
+
+Coverage is a fixed set of about 250 Japanese companies whose investor-relations websites are read continuously — not the whole market. `coverage.companies_covered` gives the current count; `coverage.available_from` and `available_to` give the date range for the company you asked about. History reaches the late 1990s where a site keeps an archive, and only recent years for most.
+
+<Warning>
+`company.in_ir_web_universe: false` means FocusAlpha does not read that company's investor-relations website. It never means the company published nothing. Many Japanese companies post only slides — try [Japan IR Presentation Decks](/international/japan-ir-presentation-decks).
+</Warning>
+
+The endpoint covers **Japanese companies only**: any other company returns `404`. If the website source cannot be read, the endpoint returns `503` rather than an empty list, so an empty `data` array always means the source answered and nothing matched.
+
+## Key Japan IR transcript fields
+
+- `title` and `title_language` (`en` or `ja`) — as the site wrote it, untranslated.
+- `kind` is `transcript`; `subtype` is `verbatim` or `qa_summary`.
+- `page_url` is the page the entry was found on; `media_urls` are the linked files.
+- `documents` — each linked document's `format` (`pdf` or `html`), `url` and `chars`. `has_text` says whether any text was extracted.
+- `ticker` — the listing the website is known by, which can be the ADR (Sony is `SONY`).
+
+About 30% of website rows have no extracted text (`has_text: false`); the links are still served. That means "not extracted", not "empty".
+
+The response also carries `company` (`company_id`, `ir_site_tickers`, `in_ir_web_universe`) and `counts`: `matched` for your filters, `in_this_tool` for all of this company's transcripts, `by_subtype`, `undated_excluded_by_date_filter` and `truncated_at_source`.
+
+## Japan IR website date convention
+
+Dates are as the website wrote them, and only a real calendar day becomes `date`. `date_status` says what the site gave:
+
+| `date_status` | Meaning |
+| --- | --- |
+| `date` / `datetime` | A real day (`datetime` also carries a time, which is rare) |
+| `period_label` | A fiscal period such as `2003-H1`, `2012-FY` or `1993-12`, kept in `period_label` and never turned into a day |
+| `ambiguous` | A day/month-ambiguous numeric date such as `01/03/19`, not guessed |
+| `invalid` / `missing` | No usable date |
+
+`date_as_written` keeps the original. Rows are returned newest first: dated rows, then rows with only a `period_label`, then undated rows. `date_gte` and `date_lte` apply to `date` only; rows without one are dropped from a ranged answer and counted in `counts.undated_excluded_by_date_filter`.
+
+## Japan IR transcript text
+
+Pass `include_text=true` to add each document's extracted `text`, capped at `max_chars` per document, with `text_truncated`. Text extracted from PDFs loses its layout: quote it, but take reported figures from [Japan Financials](/international/japan-financials).
+
+## GET /v1/companies/\{company\}/jp/ir-transcripts
+
+<ParamField path="company" type="string" required>
+  Tokyo symbol (`6758.T` or `6758`), five-digit EDINET security code, EDINET filer code, ADR symbol (`SONY`), ISIN or `company_id` of a Japanese company.
+</ParamField>
+
+<ParamField query="subtype" type="string">
+  `verbatim` or `qa_summary`. Any other value returns `400`.
+</ParamField>
+
+<ParamField query="q" type="string">
+  Case-insensitive substring of the title, English or Japanese.
+</ParamField>
+
+<ParamField query="date_gte" type="string">
+  Earliest `date`, `YYYY-MM-DD`; `date_lte` sets the ceiling. Undated rows are excluded and counted.
+</ParamField>
+
+<ParamField query="include_text" type="string" default="false">
+  `true` adds each document's extracted text.
+</ParamField>
+
+<ParamField query="max_chars" type="integer" default="20000">
+  Text cap per document when `include_text=true`, between 1,000 and 200,000.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="50">
+  Rows per page, between 1 and 200. Defaults to 10 when `include_text=true`. Page through with `cursor`, passing back `next_cursor` unchanged.
+</ParamField>
+
+## Related datasets
+
+See also [Japan IR Presentation Decks](/international/japan-ir-presentation-decks) for the slides, [Japan IR Website Disclosures](/international/japan-ir-web-disclosures) for everything else on the site, [Management Guidance](/events/guidance) for Japanese forecasts, and [Company Calendar](/companies/calendar) (`market=JP`) for upcoming briefings.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/6758.T/jp/ir-transcripts?subtype=qa_summary&limit=1" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "event_id": "8d95655a-822d-48fe-98bc-7ec67fcc8f97",
+      "company_id": "cmp_007966",
+      "ticker": "SONY",
+      "date": "2026-06-29",
+      "datetime": null,
+      "period_label": null,
+      "date_status": "date",
+      "date_as_written": "2026-06-29",
+      "title": "Q&A Summary of G&NS Small Meeting (6/5)",
+      "title_language": "en",
+      "kind": "transcript",
+      "subtype": "qa_summary",
+      "site_type": "press_release",
+      "page_url": "https://www.sony.com/en/SonyInfo/IR/news/20260629",
+      "media_urls": [
+        "https://www.sony.com/en/SonyInfo/IR/news/20260629"
+      ],
+      "has_text": false,
+      "documents": []
+    }
+  ],
+  "next_cursor": "WzFd",
+  "company": {
+    "company_id": "cmp_007966",
+    "ir_site_tickers": [
+      "SONY"
+    ],
+    "in_ir_web_universe": true
+  },
+  "counts": {
+    "matched": 3,
+    "in_this_tool": 7,
+    "by_subtype": {
+      "qa_summary": 3,
+      "verbatim": 4
+    },
+    "undated_excluded_by_date_filter": 0,
+    "truncated_at_source": false
+  },
+  "coverage": {
+    "companies_covered": 247,
+    "available_from": "2026-06-29",
+    "available_to": "2026-06-29",
+    "update_frequency": "continuous crawl of each company IR site"
+  }
+}
+```
+
+</ResponseExample>

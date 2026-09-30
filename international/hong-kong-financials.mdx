@@ -1,0 +1,205 @@
+---
+title: "Hong Kong Financials"
+sidebarTitle: "Hong Kong financials"
+description: "Income, balance-sheet and cash-flow lines for HKEX-listed companies — read out of the results announcement with a page reference, with standardized data back to 2013 beside it."
+---
+
+Hong Kong Financials serves the financial statements of HKEX-listed companies, newest period first. Each observation is one ticker, one period end, one statement and one source. Hong Kong publishes no XBRL, so there are two legs, and every row says which it is: figures read out of the results announcement itself, and standardized statement data with a longer history.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Hong Kong Financials For
+
+Read a Hong Kong company's results as it printed them, and check any figure against the page it came from. Build a longer annual history from the standardized leg. Read the derived ratios the [company screen](/screening/companies/by-fundamentals) ranks on, for the same company, in the same call.
+
+## Two Legs, and the Row Says Which
+
+`source=filing` rows are extracted from the results announcement. They carry `filing_url`, `page_no` and `disclosed_at`, the minute HKEXnews released the announcement, so any number can be checked against its page. This leg starts in 2026 — the extent of the announcement index — and covers about 2,400 issuers.
+
+`source=aggregated` rows are standardized statement data reaching back to 2013 for about 2,530 issuers. They carry no document reference, and their date field is the period end, so they tell you what the numbers were — never when the market learned them.
+
+The endpoint prefers `filing` where both exist. Where the two legs differ for the same cell, **the announcement wins**: the number served is the one the company printed, checked against the page it appears on.
+
+## Do Not Assume HKD
+
+<Warning>
+A large share of Hong Kong issuers report in CNY or USD. `currency` says which on every row, and null means the statement header did not state a unit. Read it before comparing two companies.
+</Warning>
+
+## Hong Kong Reports Twice a Year
+
+Hong Kong reports **semi-annually** by listing rule, so a year normally has two periods: `period_type` is `annual` or `interim`. The interim covers six months.
+
+Many Hong Kong fiscal years end in March or June rather than December, so `year` selects the **calendar year the period ends in**, not a fiscal-year label. `fiscal_year` is on the row.
+
+## Line Items Beyond the Typed Columns
+
+The typed columns are the headline lines: `revenue`, `gross_profit`, `operating_profit`, `profit_before_tax`, `net_profit`, `net_profit_incl_nci`, `eps_basic`, `total_assets`, `total_liabilities`, `total_equity` and `ocf`. The rest is in `data`.
+
+On a **filing** row, `data.lines` maps the announcement's lines to standard keys — `revenue`, `cost_of_revenue`, `selling_expense`, `admin_expense`, `research_and_development`, `income_tax_expense`, `interest_expense`, `net_income`, `eps_basic`, `eps_diluted`, `current_borrowings`, `capital_expenditure` and more. Values are **signed as printed**, so expenses are negative. `data.raw` keeps every line under the company's own printed label.
+
+A line that merges general and administrative expense with other operating expenses stays in `data.raw` and is **not** given the `admin_expense` key.
+
+`eps_basic` is per share in `currency`; figures printed in cents are already divided by 100.
+
+## G&A and R&D Are Not on One Basis Across Years
+
+<Warning>
+Many Hong Kong issuers print no R&D line and carry R&D inside general and administrative expense. Tencent prints only selling and G&A.
+
+- On a **filing** row, `data.rd_presentation` is `"not_on_face"` when the announcement prints no R&D line.
+- On an **aggregated** row, `data.ga_rd_basis.basis` is `includes_rd`, `excludes_rd` or `undetermined`. With `includes_rd`, the R&D figure beside it is **already inside** G&A, and adding the two counts R&D twice.
+
+The same company can switch between years: Tencent's aggregated rows are `includes_rd` for 2022–2023 and `excludes_rd` for 2024. Check the basis before comparing G&A across periods or summing G&A and R&D.
+</Warning>
+
+## The metrics Block Is the Latest Period Only
+
+The response carries a top-level `metrics` block: margins, returns (including `return_on_invested_capital` where the inputs allow it), liquidity, efficiency, leverage, EBITDA and year-on-year growth — the same numbers the company screen filters and sorts on.
+
+- It describes **one period, the latest**, named in `metrics.period`. It does not move with the `year`, `period_type` or `period_end` filters on the rows beside it.
+- `metrics.amounts` are in whole units of `metrics.currency`, which is not always the scale of the statement rows.
+- `metrics.ratios` are fractions (`0.2` is 20%), except `days_sales_outstanding` and `operating_cycle`, which are days.
+
+`metrics: null` means we hold no fundamentals for the company at all — a different fact from a null field inside it.
+
+## Hong Kong Financials Coverage
+
+The filing leg runs from 2026 for about 2,400 issuers; the aggregated leg runs from 2013 for about 2,530. `coverage.history_status` on the response is `filing_leg_from_2026_aggregated_leg_from_2013`.
+
+## Hong Kong Financials Sources
+
+Filing rows are read from the issuers' own results announcements on HKEXnews. Aggregated rows are standardized statement data.
+
+## GET /v1/companies/\{company_id\}/hk/financials
+
+Statements for one Hong Kong-listed company, newest period first.
+
+<ParamField path="company_id" type="string" required>
+  A stock code (`700` or `0700.HK`), an ISIN or a `company_id`.
+</ParamField>
+
+<ParamField query="statement" type="string">
+  `income`, `balance` or `cashflow`. Omit for all three.
+</ParamField>
+
+<ParamField query="source" type="string">
+  `filing` or `aggregated`. Omit to prefer `filing` where it exists.
+</ParamField>
+
+<ParamField query="period_type" type="string">
+  `annual`, `interim` or `quarterly`.
+</ParamField>
+
+<ParamField query="year" type="integer">
+  Calendar year the period ends in.
+</ParamField>
+
+<ParamField query="period_end" type="string">
+  Exact period end, `YYYY-MM-DD`.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="40">
+  Rows per page, between 1 and 200. Page through with `cursor`.
+</ParamField>
+
+## Related Datasets
+
+See also [Hong Kong Disclosures](/international/hong-kong-disclosures) for the announcements these figures are read out of, [Mainland China Financials](/international/china-financials) for companies also listed on the mainland, and [Screen Companies by Fundamentals](/screening/companies/by-fundamentals) for the cross-market ratios.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/0700.HK/hk/financials?statement=income&limit=1" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response (data and metrics trimmed)
+{
+  "data": [
+    {
+      "company_id": "cmp_020585",
+      "ticker": "0700.HK",
+      "period_end": "2026-06-30",
+      "period_type": "interim",
+      "fiscal_year": 2026,
+      "statement": "income",
+      "source": "filing",
+      "currency": "CNY",
+      "disclosed_at": "2026-08-12T08:31:00.000Z",
+      "filing_url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0812/2026081200296.pdf",
+      "page_no": 18,
+      "revenue": "401243000000.0",
+      "gross_profit": "229698000000.0",
+      "operating_profit": "134651000000.0",
+      "profit_before_tax": "143659000000.0",
+      "net_profit": "114115000000.0",
+      "net_profit_incl_nci": "117369000000.0",
+      "eps_basic": "12.639",
+      "total_assets": null,
+      "total_liabilities": null,
+      "total_equity": null,
+      "ocf": null,
+      "data": {
+        "lines": {
+          "revenue": 401243000000,
+          "cost_of_revenue": -171545000000,
+          "selling_expense": -23212000000,
+          "admin_expense": -72608000000,
+          "operating_income": 134651000000,
+          "net_income": 114115000000,
+          "eps_basic": 12.639
+        },
+        "raw": {
+          "Revenues": 401243000000,
+          "Selling and marketing expenses": -23212000000,
+          "General and administrative expenses": -72608000000
+        },
+        "eps_unit": "currency per share",
+        "rd_presentation": "not_on_face"
+      }
+    }
+  ],
+  "next_cursor": "WyIyMDI2LTA2LTMwIiwiaW5jb21lIl0",
+  "metrics": {
+    "period": "2025-12-31",
+    "grain": "annual",
+    "source": "hongkong_hkfrs",
+    "currency": "CNY",
+    "accounting_standard": "HKFRS",
+    "filed_at": "2026-03-18",
+    "stale": false,
+    "unit": "ones",
+    "amounts": {
+      "revenue": 751766000000,
+      "ebitda": 269331000000
+    },
+    "ratios": {
+      "operating_margin": 0.321326050925421,
+      "return_on_invested_capital": 0.153523081806153,
+      "current_ratio": 1.44266155529425
+    },
+    "growth": {
+      "revenue_growth_yoy": 0.138596031545292
+    },
+    "flags": {
+      "is_lossmaking": false,
+      "equity_negative": false
+    }
+  },
+  "coverage": {
+    "available_from": "2013-12-31",
+    "available_to": null,
+    "update_frequency": "semi_annual",
+    "history_status": "filing_leg_from_2026_aggregated_leg_from_2013"
+  }
+}
+```
+
+</ResponseExample>

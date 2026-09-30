@@ -1,0 +1,221 @@
+---
+title: "Analyst and Specialist Research"
+sidebarTitle: "Research insights"
+description: "What outside analysts and specialist publications said about companies and topics, restated as insight records — every insight anchored to a verbatim quote from the source."
+---
+
+Research Insights serves what outside analysts, specialist trade press and industry podcasts said, restated as insight records. Each observation is one source document — an article or one podcast episode — with three to five insights inside it, and **every insight carries a verbatim quote** from the source that was verified character by character before the record was written. Rows are returned newest first.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call; the sources list is free
+</Info>
+
+## What You Can Use Research Insights For
+
+See what specialist publications are saying about a company, a supply chain or a technology. Follow one source over time. Filter to the pieces that took a negative stance on a name this week. Quote the exact sentence behind a claim, with a link to the piece.
+
+## This Is Analyst Speech, Not Company Speech
+
+<Warning>
+"TSMC says CoWoS capacity doubles in 2027" is [Management Guidance](/events/guidance) — the company speaking under its own disclosure obligations. "A trade publication says TSMC's CoWoS capacity doubles in 2027" is **this** dataset — an outside source's claim about the company.
+
+The two are kept apart and never merged. Attribute every insight here to its `publisher`, never to the company it is about.
+</Warning>
+
+It is also not the news feed: [Company News](/news/company-news) scores a wire article for direction and impact, while this dataset restates an analysis piece without scoring it.
+
+## Research Is Not Keyed by Company
+
+A research piece is often about several companies at once, and sometimes about none. `company`, `source`, `topic` and `stance` are filters that combine, not addresses. With no filter, the endpoint returns the whole stream newest first.
+
+`company` accepts a ticker, `company_id`, CIK or ISIN and is expanded to every symbol the company is known by; the response lists them in `symbols_searched`.
+
+## Every Insight Is Quote-Anchored
+
+Each insight carries a `claim`, a verbatim `quote` and, where the record has them, `bullets` or a `summary`, plus a `type` (`estimate`, `forecast`, `mechanism`, `event` or `opinion`) and the source's own `confidence` in its claim (`asserted`, `estimated`, `hypothesis`, `unconfirmed` or `declined`).
+
+An insight whose quote did **not** match the source is not served. `dropped` lists its id and claim, and `insights_dropped` counts them, so you know the source said more than the record serves.
+
+## Tickers in companies Are Our Resolution
+
+`companies` lists the listed companies the source named, each with `ticker`, `mentions`, `impact` — one sentence on what the source establishes about that name — and `basis`: `named`, `product_mention:<product>` when the source named only a product we mapped to the company, or `subsidiary_of:<parent>`.
+
+The tickers are resolved from the names the source printed and are not yet confirmed against the company registry. Unlisted names are in `private_entities`.
+
+## Podcast Rows Carry Two Timestamps
+
+`source_type` is `analyst_newsletter`, `trade_press`, `industry_forum` or `podcast`. A podcast row also carries `video_id`, `duration_sec`, `main_guest` and `guests`.
+
+<Warning>
+`published_at_utc` is when a podcast episode went live and `captured_at` is when we obtained its transcript. For a back-catalogue episode they can be years apart, so an as-of question needs `captured_at`, not the publication date.
+</Warning>
+
+Podcast text is an automatic speech transcript: no editorial punctuation, with filler words and repeats left in. Quotes are verified against it character by character, so a quote that reads awkwardly is correct, not garbled.
+
+## What Is Served and What Is Not
+
+Everything we produced is served in full: each insight's claim, bullets and verbatim quote, and `record_md`, the whole record. The **article body is never served** — follow `url` to read the piece.
+
+## Research Insights Language
+
+`source_title` and every `quote` keep the source language — Korean, Japanese and Chinese included — and are never translated. `lang` names the source language.
+
+## Research Insights Coverage
+
+A few dozen research sources — call `/v1/research/sources` for the current list: analyst letters, semiconductor and data-center trade press (including Korean and Japanese outlets), and industry podcasts. The pipeline runs hourly.
+
+<Warning>
+The pipeline started on **2026-09-23** and is being backfilled. Read `coverage.available_from` on the response for the current floor. An empty result for an earlier date means the pipeline had not reached it, not that nobody wrote about the company.
+</Warning>
+
+## Research Insights Date Convention
+
+`since` and `until` filter on `published_on`: the source's printed publication date or, where the source prints none, the day we extracted it. `published_on` is also the sort key.
+
+## GET /v1/research
+
+Insight records, newest first.
+
+<ParamField query="company" type="string">
+  A ticker (`NVDA`, `2330.TW`, `6758.T`), `company_id`, CIK or ISIN.
+</ParamField>
+
+<ParamField query="source" type="string">
+  A feed or publisher name, exactly as `/v1/research/sources` lists it.
+</ParamField>
+
+<ParamField query="topic" type="string">
+  A topic tag, case-insensitive, for example `cowos`, `hbm` or `agents`.
+</ParamField>
+
+<ParamField query="stance" type="string">
+  The source's own stance toward its subject: `positive`, `negative`, `mixed` or `neutral`.
+</ParamField>
+
+<ParamField query="since" type="string">
+  Earliest publication day, `YYYY-MM-DD`. `until` sets the ceiling.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="20">
+  Rows per page, between 1 and 100. Page through with `cursor`.
+</ParamField>
+
+Each row carries `doc_id`, `feed` and `publisher`, `url`, `source_title` (the piece's own title, verbatim), `claim_title` (the source's actual claim in one sentence), `published_on` and `published_at`, `lang`, `topics`, `source_stance`, `stance_downgraded` (true when the stance's evidence quote did not verify and the stance was reset to `neutral`), `source_type`, `insights`, `companies`, `private_entities`, `dropped`, `insights_dropped`, `quotes_total`, `record_md` and `extracted_at`.
+
+## GET /v1/research/sources
+
+The source vocabulary — every feed and publisher `source` accepts, with its record count and newest publication date. Free.
+
+This endpoint takes no parameters.
+
+## Related Datasets
+
+See also [Management Guidance](/events/guidance) for what companies say about themselves, [Company News](/news/company-news) for scored wire articles, and [Company News Events](/news/news-events) for what happened to a company this week.
+
+<RequestExample>
+
+```bash Insights
+curl "https://api.focusalpha.ai/v1/research?company=TSM&limit=1" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```bash Sources
+curl "https://api.focusalpha.ai/v1/research/sources" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Insights (trimmed)
+{
+  "data": [
+    {
+      "doc_id": "sha256:c303c0a3e53a0aead04a06085cca1b0f072ed16ddd4b35f071aa0f97ec6bf05d",
+      "feed": "EE Times Japan",
+      "publisher": "EE Times Japan",
+      "url": "https://eetimes.itmedia.co.jp/ee/articles/2609/30/news059.html",
+      "source_title": "TSMC「A14」設計にエージェントAI、Synopsysと協業",
+      "claim_title": "EE Times Japan says Synopsys and TSMC expand collaboration on A14 design, agent AI, CoWoS, and N2P IP.",
+      "published_on": "2026-09-30",
+      "published_at": "2026-09-30",
+      "lang": "ja",
+      "topics": ["eda", "ai", "multidie", "advanced packaging", "ip", "process technology", "silicon photonics"],
+      "source_stance": "neutral",
+      "stance_downgraded": false,
+      "source_type": "trade_press",
+      "insights": [
+        {
+          "id": "I1",
+          "type": "event",
+          "claim": "Synopsys and TSMC are expanding collaboration in advanced semiconductor design, covering A14 process EDA flows, agent-based AI for analog/digital/multidie automation, CoWoS multidie design, and N2P IP expansion.",
+          "quote": "SynopsysとTSMCは、先端半導体設計分野での協業を拡大する。TSMCの「A14」プロセス向けEDAフローを整備したほか、エージェント型AIを活用してアナログ／デジタル／マルチダイ設計の自動化を進める。先端パッケージング技術「CoWoS」を用いたマルチダイ設計や、「N2P」プロセス向けIP（Intellectual Property）の拡充にも取り組む。",
+          "bullets": [
+            "Synopsys and TSMC are expanding their collaboration in advanced semiconductor design.",
+            "This expanded collaboration includes preparing EDA flows for TSMC's A14 process."
+          ],
+          "speaker": null,
+          "summary": null,
+          "confidence": "asserted"
+        }
+      ],
+      "companies": [
+        {
+          "name": "Taiwan Semiconductor Manufacturing Company",
+          "basis": "named",
+          "impact": "Expanding collaboration with Synopsys on A14, N2P, N3P processes, CoWoS, 3DFabric, and COUPE technologies.",
+          "ticker": "TSM",
+          "mentions": "10"
+        }
+      ],
+      "private_entities": [],
+      "dropped": [
+        {
+          "id": "I3",
+          "claim": "For CoWoS multidie design, Synopsys and TSMC support design/simulation including IVR, enabling co-design on 3DIC Compiler considering power efficiency, power integrity, and thermal aspects, while also developing CPO design flows for TSMC's COUPE technology and advancing major IPs for N2P, including silicon-validated UCIe-A 32G/40G and taped-out 64G UCIe IP for 2nm/3nm."
+        }
+      ],
+      "insights_dropped": 1,
+      "quotes_total": 9,
+      "record_md": "---\nschema_version: 1.0\n…",
+      "video_id": null,
+      "podcast": null,
+      "duration_sec": null,
+      "main_guest": null,
+      "guests": null,
+      "published_at_utc": null,
+      "captured_at": null,
+      "extracted_at": "2026-09-30T05:25:25.006Z"
+    }
+  ],
+  "next_cursor": "WyIyMDI2LTA5LTMwIiwic2hhMjU2OmMzMDNjMGEzZTUzYTBhZWFkMDRhMDYwODVjY2ExYjBmMDcyZWQxNmRkZDRiMzVmMDcxYWEwZjk3ZWM2YmYwNWQiXQ",
+  "symbols_searched": ["TSM", "2330.TW", "TSFA.F", "TSMWF"],
+  "coverage": {
+    "available_from": "2022-03-07",
+    "update_frequency": "hourly",
+    "history_status": "started_2026_09_23_backfill_in_progress"
+  }
+}
+```
+
+```json Sources (trimmed)
+{
+  "sources": [
+    {
+      "feed": "Data Center Dynamics",
+      "publisher": "Data Center Dynamics",
+      "records": 167,
+      "latest": "2026-09-30"
+    },
+    {
+      "feed": "THE ELEC",
+      "publisher": "THE ELEC",
+      "records": 164,
+      "latest": "2026-09-30"
+    }
+  ]
+}
+```
+
+</ResponseExample>

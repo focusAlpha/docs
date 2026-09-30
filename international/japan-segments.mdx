@@ -1,0 +1,152 @@
+---
+title: "Japan Segments"
+sidebarTitle: "Japan segments"
+description: "Business-segment breakdowns for Japanese-listed companies as tagged in their EDINET filings, with a reconciliation against the consolidated total on every response."
+---
+
+Japan Segments provides the business-segment breakdown a Japanese-listed company tagged in its own EDINET annual and half-year reports: revenue (external, intersegment and total), segment profit, assets, capex, depreciation, R&D, goodwill, impairment and headcount, per segment per period. Segment names come from the filing, with the company's own English label where it published one. Every response carries a `reconciliation` block that checks whether the segments add up to the consolidated figure.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What you can use Japan segments for
+
+See which business drives a Japanese company's revenue and profit, and how the mix moves year to year. Compare segment margins. Track capex and R&D by segment. Japanese segment data is not in [Segmented Financials](/financials/segments), which covers SEC filers only.
+
+## Read this before you add anything up
+
+<Warning>
+The rows are flat but the segments are a **tree**, and subtotals sit in the same table looking exactly like segments. One filer reports a segment group, its four children and a reportable-segments total; summing the `value` column naively gives about ¥4.66 trillion against a real ¥1.69 trillion.
+
+Pass `leaves_only=true`, or keep only rows where `segment_is_leaf` is `true` **and** `member_role` is `segment`.
+</Warning>
+
+`member_role` is `segment`, `total` or `reconciliation`. `segment_depth` and `segment_parent` place each row in the tree.
+
+## The reconciliation block
+
+Every response carries `reconciliation`: for each recent period, the sum of the leaf segments' external revenue (`leaf_sum`, over `n_leaf` segments) against the consolidated revenue from the same filing (`consolidated`), with the gap as `diff_pct` (in percent). Use it to see whether the breakdown adds up for that company and period instead of assuming it.
+
+It needs both sides in one filing — external revenue tagged per segment and a consolidated revenue line in yen. An **empty** reconciliation on a response that has segment rows means it could not be computed, not that the segments failed to add up. A large `diff_pct` usually means the filer tagged a subtotal that is not yet classified, not that a number is wrong.
+
+## Key Japan segment fields
+
+- `segment`, `segment_label_en`, `segment_label_ja` — the segment's machine name and the filer's English and Japanese labels.
+- `metric_key` — FocusAlpha's normalised metric (see the parameter below). Rows whose element did not map keep `metric_key` null with the raw `element_id`, so nothing is hidden by failing to normalise.
+- `value` and `unit` — the amount and its unit, usually `JPY`; `employees` rows are headcounts.
+- `period_start`, `period_end`, `rel_period` — the period, and the filing's own word for it (`当期` current, `前期` prior).
+- `doc_id` and `doc_type_code` — the EDINET filing the row came from.
+
+## Japan segments coverage
+
+Not every filer tags segments: a single-segment company reports none at all, and some file the breakdown only as a note. The `coverage` block reports how many companies have segment rows (`companies_covered`) against the Japanese universe (`companies_tracked`), and the range of filings loaded.
+
+## GET /v1/companies/\{company\}/jp/segments
+
+<ParamField path="company" type="string" required>
+  Tokyo symbol (`7203.T` or `7203`), five-digit EDINET security code, EDINET filer code, ADR symbol (`TM`), ISIN or `company_id`.
+</ParamField>
+
+<ParamField query="metric_key" type="string">
+  One of `revenue_external`, `revenue_intersegment`, `revenue_total`, `segment_profit`, `assets`, `assets_noncurrent`, `liabilities`, `capex`, `depreciation`, `employees`, `employees_temporary`, `rnd`, `goodwill`, `goodwill_amortization`, `impairment`. Omit to get every metric, mapped or not.
+</ParamField>
+
+<ParamField query="leaves_only" type="string" default="false">
+  `true` keeps only the rows that are safe to sum. If a filer's members are not yet classified, this can drop all of its rows — try without it.
+</ParamField>
+
+<ParamField query="report_period" type="string">
+  `annual`, `half` or `quarterly`.
+</ParamField>
+
+<ParamField query="period_end" type="string">
+  Exact period end, `YYYY-MM-DD`.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="200">
+  Rows per page, between 1 and 1000, newest period first. Narrow with `period_end` and `metric_key` to keep one period in one page.
+</ParamField>
+
+## Related datasets
+
+See also [Japan Financials](/international/japan-financials) for the consolidated figures the reconciliation compares against, and [Japan Report Sections](/international/japan-report-sections) for management's narrative on each business.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/7203.T/jp/segments?leaves_only=true&metric_key=revenue_external&limit=2" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "company_id": "cmp_008882",
+      "doc_id": "S100Y8NY",
+      "doc_type_code": "120",
+      "segment": "FinancialServices",
+      "segment_label_en": "Financial Services",
+      "segment_label_ja": "金融",
+      "segment_depth": 3,
+      "segment_is_leaf": true,
+      "segment_parent": "cor",
+      "member_role": "segment",
+      "metric_key": "revenue_external",
+      "element_id": "jpcrp030000-asr_E02144-000:OperatingRevenueFromExternalCustomersIFRS",
+      "label_ja": null,
+      "period_start": "2025-04-01",
+      "period_end": "2026-03-31",
+      "rel_period": "当期",
+      "unit": "JPY",
+      "value": "4819003000000.0"
+    },
+    {
+      "company_id": "cmp_008882",
+      "doc_id": "S100Y8NY",
+      "doc_type_code": "120",
+      "segment": "Automotive",
+      "segment_label_en": "Automotive",
+      "segment_label_ja": "自動車",
+      "segment_depth": 3,
+      "segment_is_leaf": true,
+      "segment_parent": "cor",
+      "member_role": "segment",
+      "metric_key": "revenue_external",
+      "element_id": "jpcrp030000-asr_E02144-000:OperatingRevenueFromExternalCustomersIFRS",
+      "label_ja": null,
+      "period_start": "2025-04-01",
+      "period_end": "2026-03-31",
+      "rel_period": "当期",
+      "unit": "JPY",
+      "value": "45201924000000.0"
+    }
+  ],
+  "next_cursor": "WyIyMDI2LTAzLTMxIixudWxsXQ",
+  "coverage": {
+    "available_from": "2017-06-20",
+    "available_to": "2026-09-29",
+    "update_frequency": "daily",
+    "history_status": "backfill_in_progress_majority_loaded",
+    "companies_covered": 3033,
+    "companies_tracked": 3791
+  },
+  "reconciliation": [
+    {
+      "period_start": "2025-04-01",
+      "period_end": "2026-03-31",
+      "n_leaf": "2",
+      "leaf_sum": "50020927000000.0",
+      "consolidated": "50684952000000.0",
+      "diff_pct": "-1.310"
+    }
+  ]
+}
+```
+
+</ResponseExample>

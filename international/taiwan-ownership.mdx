@@ -1,0 +1,179 @@
+---
+title: "Taiwan Ownership"
+sidebarTitle: "Taiwan insider ownership"
+description: "Who owns a Taiwan-listed company from the inside: the monthly directors' and officers' shareholding filing with pledged shares, and the exchange's list of major shareholders."
+---
+
+Taiwan Ownership covers who owns a Taiwan-listed company from the inside. The `directors` kind is the monthly filing of shares held by directors, supervisors, managers and major shareholders, including the shares they have **pledged** as loan collateral. The `major_shareholders` kind is the exchange's list of large holders, by name. Both are share counts, not money.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Taiwan Ownership For
+
+Track what a Taiwan company's chairman, directors and officers hold month by month. Find insiders who have pledged a large share of their holding, a governance signal a price chart does not show. See who the exchange lists as a company's major shareholders.
+
+This is domestic insider ownership. For how much of a company foreign investors hold, use [Taiwan Foreign Ownership](/international/taiwan-foreign-ownership), which answers a different question.
+
+## Directors' and Officers' Holdings
+
+`kind=directors` is the default. Each row is one person in one role for one month.
+
+`title` is the role as filed, in Chinese: for example 董事長本人 (the chairman), 董事本人 (a director), 獨立董事本人 (an independent director), 副總經理本人 (a vice president), 大股東本人 (a major shareholder), and 董事之法人代表人 (the representative of a corporate director).
+
+`current_shares` is the holding. `elected_shares` is the holding at election, and is `0` for officers who were not elected. `pledged_shares` is the number pledged, and `pledged_pct` is pledged shares as a percentage of `current_shares`, on a **0-to-100 scale**.
+
+## One Person Can Appear Under Several Titles
+
+<Warning>
+A person who holds two roles is listed once per role, **with the same holding on each row**. In the example below, TSMC's chairman appears as both 董事長本人 and 總經理本人 with the same `current_shares`.
+
+Deduplicate by `holder_name` before adding up insider holdings, or the same shares are counted twice.
+</Warning>
+
+## The Major-Shareholder List Carries No Holding Size
+
+<Warning>
+`kind=major_shareholders` returns **names only**. The source publishes no share count, no percentage and no rank.
+
+The row order is not a ranking, and there is nothing in these rows to sum.
+</Warning>
+
+The list is a snapshot taken on most days, so the same name repeats once per `snapshot_date`. Take the newest `snapshot_date` rather than reading the repeats as separate holdings.
+
+Not every company has rows in the list. TSMC (`2330`), for example, returns none.
+
+## Taiwan Ownership Date Convention
+
+Directors' holdings are monthly. `period` is the month, `YYYY-MM`, and `report_date` is when it was filed. `date_gte` and `date_lte` take `YYYY-MM-DD`, but only the month is compared, so any day in a month selects that month.
+
+Major-shareholder rows are dated by `snapshot_date`, `YYYY-MM-DD`, and `date_gte` and `date_lte` compare the full date.
+
+Rows are returned newest first.
+
+## Page Through One Month at a Time
+
+Pass `next_cursor` back as `cursor` to get the next page. A person listed under two titles in the same month can straddle a page boundary, so fetch one month per request with `date_gte`, `date_lte` and a `limit` large enough to hold it.
+
+## Taiwan Ownership Coverage
+
+Directors' holdings run monthly from **2026-06**. The major-shareholder list runs from **2026-07-23**. Both are recent additions, so there is no longer history to backfill.
+
+## GET /v1/companies/\{company_id\}/tw/ownership
+
+Directors' and officers' holdings, or the major-shareholder list, newest first.
+
+<ParamField path="company_id" type="string" required>
+  A Taiwan security code such as `2330`, a suffixed ticker such as `2330.TW` or `6976.TWO`, an ISIN or a `company_id`.
+</ParamField>
+
+<ParamField query="kind" type="string" default="directors">
+  `directors` or `major_shareholders`.
+</ParamField>
+
+<ParamField query="holder" type="string">
+  Part of the holder's name. Matches `holder_name` for directors and `shareholder_name` for major shareholders.
+</ParamField>
+
+<ParamField query="date_gte" type="string">
+  Earliest date, `YYYY-MM-DD`. For directors, only the month is compared.
+</ParamField>
+
+<ParamField query="date_lte" type="string">
+  Latest date, `YYYY-MM-DD`. For directors, only the month is compared.
+</ParamField>
+
+<ParamField query="cursor" type="string">
+  `next_cursor` from the previous page.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Rows per page, between 1 and 1000.
+</ParamField>
+
+## Related Datasets
+
+See also [Taiwan Foreign Ownership](/international/taiwan-foreign-ownership) for daily foreign-investor holdings, [Taiwan Financials](/international/taiwan-financials), and [Insider Trades](/ownership/insider-trades) for US insider filings.
+
+<RequestExample>
+
+```bash Directors
+curl "https://api.focusalpha.ai/v1/companies/2330/tw/ownership?holder=%E9%AD%8F%E5%93%B2%E5%AE%B6&date_gte=2026-08-01&date_lte=2026-08-31" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```bash Major shareholders
+curl "https://api.focusalpha.ai/v1/companies/2317/tw/ownership?kind=major_shareholders&date_gte=2026-09-29" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Directors
+{
+  "data": [
+    {
+      "company_id": "cmp_008395",
+      "local_security_code": "2330",
+      "period": "2026-08",
+      "market": "twse",
+      "company_name": "台積電",
+      "title": "董事長本人",
+      "holder_name": "魏哲家",
+      "elected_shares": "6392834.0",
+      "current_shares": "7452349.0",
+      "pledged_shares": "1600000.0",
+      "pledged_pct": "21.47",
+      "report_date": "2026-09-18"
+    },
+    {
+      "company_id": "cmp_008395",
+      "local_security_code": "2330",
+      "period": "2026-08",
+      "market": "twse",
+      "company_name": "台積電",
+      "title": "總經理本人",
+      "holder_name": "魏哲家",
+      "elected_shares": "0.0",
+      "current_shares": "7452349.0",
+      "pledged_shares": "1600000.0",
+      "pledged_pct": "21.47",
+      "report_date": "2026-09-18"
+    }
+  ],
+  "next_cursor": null,
+  "coverage": {
+    "available_from": "2026-06",
+    "available_to": null,
+    "update_frequency": "monthly",
+    "history_status": "complete"
+  }
+}
+```
+
+```json Major shareholders
+{
+  "data": [
+    {
+      "company_id": "cmp_004042",
+      "local_security_code": "2317",
+      "snapshot_date": "2026-09-29",
+      "market": "twse",
+      "company_name": "鴻海",
+      "shareholder_name": "郭台銘"
+    }
+  ],
+  "next_cursor": null,
+  "coverage": {
+    "available_from": "2026-07-23",
+    "available_to": null,
+    "update_frequency": "daily",
+    "history_status": "complete"
+  }
+}
+```
+
+</ResponseExample>

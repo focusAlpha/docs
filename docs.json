@@ -135,7 +135,8 @@
               "companies/registry",
               "companies/identifiers",
               "companies/listings",
-              "companies/corporate-events"
+              "companies/corporate-events",
+              "companies/calendar"
             ]
           },
           {
@@ -162,6 +163,9 @@
             "group": "Transcripts and documents",
             "pages": [
               "transcripts/earnings-call-transcripts",
+              "transcripts/us-presentation-decks",
+              "international/japan-ir-transcripts",
+              "international/japan-ir-presentation-decks",
               "transcripts/semantic-retrieval",
               "transcripts/documents"
             ]
@@ -178,10 +182,24 @@
             "group": "International financials",
             "pages": [
               "international/taiwan-financials",
+              "international/taiwan-cash-flow",
               "international/taiwan-monthly-revenue",
               "international/taiwan-foreign-ownership",
+              "international/taiwan-ownership",
+              "international/taiwan-investor-conferences",
               "international/korea-dart-financials",
+              "international/korea-dart-shareholders",
+              "international/korea-dart-capital",
+              "international/korea-dart-executive-compensation",
               "international/korea-dart-report-sections",
+              "international/japan-financials",
+              "international/japan-segments",
+              "international/japan-ownership",
+              "international/japan-officers",
+              "international/japan-report-sections",
+              "international/hong-kong-financials",
+              "international/china-financials",
+              "international/china-report-timing",
               "international/form-20f"
             ]
           }
@@ -257,14 +275,17 @@
             "pages": [
               "news/news-events",
               "news/company-news",
-              "news/themes"
+              "news/themes",
+              "events/research"
             ]
           },
           {
             "group": "Filing events",
             "pages": [
               "events/8k-events",
-              "events/8k-exhibits"
+              "events/8k-exhibits",
+              "events/8k-company-measures",
+              "events/8k-segments"
             ]
           },
           {
@@ -280,7 +301,11 @@
               "international/exchange-disclosures",
               "international/disclosures-taiwan",
               "international/disclosures-korea",
-              "international/disclosures-japan"
+              "international/disclosures-japan",
+              "international/japan-edinet-disclosures",
+              "international/japan-ir-web-disclosures",
+              "international/hong-kong-disclosures",
+              "international/china-disclosures"
             ]
           }
         ]

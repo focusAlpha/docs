@@ -1,17 +1,17 @@
 ---
 title: "Plans and credits"
-description: "How FocusAlpha plans, credit metering, and dataset entitlements work."
+description: "How FocusAlpha plans, credit metering, and rate limits work."
 ---
 
-Every FocusAlpha API key belongs to a plan. Your plan determines three things: how many
-credits you have to spend, how fast you can call the API, and which datasets you are
-entitled to at all. This page explains all three.
+Every FocusAlpha API key belongs to a plan. Every dataset is available on every plan,
+including Free — your plan determines how many credits you have to spend and how fast
+you can call the API. This page explains both.
 
 ## Plans
 
 | | Free trial | Professional | Fund |
 |---|---|---|---|
-| Credits | 100, one-time | 500 per month | Effectively unlimited |
+| Credits | 100, one-time | 1,000 per month, per seat | Unlimited |
 | Credit renewal | Never — a trial grant | Monthly | Monthly |
 | Rate limit | 20 requests/min | 120 requests/min | 600 requests/min |
 | Max `top_k` on `/v1/retrieve` | 10 | 25 | 50 |
@@ -66,32 +66,21 @@ Two account endpoints are also free to call:
 - `GET /v1/usage` — your request totals for a period, broken down by key
 - `GET /v1/_status` — per-dataset coverage and freshness (see [Coverage and freshness](/concepts/coverage))
 
-## Dataset entitlements
+## Dataset access
 
-Credit cost is one axis; **which datasets your plan may call at all** is a separate one.
-Core SEC data is open to every plan, including Free. Differentiated datasets require
-Professional or Fund:
-
-| Tier required | Datasets |
-|---|---|
-| Any plan | Semantic retrieval, document corpus, SEC filings index and items, financial statements, financial metrics, segments, company facts, the company registry |
-| Professional and up | 13F institutional holdings, insider trades (Form 4), Taiwan financials and ownership, Korea (DART) financials, executive compensation and proxy ownership, short interest, daily prices and market caps, benchmarks, macroeconomic series and the economic calendar, the investment-adviser directory, Form 20-F datasets |
-| Fund only | Cross-company screening, adviser screening, the ETF dataset — directory, NAV, shares, AUM, holdings, splits, distributions, fees, labels and screening, live news and events, structured 8-K events, 8-K exhibits, earnings-call guidance, reported earnings figures, prediction-market prices, international disclosures (TW/KR/JP), the venture-investor directory |
-
-Calling a dataset above your tier returns `402 Payment Required` with a message naming
-the dataset and the plan it requires — Professional refusals include the upgrade URL,
-Fund refusals ask you to contact sales.
+Every dataset — including screening, ETF data, live news and events, guidance, regional
+filings and the WebSocket event streams — is open to every plan. Credits and rate limits
+are the only difference between plans, so the Free plan's 100 credits are a way to try
+any dataset before you upgrade.
 
 ## When you run out of credits
 
-A metered call with an empty balance also returns `402 Payment Required`:
+A metered call with an empty balance returns `402 Payment Required`:
 
 - On the Free plan the message is `Free credits used up. Upgrade to keep making requests.`
 - On a paid plan it tells you that you are out of credits for the current billing period.
 
-The two `402` cases — out of credits versus not entitled — carry different messages, so
-your error handling can distinguish "top up or wait for renewal" from "this dataset
-needs a higher tier". See [Errors](/concepts/errors) for the envelope shapes.
+See [Errors](/concepts/errors) for the envelope shape.
 
 <Tip>
 You will get a heads-up before hitting zero: when a paid balance drops to 10% or less of

@@ -1,0 +1,145 @@
+---
+title: "Company Measures from Earnings Releases"
+sidebarTitle: "8-K company measures"
+description: "The company's own consolidated figures as its earnings release printed them — including adjusted EBITDA, organic growth and other measures the financial statements do not carry."
+---
+
+Company Measures are the company-level figures a company printed in its earnings release, with the question of which row on the page is the company's own figure already settled. Each observation is one figure for one period from one release, carrying the value, the verbatim quote it was read from and the link to the release. Use it when you want "what did the company report for X" without reasoning about which of several rows is the consolidated one.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Company Measures For
+
+Read the measures a company manages to — adjusted EBITDA, organic growth, net interest margin, same-store sales, production volumes, backlog — which the financial statements have no column for. See what the headline figures looked like **on the day**, before any restatement. Compare a reported figure with [management guidance](/events/guidance) on the same `metric_key`.
+
+## This Sits Beside the Statements, Not Instead of Them
+
+<Warning>
+[Income Statements](/financials/income-statements) and their siblings are the audited, comparable, restated record. This dataset is the figure **as printed on the day**.
+
+Where the two overlap they can legitimately differ. FAST's EPS reads 0.52 here and 0.26 in the statements — a stock split restated the statement, while this dataset keeps what the market read that morning. Both are right. Cite this dataset for "what was announced" and the statements for "what is comparable".
+</Warning>
+
+## Read value_is_change Before Using a Number
+
+When `value_is_change` is true, the figure is a **change**, not a level: a release that says "revenue increased $50 million" stores 50,000,000, which looks exactly like "revenue was $50 million" without the flag.
+
+`unit_check` flags a row whose key says money and whose unit says count. It is a flag, never a correction.
+
+## GAAP and Non-GAAP Readings Are Separate Rows
+
+`basis` separates a GAAP reading of a metric from a non-GAAP one; the two are separate rows.
+
+## One Consolidated Reading per Figure
+
+Only the company-level reading is served: `row_level` is `company_total` or `sole`. The segment, product and geography breakouts beneath these totals are in [Segment Breakouts from Earnings Releases](/events/8k-segments). Rows whose identity could not be decided are in neither, and appear only in [Reported Earnings Figures](/events/earnings-results).
+
+## Key Company Measure Fields
+
+Each row carries `ticker`, `company_id`, the fiscal `year` and `quarter` of the release, `observed_at` (the release timestamp, which also orders the rows) and `occurred_on`, `doc_id` and `source_ref` (the release), `metric_key` and `metric_key_as_extracted`, `basis`, `period` as the release labelled it with `period_grain`, `period_calendar` and `period_end`, the printed `label` and `value_text`, the parsed `value_low` and `value_high` (equal unless `value_is_band`), `value_unit`, `yoy` when the release printed one, `quote`, `value_is_change`, `unit_check` and `row_level`.
+
+`metric_key` is normalised — research and development expense arrives under many spellings and is one key here. `metric_key_as_extracted` is what the release actually said, and filtering on either works.
+
+## Company Measures Coverage
+
+Companies whose earnings releases are covered: SEC 8-K and 6-K filings, Japanese and Hong Kong exchange announcements, A-share filings and company IR pages. The floor moves as the backfill proceeds — read `coverage.available_from` on the response.
+
+## Company Measures Date Convention
+
+`year` and `quarter` are the fiscal year and quarter of the **release**. `period` is the period the figure is **for**, as the release labelled it — a Q3 release can also print year-to-date figures. Rows are returned newest release first.
+
+## GET /v1/companies/\{company_id\}/8k-company-measures
+
+Company-level figures from one company's earnings releases, newest first. The identifier is expanded to every ticker the company is known by.
+
+<ParamField path="company_id" type="string" required>
+  A ticker, `company_id`, CIK or ISIN.
+</ParamField>
+
+<ParamField query="metric_key" type="string">
+  Normalised metric, for example `revenue`, `adjusted_ebitda` or `eps`. The pre-normalisation spelling is accepted too.
+</ParamField>
+
+<ParamField query="period" type="string">
+  The period the figure is for, exactly as the release labelled it, for example `Q3-FY26`.
+</ParamField>
+
+<ParamField query="year" type="integer">
+  Fiscal year of the release.
+</ParamField>
+
+<ParamField query="quarter" type="integer">
+  Fiscal quarter of the release, 1 to 4.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Rows per page, between 1 and 1000. Page through with `cursor`.
+</ParamField>
+
+## Related Datasets
+
+See also [Segment Breakouts from Earnings Releases](/events/8k-segments) for the breakouts beneath these totals, [Reported Earnings Figures](/events/earnings-results) for every row the release contained, [Management Guidance](/events/guidance) for the forward-looking half of the same vocabulary, [8-K Exhibits](/events/8k-exhibits) for the release text, and [Income Statements](/financials/income-statements) for the restated record.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/AAPL/8k-company-measures?metric_key=operating_income&period=Q3-FY26&limit=1" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "ticker": "AAPL",
+      "company_id": "cmp_000584",
+      "year": 2026,
+      "quarter": 3,
+      "observed_at": "2026-07-30T20:30:28Z",
+      "occurred_on": "2026-07-30",
+      "doc_id": "0000320193-26-000018:EX-99.1",
+      "source_ref": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+      "source_feed": "edgar_8k",
+      "metric_key": "operating_income",
+      "metric_key_as_extracted": "operating_income",
+      "basis": "",
+      "metric_definition": null,
+      "period": "Q3-FY26",
+      "period_grain": "Q",
+      "period_calendar": "2026Q2",
+      "period_end": "2026-06-27",
+      "period_end_source": "filed_period",
+      "label": "Q3-FY26 Operating income",
+      "value_text": "$35,695 million",
+      "value_low": "35695000000.0",
+      "value_high": "35695000000.0",
+      "value_unit": "usd",
+      "yoy": null,
+      "value_is_band": false,
+      "value_is_change": false,
+      "value_is_delta": false,
+      "value_not_level": false,
+      "quote": "Operating income | 35,695",
+      "unit_check": null,
+      "value_scale_note": null,
+      "row_level": "sole",
+      "fcf_check": null
+    }
+  ],
+  "next_cursor": null,
+  "coverage": {
+    "available_from": "2025-01-02",
+    "available_to": null,
+    "update_frequency": "daily",
+    "history_status": "starts_2025_01_02"
+  }
+}
+```
+
+</ResponseExample>

@@ -1,0 +1,156 @@
+---
+title: "Japan Ownership"
+sidebarTitle: "Japan ownership"
+description: "Who owns a Japanese-listed company: the 5% large-holding reports filed to EDINET, and the top-ten major-shareholder table from the annual report."
+---
+
+Japan Ownership serves two EDINET filings that answer different questions. **Large-holding reports** (大量保有報告書) are Japan's 5% ownership filings — the closest equivalent to a US Schedule 13D/13G — filed by the holder once its stake reaches 5%, followed by change reports (変更報告書) as the stake moves. The **major-shareholder table** (大株主の状況) is the top-ten list printed in the company's annual report. Choose one with `kind`.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What you can use Japan ownership for
+
+Spot a new 5% holder, or an existing one building or cutting its stake, with the date the obligation arose. Read the holder's own stated purpose to see activist intent. Follow cross-shareholding unwinds between group companies. See who sits at the top of the register each year.
+
+## Large-holding reports (`kind=large_holdings`, the default)
+
+Each row is an **event** with a statutory trigger date, `obligation_date` (報告義務発生日). The filing is made **by the holder, not the company**, so `holder_name` is often an individual, a founder's asset-management company or a foreign manager that appears in no company table.
+
+- `holding_ratio` and `prev_holding_ratio` are **fractions** (`0.0829` = 8.29%); `ratio_change` is the difference.
+- `shares_held` and `shares_outstanding` are the share counts behind the ratio.
+- `purpose` (保有目的) is the holder's own statement of why it holds the stake — the field with no US equivalent. A holder that writes that it has no plan to make material proposals (重要提案行為等を行う予定はなく) is declaring it will not push the company; one that does not is the row to read.
+- `acquisition_funds`, `own_funds` and `borrowed_funds` are disclosed only on an initial report, not on a change report, so most rows leave them null by design.
+- `is_amendment` marks a correction to an earlier report.
+
+<Warning>
+**One filing is usually several rows.** Japanese holders file jointly (共同保有者): a typical bank or insurer filing carries three to nine rows, one per group member, and each row's `holding_ratio` is **that member's own slice**, not the group's. It is the group total that crossed 5%, so **sum the rows of one `doc_id`** to get the stake that matters. `filer_name` is the member that submitted; `holder_name` is the member the row is about.
+
+A member's slice can be **negative** — for example a securities arm that is net short after lending. That is real, not a parse error.
+
+`min_ratio` filters **row by row**: `min_ratio=0.05` drops the smaller members of a group that together holds 20%, and drops a whole filing whose members each hold under 5%. Leave it off when the question is who crossed the threshold.
+</Warning>
+
+An empty answer is often correct: a company with no holder above 5% generates no filing. EDINET also keeps large-holding reports public for about five years only, so an older window is empty at the source.
+
+## Major-shareholder table (`kind=major_shareholders`)
+
+The top-ten table out of the annual report: an **annual snapshot** with a `rank` and no event date. It carries different fields — `rank`, `holder_name`, `holder_address`, `shares_held` and `shareholding_ratio` (a fraction), plus `period_end`, `filed_on`, `doc_id` and `filing_url`. The table also appears in half-year reports, so group rows by `doc_id` and use `filed_on` to tell the snapshots apart; `period_end` can be null on some reports.
+
+The top rows are usually trust-bank custodians (日本マスタートラスト信託銀行, 日本カストディ銀行) holding for someone else: a custodian is not a beneficial owner. This view returns every row that matches in one response; narrow it with `date_gte` / `date_lte` and `limit`.
+
+## Neither is a transaction feed
+
+Japan publishes no equivalent of a US Form 4. For directors' own holdings, see the annual share counts in [Japan Officers](/international/japan-officers); a director's holding company that crosses 5% does appear here, with a trigger date.
+
+## Japan ownership coverage
+
+Every response carries a measured `coverage` block with the date range loaded, `companies_covered` and `companies_tracked`. For large-holding reports the dates are the trigger dates in the filings; for the major-shareholder table they are the annual reports loaded.
+
+## GET /v1/companies/\{company\}/jp/ownership
+
+<ParamField path="company" type="string" required>
+  Tokyo symbol (`7203.T` or `7203`), five-digit EDINET security code, EDINET filer code, ADR symbol (`TM`), ISIN or `company_id` of the **issuer**.
+</ParamField>
+
+<ParamField query="kind" type="string" default="large_holdings">
+  `large_holdings` (5% reports) or `major_shareholders` (the annual top-ten table).
+</ParamField>
+
+<ParamField query="date_gte" type="string">
+  Earliest trigger date (large holdings) or period end (major shareholders), `YYYY-MM-DD`; `date_lte` sets the ceiling.
+</ParamField>
+
+<ParamField query="min_ratio" type="number">
+  Minimum stake as a **fraction** (`0.05` = 5%). Applied per row — see the warning above.
+</ParamField>
+
+<ParamField query="holder" type="string">
+  Substring of the holder's name, Japanese or English.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Rows per page, between 1 and 500. Large-holding rows are newest trigger date first and page with `cursor`, passing back `next_cursor` unchanged.
+</ParamField>
+
+## Related datasets
+
+See also [Japan Officers](/international/japan-officers) for directors' own shareholdings, [Japan EDINET Disclosures](/international/japan-edinet-disclosures) for the statutory report filed when a major shareholder changes, and [13F Institutional Holdings](/ownership/13f) for US-listed positions.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/7203.T/jp/ownership?kind=large_holdings&limit=2" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "company_id": "cmp_008882",
+      "issuer_name": "トヨタ自動車株式会社",
+      "doc_id": "S100Y6H1",
+      "doc_type_code": "350",
+      "is_amendment": false,
+      "holder_name": "株式会社豊田自動織機",
+      "holder_address": "愛知県刈谷市豊田町２丁目１番地",
+      "filer_name": "株式会社豊田自動織機取締役社長 伊藤 浩一",
+      "filer_name_en": "TOYOTA INDUSTRIES CORPORATION",
+      "holding_ratio": "0.0001",
+      "prev_holding_ratio": "0.0755",
+      "ratio_change": "-0.0754",
+      "shares_held": "1242720.0",
+      "shares_outstanding": "15794987460.0",
+      "acquisition_funds": null,
+      "own_funds": null,
+      "borrowed_funds": null,
+      "purpose": "政策投資（取引関係の維持・強化）",
+      "obligation_date": "2026-05-25",
+      "filed_on": "2026-05-27",
+      "record_date": "2026-05-25",
+      "filing_url": "https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100Y6H1.pdf"
+    },
+    {
+      "company_id": "cmp_008882",
+      "issuer_name": "トヨタ自動車株式会社",
+      "doc_id": "S100Y6H1",
+      "doc_type_code": "350",
+      "is_amendment": false,
+      "holder_name": "トヨタ不動産株式会社",
+      "holder_address": "愛知県名古屋市中村区名駅四丁目７番１号",
+      "filer_name": "株式会社豊田自動織機取締役社長 伊藤 浩一",
+      "filer_name_en": "TOYOTA INDUSTRIES CORPORATION",
+      "holding_ratio": "0.0158",
+      "prev_holding_ratio": "0.0158",
+      "ratio_change": "0.0000",
+      "shares_held": "249754115.0",
+      "shares_outstanding": "15794987460.0",
+      "acquisition_funds": "97744870000.0",
+      "own_funds": "89696883000.0",
+      "borrowed_funds": "8047987000.0",
+      "purpose": "政策投資",
+      "obligation_date": "2026-05-25",
+      "filed_on": "2026-05-27",
+      "record_date": "2026-05-25",
+      "filing_url": "https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100Y6H1.pdf"
+    }
+  ],
+  "next_cursor": "WyIyMDI2LTA1LTI1IiwiUzEwMFk2SDEiXQ",
+  "coverage": {
+    "available_from": "1984-12-25",
+    "available_to": "2027-06-15",
+    "update_frequency": "daily",
+    "history_status": "all_tracked_filers_loaded",
+    "companies_covered": 3468,
+    "companies_tracked": 3791
+  }
+}
+```
+
+</ResponseExample>
