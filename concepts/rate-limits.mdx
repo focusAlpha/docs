@@ -47,16 +47,15 @@ them as fast as it likes.
 
 ## Distinguishing a throttle from a billing problem
 
-Because the SEC data routes reuse `402` for throttling, a `402` there can mean three
+Because the SEC data routes reuse `402` for throttling, a `402` there can mean two
 different things. Read the `message`:
 
 | Message says | It means | What to do |
 |---|---|---|
 | Rate limit exceeded | You are over your per-minute ceiling | Wait for the next minute window and retry |
 | Out of credits / free credits used up | Your balance is empty | Upgrade or wait for the billing period to renew |
-| A dataset name and a plan tier | Your plan is not entitled to this dataset | Upgrade to the named tier |
 
-Only the first case is retryable. Retrying an empty balance or a plan gate in a loop
+Only the first case is retryable. Retrying an empty balance in a loop
 will never succeed — surface those to a human instead.
 
 ## Retry guidance

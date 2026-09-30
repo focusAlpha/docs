@@ -18,7 +18,7 @@ news, events, market data, regional datasets, directories — return errors as:
   "success": false,
   "error": {
     "statusCode": 402,
-    "message": "Cross-company screening is available on the Fund plan. Contact sales to enable it.",
+    "message": "Free credits used up. Upgrade to keep making requests.",
     "error": "Payment Required",
     "path": "/v1/screen",
     "timestamp": "2026-08-27T14:00:00.000Z",
@@ -63,7 +63,7 @@ plan refusal — the `message` carries it; otherwise you get the canonical strin
 |---|---|---|
 | `400` | Invalid parameters — a failed validation rule, a missing required combination, or a malformed cursor | Any route |
 | `401` | Missing, malformed, unknown, or revoked API key | Any authenticated route |
-| `402` | Out of credits, a dataset your plan is not entitled to, or (SEC data routes only) a rate limit | See [Plans and credits](/concepts/plans-credits) |
+| `402` | Out of credits, or (SEC data routes only) a rate limit | See [Plans and credits](/concepts/plans-credits) |
 | `404` | A company identifier that could not be resolved, a missing document, or an unavailable resource | Dataset routes |
 | `429` | Rate limit exceeded on `POST /v1/retrieve` | See [Rate limits](/concepts/rate-limits) |
 | `500` | An unexpected server fault | Any route |
