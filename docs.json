@@ -285,7 +285,8 @@
               "events/8k-events",
               "events/8k-exhibits",
               "events/8k-company-measures",
-              "events/8k-segments"
+              "events/8k-segments",
+              "events/8k-release-facts"
             ]
           },
           {

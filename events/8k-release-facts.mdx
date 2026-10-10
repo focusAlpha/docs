@@ -1,0 +1,214 @@
+---
+title: "Every Figure in the Earnings Release"
+sidebarTitle: "8-K release facts"
+description: "Every number a company printed in its earnings release — each table cell and each figure in the text — with the table, row and column or the sentence it came from."
+---
+
+Release Facts are every number a company printed in its earnings release: each cell of each table and each figure in the text. Each row is one figure, carrying where it was printed — the table title, the row label and the rows above it, the column header, or the sentence — together with what it is: the metric, the segment, the basis and the period.
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What You Can Use Release Facts For
+
+Read the parts of a release the headline figures leave out: the segment and product-line tables, the KPI pages (units, prices, store counts, same-store sales, backlog, bookings, subscribers), the non-GAAP reconciliation line by line, the statements and cash flow as printed, and the guidance tables. [Reported Earnings Figures](/events/earnings-results) keeps the handful of figures a reader looks at first; this dataset is the whole document.
+
+## Start With the Table of Contents
+
+Call the route with only the company and you get the release's table of contents: every table with its title and type, the segments it names, the most-printed metrics and the periods it covers. Then ask for figures:
+
+| Parameter | Use it for |
+|---|---|
+| `q` | Words that must all appear in the row label, metric, segment, table title or sentence — `data center`, `backlog`, `same-store sales` |
+| `table` (+ `exhibit`) | One table, by the number the table of contents lists |
+| `segment`, `level` | One segment, or only the company's own figures, or only the breakouts |
+| `current=true` | The quarter the release reports, with its year-to-date, full year and closing balance sheet |
+| `releases=all` | Every release held for the company — a series across quarters |
+
+## One Row Per Figure
+
+A number printed in the summary table, the income statement and a sentence comes back **once**, from its finest printing — a table cell before a rounded sentence — and `mentions` says how many places printed it. Pass `evidence=true` for every printing.
+
+<Warning>
+Two **different** values under one metric are both returned and never merged. They are different lines — `Net income` beside `Net income -- TTM` in one column, `Average assets` beside `Total assets` — so read `row_label`, `row_path`, `col_header` and `table_title` before treating two rows as the same figure.
+</Warning>
+
+## Read These Before Using a Number
+
+| Field | What it tells you |
+|---|---|
+| `value`, `value_text` | `value` is scaled to whole units of `unit` / `currency`; `value_text` is exactly as printed |
+| `is_change` | `true` means a change — growth, "up $50 million" — not a level |
+| `is_forward` | `true` means guidance or outlook |
+| `basis` | Empty is the as-reported (GAAP) figure; otherwise `non_gaap`, `adjusted`, `organic`, `constant_currency` … |
+| `scope` | `partial` means only part of the company — a joint-venture share, one side of a split |
+| `segment_axis` | `segment`, `product`, `geography` …; sum segments only within one axis |
+| `period`, `period_end` | `period` is the company's own fiscal label; `period_end` the calendar day it ends, with `period_end_source` saying whether the release printed it or it came from the company's filed fiscal calendar |
+
+## As Printed on the Day
+
+This is the figure the release printed, not the restated one. Where it overlaps the [Financial Statements](/financials/combined) it can legitimately differ — a restatement, a stock split. Cite the statements for the comparable record.
+
+## Release Facts Coverage
+
+Coverage is still narrow and grows as releases are read: at launch, the latest earnings release of each S&P 500 company plus earlier quarters for a few names. Releases filed only as PDF are not read. Read the `coverage` block on the response for the current count and date range. For other companies and older quarters, [Reported Earnings Figures](/events/earnings-results) holds the headline figures of far more releases.
+
+## GET /v1/companies/\{company_id\}/8k-release-facts
+
+The table of contents of a company's newest release, or its figures, depending on the parameters.
+
+<ParamField path="company_id" type="string" required>
+  A ticker, `company_id`, CIK or ISIN.
+</ParamField>
+
+<ParamField query="view" type="string">
+  `index` (table of contents) or `facts`. Omitted: no filter returns `index`, any filter returns `facts`.
+</ParamField>
+
+<ParamField query="q" type="string">
+  Words that must all appear in the row label, metric, segment, table title or sentence.
+</ParamField>
+
+<ParamField query="metric_key" type="string">
+  A metric key from the table of contents, for example `revenue` or `operating_income`.
+</ParamField>
+
+<ParamField query="segment" type="string">
+  Part of a segment or sub-segment name, for example `Data Center`.
+</ParamField>
+
+<ParamField query="level" type="string">
+  `company` for figures with no segment, `segment` for the breakouts.
+</ParamField>
+
+<ParamField query="basis" type="string">
+  `gaap` (as reported) or `non_gaap` (any non-GAAP or adjusted basis).
+</ParamField>
+
+<ParamField query="period" type="string">
+  The fiscal label the figure is for: `Q2-FY26`, `H1-FY26`, `9M-FY26`, `FY26`, `AS_OF`.
+</ParamField>
+
+<ParamField query="current" type="boolean">
+  Only the quarter the release reports, with its year-to-date, full year and closing balances.
+</ParamField>
+
+<ParamField query="table" type="integer">
+  One table, by the number the table of contents lists. Pass `exhibit` too when the release has more than one.
+</ParamField>
+
+<ParamField query="source" type="string">
+  `table` for table cells only, `prose` for figures from the text only.
+</ParamField>
+
+<ParamField query="accession" type="string">
+  One release by accession number. Default: the newest.
+</ParamField>
+
+<ParamField query="releases" type="string" default="latest">
+  `all` searches every release held for the company.
+</ParamField>
+
+<ParamField query="evidence" type="boolean" default="false">
+  Every printing of every figure instead of one row per figure.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Rows per page, between 1 and 500. Page through with `cursor`.
+</ParamField>
+
+## Related Datasets
+
+See also [Reported Earnings Figures](/events/earnings-results) for the headline figures across many more releases, [Company Measures](/events/8k-company-measures) and [Segment Breakouts](/events/8k-segments) for its two cuts, and [8-K Exhibits](/events/8k-exhibits) for the release text itself.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/NVDA/8k-release-facts?segment=Data%20Center&current=true&limit=1" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response (one figure; releases trimmed)
+{
+  "view": "facts",
+  "company": { "company_id": "cmp_006294", "ticker": "NVDA", "name": "NVIDIA Corporation" },
+  "releases": [
+    {
+      "accession": "0001045810-26-000073",
+      "published_at": "2026-08-26T20:21:19Z",
+      "release_period": "Q2-FY27",
+      "release_period_end": "2026-07-26",
+      "documents": [
+        { "exhibit": "EX-99.1", "doc_id": "0001045810-26-000073:EX-99.1", "tables": 10, "figures": 493 },
+        { "exhibit": "EX-99.2", "doc_id": "0001045810-26-000073:EX-99.2", "tables": 11, "figures": 378 }
+      ]
+    }
+  ],
+  "data": [
+    {
+      "ticker": "NVDA",
+      "company_id": "cmp_006294",
+      "accession": "0001045810-26-000073",
+      "exhibit": "EX-99.2",
+      "published_at": "2026-08-26T20:21:19Z",
+      "release_period": "Q2-FY27",
+      "metric": "Revenue",
+      "metric_key": "revenue",
+      "metric_key_as_extracted": "revenue",
+      "segment": "Data Center",
+      "sub_segment": null,
+      "segment_axis": "product",
+      "scope": null,
+      "basis": null,
+      "period": "Q2-FY27",
+      "period_grain": "Q",
+      "period_end": "2026-07-26",
+      "period_end_source": "filed_period",
+      "period_calendar": "2026Q3",
+      "in_release_period": true,
+      "value": 89023000000,
+      "value_low": 89023000000,
+      "value_high": 89023000000,
+      "unit": "usd",
+      "currency": "USD",
+      "value_text": "$89,023",
+      "is_change": false,
+      "change_kind": null,
+      "is_forward": false,
+      "bound": null,
+      "role": "line",
+      "source": "table",
+      "table": 3,
+      "table_title": "Revenue by Market Platform",
+      "table_kind": "segment_results",
+      "row": 3,
+      "col": 3,
+      "paragraph": null,
+      "row_label": "Data Center",
+      "row_path": null,
+      "col_header": ["Q2 FY27"],
+      "quote": "Data Center | Q2 FY27 | $89,023",
+      "mentions": 4,
+      "fact_key": "ba71be5346cd08b9ae3c7fa7",
+      "low_confidence": false,
+      "fact_id": "fa80339043694c9ca11125466fd5d1e9"
+    }
+  ],
+  "next_cursor": "WyIyMDI2LTA4LTI2VDIwOjIxOjE5LjAwMDAwMFoiLC…",
+  "coverage": {
+    "available_from": "2025-01-22",
+    "available_to": "2026-10-09",
+    "companies": 486,
+    "releases": 496,
+    "update_frequency": "as releases are read; not yet daily",
+    "history_status": "partial"
+  }
+}
+```
+
+</ResponseExample>
