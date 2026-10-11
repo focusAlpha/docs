@@ -46,9 +46,17 @@ Two **different** values under one metric are both returned and never merged. Th
 | `segment_axis` | `segment`, `product`, `geography` …; sum segments only within one axis |
 | `period`, `period_end` | `period` is the company's own fiscal label; `period_end` the calendar day it ends, with `period_end_source` saying whether the release printed it or it came from the company's filed fiscal calendar |
 
-## As Printed on the Day
+## As Printed on the Day, and Restated Beside It
 
-This is the figure the release printed, not the restated one. Where it overlaps the [Financial Statements](/financials/combined) it can legitimately differ — a restatement, a stock split. Cite the statements for the comparable record.
+`value` is the figure the release printed that day. When the company later gave the same quarter another figure, both versions are kept: the restated one sits beside the printed one, with where it came from.
+
+| Field | What it tells you |
+|---|---|
+| `restated_value` | The figure the company later gave for the same quarter |
+| `restated_basis` | `restated_in_filing` (a later 10-Q or 10-K replaced the first figure), `revised_after_release` (the first 10-Q or 10-K already differed from the release), or `fiscal_calendar_changed` (the company moved its fiscal year; the filed period is a transition stub, not the same quarter) |
+| `restated_in_accession`, `restated_filed` | The filing that carries the restated figure, and the day it was filed |
+
+Quote `value` for what the market saw on the day; use the restated figure or the [Financial Statements](/financials/combined) to compare across periods. The restated version is attached to the headline figures checked against the company's filings — revenue, operating income, net income, gross profit and diluted EPS.
 
 ## Release Facts Coverage
 
