@@ -52,7 +52,7 @@ This is the figure the release printed, not the restated one. Where it overlaps 
 
 ## Release Facts Coverage
 
-Coverage is still narrow and grows as releases are read: at launch, the latest earnings release of each S&P 500 company plus earlier quarters for a few names. Releases filed only as PDF are not read. Read the `coverage` block on the response for the current count and date range. For other companies and older quarters, [Reported Earnings Figures](/events/earnings-results) holds the headline figures of far more releases.
+Coverage is still narrow and grows as releases are read: the last three quarterly earnings releases of most S&P 500 companies, from late 2025 on. Releases filed only as PDF are not read. Read the `coverage` block on the response for the current count and date range. For other companies and older quarters, [Reported Earnings Figures](/events/earnings-results) holds the headline figures of far more releases.
 
 ## GET /v1/companies/\{company_id\}/8k-release-facts
 
@@ -203,8 +203,8 @@ curl "https://api.focusalpha.ai/v1/companies/NVDA/8k-release-facts?segment=Data%
   "coverage": {
     "available_from": "2025-01-22",
     "available_to": "2026-10-09",
-    "companies": 486,
-    "releases": 496,
+    "companies": 488,
+    "releases": 1455,
     "update_frequency": "as releases are read; not yet daily",
     "history_status": "partial"
   }
