@@ -2,12 +2,13 @@
 title: "Segmented Financials"
 sidebarTitle: "Segmented financials"
 description: "As-reported business and geographic segment breakdowns — revenue and related line items by the axes the company itself disclosed."
+keywords: ["get_segmented_financials"]
 ---
 
 Segmented Financials provides business and geographic segment breakdowns exactly as a company reported them. Each observation is one segment member for one fiscal period, carrying revenue and the related line items the company disclosed for that segment. The axes are the company's own; nothing is mapped to a common taxonomy.
 
 <Info>
-  **Plan:** Free and above · **Credits:** 1 per call
+  **Plan:** Free and above · **Credits:** 1 per call · **MCP tool:** `get_segmented_financials`
 </Info>
 
 ## What You Can Use Segmented Financials For
@@ -27,6 +28,28 @@ Compare a company against itself first. Cross-company segment comparison require
 ## Key Segmented Financials Fields
 
 Rows carry the segment axis and member as the company named them, the line-item values disclosed for that member, `report_period`, `period`, `currency` and `accounting_standard`.
+
+The income-statement metrics are revenue, operating income, `segment_profit` — the filer's own segment profit measure, named in each item's `measure` — depreciation and premiums written. Every other metric by segment (EBITDA, margins, gross profit) is what the earnings release printed, in [8-K Segments](/events/8k-segments); the two sources are independent and are never joined.
+
+## Add Up One Bucket, Never Several
+
+Each metric holds one breakdown per bucket: `segment`, `product` and `geography`. Add up one bucket, never two. `other` holds reconciliation lines — segment totals, eliminations, corporate — and is not a breakdown; it does not sum to anything.
+
+## Gross and External Segment Figures
+
+Every `segment` item says its `basis`:
+
+| `basis` | Meaning |
+|---|---|
+| `gross` | Includes sales to other segments. |
+| `external` | Outside customers only. |
+| `unspecified` | The filing does not say. |
+
+When the filing tags more than one basis or the inter-segment amounts, the item also carries `gross`, `external` and `intersegment` as filed, so `gross` − `intersegment` = `external`. A one-item `segment_total` bucket carries the same fields for the whole table, with the segments' inter-segment amounts summed.
+
+<Warning>
+A gross `segment` bucket adds up to more than consolidated revenue, by the inter-segment sales `segment_total` shows (Ford Blue sells to Ford Pro). Never add gross and external figures together.
+</Warning>
 
 ## The Four Segment Endpoints
 

@@ -83,7 +83,8 @@ Where a company appears in more than one source, SEC wins, so ADRs keep their US
 - `dividend_yield`, `payout_ratio`, `debt_to_equity` and `return_on_invested_capital` are null for **every** Taiwanese and A-share row. Korea carries dividends and debt for part of its companies.
 - `return_on_invested_capital` reaches Japan (~2,584), the US (~1,897), Hong Kong (~1,127) and Korea (~895).
 - `ebitda` reaches Japan (~3,561), the US (~2,660), Taiwan (~2,284), Hong Kong (~2,248) and Korea (~353), and is null for every A-share row. The Korean figure is small on purpose: a filer whose depreciation is split across several lines is left null rather than partially summed.
-- The four liquidity ratios are null for every A-share row, which carries no current-asset or current-liability total.
+- The four liquidity ratios are null for A-share rows except about 71 of the largest companies, whose full statement carries current-asset and current-liability totals; the summary source behind the rest carries no current/non-current split, and banks, insurers and brokers have none at all. `current_ratio` reaches 957 of the ~7,265 China-domiciled companies — 886 of them listed outside the mainland — and `working_capital_turnover` 765.
+- `return_on_equity` and `book_value_growth_yoy` are on parent-only equity, so they are null for A-share rows except the largest (96 today), whose full statement carries parent-only equity; the summary source for the rest carries only total equity, which includes minority interests.
 - `receivables_turnover`, `days_sales_outstanding`, `operating_cycle` and `interest_coverage` are null for every Taiwanese row: the source has no receivables balance and no interest-expense line.
 - Japanese rows are read from full statements and carry every ratio column. Consolidated and parent-only accounts are never mixed in one row.
 - Hong Kong reports in eleven currencies, more CNY than HKD. Read `fundamentals_currency` before comparing amounts.

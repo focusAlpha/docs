@@ -2,12 +2,13 @@
 title: "Earnings Call Transcripts"
 sidebarTitle: "Earnings call transcripts"
 description: "Speaker-segmented earnings call transcripts and other company documents, searchable by meaning and citable back to the source passage."
+keywords: ["retrieve", "list_documents", "get_document", "get_document_segments"]
 ---
 
-Earnings Call Transcripts are quarterly earnings call records held in the FocusAlpha document corpus, alongside SEC filings and other company documents. Each document is associated with a company, a fiscal year and quarter, and a source URL, and is stored as ordered text segments. Transcripts are reached in two ways: by [semantic retrieval](/transcripts/semantic-retrieval) across the corpus, or by listing and fetching a specific document.
+Earnings Call Transcripts are quarterly earnings call records held in the FocusAlpha document corpus, alongside SEC filings and other company documents. Each document is associated with a company and a fiscal year and quarter, and is stored as ordered text segments. The corpus also holds conference transcripts — management at investor conferences, analyst days, keynotes and shareholder meetings. Transcripts are reached in two ways: by [semantic retrieval](/transcripts/semantic-retrieval) across the corpus, or by listing and fetching a specific document.
 
 <Info>
-  **Plan:** Free and above · **Credits:** 1 per call
+  **Plan:** Free and above · **Credits:** 1 per call · **MCP tools:** `retrieve`, `list_documents`, `get_document`, `get_document_segments`
 </Info>
 
 ## What You Can Use Earnings Call Transcripts For
@@ -16,7 +17,9 @@ Find what management said about a topic — pricing, demand, margins, tariffs, c
 
 ## What Is in the Document Corpus
 
-The corpus holds earnings call transcripts and company filings and documents. Every document carries a company, a fiscal `year` and `quarter` where the document has one, a document type, and a `source_url` pointing at the original.
+The corpus holds earnings call transcripts, conference transcripts, and company filings and documents. Every document carries a company, a `year` and `quarter` where the document has one, a document type, and a `source_url`, which points at the original for a filing and is `null` for every transcript.
+
+Conference transcripts (`documentType` `conference_transcript`) are management's non-earnings appearances: broker and investor conference fireside chats, analyst and investor days, keynotes, strategic-deal calls and shareholder meetings. They are listed alongside a company's earnings calls, and [semantic retrieval](/transcripts/semantic-retrieval) searches both together by default.
 
 Documents are stored as ordered **segments**. A segment is a contiguous passage of the document, and it is the unit that retrieval returns and cites.
 
@@ -28,15 +31,15 @@ A guessed period returns stale passages rather than an error, so listing first i
 
 ## Key Document Fields
 
-`document_id` identifies a document and is what the fetch and segment endpoints take. `ticker` identifies the company. `year` and `quarter` place the document in fiscal time. The document type distinguishes a transcript from a filing. `source_url` links the original, and page numbers are carried where the source has them.
+`document_id` identifies a document and is what the fetch and segment endpoints take. `ticker` identifies the company. `year` and `quarter` place the document in fiscal time. The document type distinguishes an earnings call (`earnings_call`) from a conference transcript (`conference_transcript`) and from a filing. `source_url` links the original filing and is `null` on transcripts; page numbers are carried where the source has them.
 
 ## Earnings Call Transcript Date Convention
 
-`year` and `quarter` are the **fiscal** period the document covers, not the calendar date it was published. A company with a September fiscal year end reports its Q1 in January, and this dataset labels that document Q1 of the following fiscal year, as the company does.
+`year` and `quarter` are the **fiscal** period the document covers, not the calendar date it was published. A company with a September fiscal year end reports its Q1 in January, and this dataset labels that document Q1 of the following fiscal year, as the company does. A conference transcript is labelled by the calendar quarter in which the event took place.
 
 ## Earnings Call Transcript Sources
 
-Transcripts are sourced from the calls themselves and are speaker-segmented. Filings in the corpus come from SEC EDGAR. Every document retains a `source_url`, so any passage returned by retrieval can be traced to the original document.
+Transcripts are sourced from the calls themselves and are speaker-segmented. Filings in the corpus come from SEC EDGAR and retain a `source_url`. Transcripts are served without a source link; any passage returned by retrieval is traced to its transcript by `documentId`, title and period.
 
 ## List and Fetch Documents
 

@@ -1,0 +1,174 @@
+---
+title: "MCP tool reference"
+sidebarTitle: "MCP tool reference"
+description: "Every FocusAlpha MCP tool in one list: what question it answers, the REST endpoint behind it, and the page that documents its parameters and fields."
+keywords: ["mcp", "tools", "tool list", "which tool", "agent", "llm"]
+---
+
+This page lists every tool the FocusAlpha MCP server (`https://mcp.focusalpha.ai/mcp`) exposes. Each tool is a thin wrapper over one REST endpoint or a small group of them, so the linked page documents its parameters, response fields, coverage and caveats. To connect a client, see [Connect via MCP](/mcp-setup).
+
+<Info>
+  Every tool is read-only, available on every plan (except `get_private_company`, which is Fund only), and costs the same credits as the REST call behind it (see [Plans and credits](/concepts/plans-credits)). An agent that is unsure which tool answers a question can call `list_datasets` (free): it returns every dataset, what it answers, its coverage and its known traps.
+</Info>
+
+## Pick the right tool
+
+Several datasets sound alike but answer different questions. Use this table before you reach for a tool.
+
+| You want | Use | Not |
+| --- | --- | --- |
+| What the company itself expects (forward guidance, with the quote) | `get_guidance` | `get_consensus`, `get_research` |
+| Whether the company raised or cut its guidance | `get_guidance_changes` | `get_guidance` |
+| What analysts expect: estimates, surprises, price targets, ratings | `get_consensus` | `get_guidance` |
+| Where prediction markets set the EPS bar | `get_prediction_markets_consensus` | `get_consensus` |
+| What outside analysts and specialist publications wrote | `get_research` | `retrieve` |
+| What management said about a topic, on calls and at conferences | `retrieve` | `get_research` |
+| The figures a release printed (non-GAAP metrics, KPIs) | `get_8k_earnings_results`, `get_8k_company_measures` | `retrieve` |
+| Audited statement figures | `get_income_statements`, `get_balance_sheets`, `get_cash_flow_statements` | `retrieve` |
+| What just happened to a company | `get_company_events` | `get_company_news` |
+| Market-moving news that names no company | `get_macro_news` | `get_company_events` |
+| Index, commodity and crypto prices | `get_benchmark_prices` | `get_macro_series` |
+| Companies that match a condition | `screen_companies` | `search_companies` |
+| An ETF (ETFs are not in the company registry) | `search_etfs`, `get_etf` | `search_companies` |
+
+## Discovery and identity
+
+| Tool | Answers | REST endpoint | Docs |
+| --- | --- | --- | --- |
+| `list_datasets` | Which dataset and tool answers a question, with coverage and traps | — | [Coverage and freshness](/concepts/coverage) |
+| `list_coverage` | Which tickers, CIKs and SEC form types a dataset covers | `GET /v1/filings/tickers`, `/ciks`, `/types`, `/items/types`, `GET /v1/company/facts/tickers`, `/ciks` | [SEC filings coverage](/filings/coverage) |
+| `search_companies` | A company's canonical `cmp_…` id from a ticker, CIK, ISIN, local code or name | `GET /v1/companies` | [Company registry](/companies/registry) |
+| `get_company` | One company's profile, identifiers, listings or corporate events (`section`) | `GET /v1/companies/{id}`, `/identifiers`, `/listings`, `/events` | [Registry](/companies/registry), [Identifiers](/companies/identifiers), [Listings](/companies/listings), [Corporate events](/companies/corporate-events) |
+| `screen_companies` | Companies that match conditions on fundamentals, guidance, events, products or positioning | `GET /v1/screen`, `/facets`, `/terms` | [Company screening](/companies/screening) |
+| `get_company_calendar` | Scheduled company events: report dates, ex-dividend dates, investor days, conferences, AGMs | `GET /v1/calendar` | [Company calendar](/companies/calendar) |
+| `get_private_company` | A private company's last valuation, funding rounds and mutual-fund marks | `GET /v1/private-companies/{id}`, `/funding`, `/fund-marks` | [Private companies](/companies/private-companies) |
+
+## Financial statements and SEC filings
+
+| Tool | Answers | REST endpoint | Docs |
+| --- | --- | --- | --- |
+| `get_income_statements` | Income statements, annual / quarterly / TTM | `GET /v1/financials/income-statements` | [Income statements](/financials/income-statements) |
+| `get_balance_sheets` | Balance sheets | `GET /v1/financials/balance-sheets` | [Balance sheets](/financials/balance-sheets) |
+| `get_cash_flow_statements` | Cash flow statements | `GET /v1/financials/cash-flow-statements` | [Cash flow statements](/financials/cash-flow-statements) |
+| `get_all_financials` | All three statements in one call | `GET /v1/financials` | [Combined statements](/financials/combined) |
+| `get_financial_metrics` | Margins, returns, per-share figures and ratios | `GET /v1/financial-metrics` | [Financial metrics](/financials/metrics) |
+| `get_segmented_financials` | Business and geographic segments from SEC filings | `GET /v1/financials/segments` | [Segmented financials](/financials/segments) |
+| `get_company_facts` | Basic issuer facts as filed | `GET /v1/company/facts` | [Company facts](/financials/company-facts) |
+| `get_filings` | The SEC filing index for a company | `GET /v1/filings` | [SEC filings index](/filings/index) |
+| `get_filing_items` | One 10-K, 10-Q or 8-K split into its items, with text | `GET /v1/filings/items` | [SEC filing items](/filings/items) |
+
+## Earnings, guidance and expectations
+
+| Tool | Answers | REST endpoint | Docs |
+| --- | --- | --- | --- |
+| `get_guidance` | What management said it expects, with the quote | `GET /v1/companies/{id}/guidance` | [Management guidance](/events/guidance) |
+| `get_guidance_changes` | How guidance moved against the previous event | `GET /v1/companies/{id}/guidance-changes` | [Guidance changes](/events/guidance-changes) |
+| `get_8k_earnings_results` | Every figure an earnings release printed, including non-GAAP and KPIs | `GET /v1/companies/{id}/earnings-results` | [Reported earnings figures](/events/earnings-results) |
+| `get_8k_company_measures` | The company's own consolidated figures from the release, one row per measure | `GET /v1/companies/{id}/8k-company-measures` | [Company measures](/events/8k-company-measures) |
+| `get_8k_segments` | Segment, product and geography breakouts printed in the release | `GET /v1/companies/{id}/8k-segments` | [Release segments](/events/8k-segments) |
+| `get_consensus` | Analyst estimates, actual vs estimate, price targets and ratings | `GET /v1/companies/{id}/consensus` | [Analyst consensus](/events/consensus) |
+| `get_prediction_markets_consensus` | The EPS bar prediction markets set, and whether the company cleared it | `GET /v1/companies/{id}/earnings-markets` | [Earnings consensus](/events/earnings-consensus) |
+| `get_prediction_markets_quote` | Current prediction-market prices on a company's results, KPIs and call topics | `GET /v1/companies/{id}/prediction-markets` | [Prediction markets](/events/prediction-markets) |
+
+## Transcripts, documents and research
+
+| Tool | Answers | REST endpoint | Docs |
+| --- | --- | --- | --- |
+| `retrieve` | Passages where management discussed a topic, across earnings calls, conferences, investor days and filings | `POST /v1/retrieve` | [Semantic retrieval](/transcripts/semantic-retrieval) |
+| `list_documents` | Which transcripts and documents exist for a ticker | `GET /v1/documents/by-ticker/{ticker}` | [Document corpus](/transcripts/documents) |
+| `get_document` | One document's metadata | `GET /v1/documents/{id}` | [Document corpus](/transcripts/documents) |
+| `get_document_segments` | One document's full text, in order | `GET /v1/documents/{id}/segments` | [Document corpus](/transcripts/documents) |
+| `get_us_presentation_deck` | Slides a US company posted on its IR site | `GET /v1/companies/{id}/us/ir-presentation-decks` | [US presentation decks](/transcripts/us-presentation-decks) |
+| `get_research` | What outside analysts and specialist publications said, as quote-anchored records | `GET /v1/research`, `/sources` | [Research](/events/research) |
+
+## News and real-time events
+
+| Tool | Answers | REST endpoint | Docs |
+| --- | --- | --- | --- |
+| `get_company_events` | What happened to a company recently, one row per event | `GET /v1/companies/{id}/news/events` | [News events](/news/news-events) |
+| `get_company_news` | The individual articles behind those events | `GET /v1/companies/{id}/news` | [Company news](/news/company-news) |
+| `get_macro_news` | Macro and policy events by theme | `GET /v1/news/themes`, `/{theme}` | [News themes](/news/themes) |
+| `get_8k_events` | Structured facts from 8-K filings: appointments, borrowings, deals, notices | `GET /v1/8k-events`, `/families`, `GET /v1/companies/{id}/8k-events` | [8-K events](/events/8k-events) |
+| `get_8k_raw_filings` | The exhibits attached to an 8-K or 6-K, such as the press release | `GET /v1/companies/{id}/8k-exhibits` | [8-K exhibits](/events/8k-exhibits) |
+| `get_company_disclosures` | Exchange filings across the SEC, Japan, Korea, Taiwan, Hong Kong and mainland China | `GET /v1/companies/{id}/disclosures` | [Exchange disclosures](/international/exchange-disclosures) |
+| `manage_push_subscriptions` | Set up webhook delivery of events or raw news, or get a live-stream token | `/v1/events/subscriptions`, `/v1/news/subscriptions`, `GET /v1/events/stream-token` | [Push subscriptions](/realtime/push-subscriptions), [WebSocket streaming](/websocket/overview) |
+
+## Ownership and incentives
+
+| Tool | Answers | REST endpoint | Docs |
+| --- | --- | --- | --- |
+| `get_institutional_holdings` | A manager's 13F portfolio, or the institutions holding a security | `GET /v1/institutional-holdings` | [13F holdings](/ownership/13f) |
+| `get_insider_trades` | Form 4 insider transactions | `GET /v1/insider-trades` | [Insider trades](/ownership/insider-trades) |
+| `get_proxy_ownership` | Beneficial owners disclosed in the proxy statement | `GET /v1/companies/{id}/proxy-ownership` | [Proxy ownership](/ownership/proxy-ownership) |
+| `get_executive_compensation` | Named-executive pay from the proxy statement | `GET /v1/companies/{id}/executive-compensation` | [Executive compensation](/ownership/executive-compensation) |
+| `get_short_interest` | Short interest per settlement date | `GET /v1/companies/{id}/short-interest` | [Short interest](/ownership/short-interest) |
+
+## Investment advisers and investors
+
+| Tool | Answers | REST endpoint | Docs |
+| --- | --- | --- | --- |
+| `search_institutions` | Find an SEC-registered or exempt adviser | `GET /v1/institutions` | [Form ADV directory](/advisers/form-adv) |
+| `get_institution_profile` | Everything on one adviser: Form ADV, brochure, holdings | `GET /v1/institutions/{id}` | [Form ADV directory](/advisers/form-adv), [ADV brochure](/advisers/adv-brochure) |
+| `screen_institutions` | Advisers that match a firm type, strategy or scale | `GET /v1/institutions/screen`, `/facets` | [Adviser screening](/advisers/screening) |
+| `search_vc_investors` | Venture and growth investors by type, stage, theme and location | `GET /v1/investors` | [Venture investors](/advisers/venture-investors) |
+
+## ETFs
+
+| Tool | Answers | REST endpoint | Docs |
+| --- | --- | --- | --- |
+| `search_etfs` | Find an ETF and its identifiers | `GET /v1/etfs` | [ETF data](/etf/overview), [Identifiers](/etf/identifiers) |
+| `get_etf` | Everything on one ETF: identity, labels, fees, structure | `GET /v1/etfs/{id}` | [ETF data](/etf/overview), [Classification](/etf/classification), [Fees](/etf/fees) |
+| `get_etf_history` | Daily NAV, shares, flows, total return, splits and distributions | `GET /v1/etfs/{id}/history` | [NAV](/etf/nav), [Flows](/etf/flows), [Total return](/etf/total-return) |
+| `get_etf_holdings` | An ETF's holdings as filed | `GET /v1/etfs/{id}/holdings` | [ETF holdings](/etf/holdings) |
+| `screen_etfs` | ETFs that match a condition on labels, size, fees, flows or portfolio | `GET /v1/etfs/screen`, `/facets` | [ETF screening](/etf/screening) |
+| `get_etf_taxonomy` | The full ETF label vocabulary | `GET /v1/etfs/taxonomy` | [ETF taxonomy](/etf/taxonomy) |
+
+## Market data and macro
+
+| Tool | Answers | REST endpoint | Docs |
+| --- | --- | --- | --- |
+| `get_market_data` | Daily prices or market cap for a security | `GET /v1/companies/{id}/market-data` | [Daily prices](/market-data/prices), [Market cap](/market-data/market-cap) |
+| `get_benchmark_prices` | Daily prices for an index, commodity or cryptocurrency | `GET /v1/benchmarks`, `/{symbol}` | [Benchmarks](/market-data/benchmarks) |
+| `search_macro_series` | Find a macro series key: CPI, GDP, payrolls, policy rates, yields | `GET /v1/macro/catalog`, `GET /v1/macro/series` | [Macro series](/macro/series) |
+| `get_macro_series` | The values of one macro series | `GET /v1/macro/series/{key}` | [Macro series](/macro/series) |
+| `get_economic_calendar` | Scheduled releases, central-bank decisions, elections and holidays | `GET /v1/macro/calendar` | [Economic calendar](/macro/calendar) |
+
+## Japan
+
+| Tool | Answers | REST endpoint | Docs |
+| --- | --- | --- | --- |
+| `get_japan_financials` | Financial facts as filed to EDINET | `GET /v1/companies/{id}/jp/financials` | [Japan financials](/international/japan-financials) |
+| `get_japan_segments` | Business segments from EDINET filings | `GET /v1/companies/{id}/jp/segments` | [Japan segments](/international/japan-segments) |
+| `get_japan_ownership` | 5% holding reports and major shareholders | `GET /v1/companies/{id}/jp/ownership` | [Japan ownership](/international/japan-ownership) |
+| `get_japan_officers` | Board and executive roster and pay | `GET /v1/companies/{id}/jp/officers` | [Japan officers](/international/japan-officers) |
+| `get_japan_report_sections` | Narrative sections of the annual or half-year report | `GET /v1/companies/{id}/jp/report-sections` | [Japan report sections](/international/japan-report-sections) |
+| `get_japan_disclosure` | Extraordinary reports and buyback reports on EDINET | `GET /v1/companies/{id}/jp/disclosures` | [Japan EDINET disclosures](/international/japan-edinet-disclosures) |
+| `get_japan_transcript` | Results-briefing transcripts and Q&A from the IR website | `GET /v1/companies/{id}/jp/ir-transcripts` | [Japan IR transcripts](/international/japan-ir-transcripts) |
+| `get_japan_presentation_deck` | Slides from the IR website | `GET /v1/companies/{id}/jp/ir-presentation-decks` | [Japan IR decks](/international/japan-ir-presentation-decks) |
+| `get_japan_ir_web_disclosure` | Everything else on the IR website: releases, dividends, forecast revisions | `GET /v1/companies/{id}/jp/ir-web-disclosures` | [Japan IR website disclosures](/international/japan-ir-web-disclosures) |
+
+## Taiwan
+
+| Tool | Answers | REST endpoint | Docs |
+| --- | --- | --- | --- |
+| `get_taiwan_financials` | Quarterly statements (filed cumulative) | `GET /v1/companies/{id}/tw/financials` | [Taiwan financials](/international/taiwan-financials) |
+| `get_taiwan_cashflow` | Cash flow and balance-sheet detail | `GET /v1/companies/{id}/tw/cashflow` | [Taiwan cash flow](/international/taiwan-cash-flow) |
+| `get_taiwan_monthly_revenue` | Monthly revenue | `GET /v1/companies/{id}/tw/monthly-revenue` | [Taiwan monthly revenue](/international/taiwan-monthly-revenue) |
+| `get_taiwan_earnings` | Investor conferences filed on MOPS, with deck and recording links | `GET /v1/companies/{id}/tw/earnings` | [Taiwan investor conferences](/international/taiwan-investor-conferences) |
+| `get_taiwan_presentation_deck` | The text of those conference slides | `GET /v1/companies/{id}/tw/presentation-decks` | [Taiwan presentation decks](/international/taiwan-presentation-decks) |
+| `get_taiwan_ownership` | Director and major-holder holdings and pledges | `GET /v1/companies/{id}/tw/ownership` | [Taiwan ownership](/international/taiwan-ownership) |
+| `get_taiwan_foreign_ownership` | Daily foreign shareholding against the limit | `GET /v1/companies/{id}/tw/foreign-ownership` | [Taiwan foreign ownership](/international/taiwan-foreign-ownership) |
+
+## Korea, Hong Kong, mainland China and Form 20-F
+
+| Tool | Answers | REST endpoint | Docs |
+| --- | --- | --- | --- |
+| `get_korea_financials` | Financial facts as filed to DART | `GET /v1/companies/{id}/kr/financials` | [Korea financials](/international/korea-dart-financials) |
+| `get_korea_report_sections` | DART report sections: ownership, shareholders, share structure, dividends, investments, debt, executive pay (`section`) | `GET /v1/companies/{id}/kr/{section}` | [Shareholders](/international/korea-dart-shareholders), [Capital](/international/korea-dart-capital), [Executive compensation](/international/korea-dart-executive-compensation), [Report sections](/international/korea-dart-report-sections) |
+| `get_hk_financials` | Hong Kong annual and interim statements | `GET /v1/companies/{id}/hk/financials` | [Hong Kong financials](/international/hong-kong-financials) |
+| `get_hong_kong_disclosure` | HKEXnews announcements | `GET /v1/companies/{id}/hk/disclosures` | [Hong Kong disclosures](/international/hong-kong-disclosures) |
+| `get_china_financials` | Mainland China quarterly statements | `GET /v1/companies/{id}/cn/financials` | [China financials](/international/china-financials) |
+| `get_mainland_china_disclosure` | Mainland China announcements | `GET /v1/companies/{id}/cn/disclosures` | [China disclosures](/international/china-disclosures) |
+| `get_china_report_timing` | When a mainland periodic report was first made public | `GET /v1/companies/{id}/cn/report-timing` | [China report timing](/international/china-report-timing) |
+| `get_adr_20f_data` | Form 20-F profile, segments, ownership and XBRL facts (`section`) | `GET /v1/companies/{id}/20f/{section}` | [Form 20-F](/international/form-20f) |
+| `get_adr_20f_notes` | Form 20-F notes to the accounts, index first then full text | `GET /v1/companies/{id}/20f/notes` | [Form 20-F](/international/form-20f) |

@@ -2,12 +2,13 @@
 title: "Cash Flow Statements"
 sidebarTitle: "Cash flow statements"
 description: "As-reported cash flow statements for SEC filers by fiscal year, quarter or trailing twelve months, in the currency and accounting standard the company filed."
+keywords: ["get_cash_flow_statements"]
 ---
 
 Cash Flow Statements provides as-reported cash flow statements for SEC filers. Each observation is one fiscal period for one company, carrying operating, investing and financing cash flows as the company filed them, in its own reporting currency and under its own accounting standard. Rows are returned newest first.
 
 <Info>
-  **Plan:** Free and above · **Credits:** 1 per call
+  **Plan:** Free and above · **Credits:** 1 per call · **MCP tool:** `get_cash_flow_statements`
 </Info>
 
 ## What You Can Use Cash Flow Statements For
@@ -21,6 +22,16 @@ Coverage is SEC filers. Figures are read from each company's own XBRL data as fi
 ## Key Cash Flow Statements Fields
 
 The statement carries the reported operating, investing and financing line items, together with `report_period`, `period`, `currency` and `accounting_standard`.
+
+## Which Fields Are Signed
+
+The net fields are signed as the statement prints them, so negative is cash out:
+
+- `business_acquisitions_and_disposals` — businesses bought less businesses sold.
+- `investment_acquisitions_and_disposals` — all investment purchases less sales and maturities: marketable, non-marketable and equity-method.
+- `issuance_or_purchase_of_equity_shares` and `issuance_or_repayment_of_debt_securities`.
+
+`capital_expenditure` and `dividends_and_other_cash_distributions` are **amounts paid**, positive. `free_cash_flow` is cash from operations less `capital_expenditure`.
 
 ## Currency and Accounting Standard
 
