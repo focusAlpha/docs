@@ -1,0 +1,293 @@
+---
+title: "Private Companies"
+sidebarTitle: "Private companies"
+description: "What a private company was last valued at and when that was set, whether it is still private, every round that can be sourced, and how public mutual funds mark its shares."
+---
+
+Private Companies covers about 375 private companies: the global unicorn list plus the larger US private companies. For each one you get its latest closed valuation, latest round and revenue, each with its own date and sources; whether it is still operating as a private company; every round that can be sourced, from press reports and SEC Form D filings; and how US mutual funds have marked its shares in their SEC Form N-PORT filings.
+
+**MCP tool:** `get_private_company` — see [Connect via MCP](/mcp-setup).
+
+<Info>
+  **Plan:** Fund · **Credits:** 1 per call
+</Info>
+
+<Note>
+This dataset is available on the **Fund** plan only. On the Free and Professional plans, every endpoint on this page returns `402` with a message naming the dataset, and no credits are spent. Contact sales to enable it.
+</Note>
+
+## What you can use private companies for
+
+Find what a private company was last valued at, and the round that set it. Check whether it has been acquired, gone public or shut down. List its rounds side by side with its Form D filings. See whether the funds that hold it have marked it up or down since its last round.
+
+## Find the company_id
+
+Every route is keyed on a private company's `company_id`, which starts with `cmp_p`. Tickers and names are not accepted here. Search the [Company Registry](/companies/registry) by name with `q`; private companies come back with `entity_kind: "private"`.
+
+## How to read the figures
+
+- **Every figure is sourced.** Each was checked against a press report, a company announcement or a filing, and carries that source. Nothing is an estimate.
+- **The date on a valuation is the date of the round that set it.** A 2021 figure on a company that has not raised since is still its last valuation, not stale data.
+- **`unit` is the currency as reported.** `eur`, `gbp`, `cad`, `cny` and `krw` figures are never converted.
+- **`pending` is never the current figure.** A newer valuation or round that is only in talks (`reported_talks`), announced but not closed (`announced_not_closed`) or proposed (`proposed`) is listed separately. Quote the closed figure and say that talks exist.
+- **`status.confirmed: false` means no 2025–26 source either way.** It does not mean the company is gone.
+
+## What absence means
+
+A company outside the reviewed list returns `404` with a reason: either it is not in the private-company coverage, or it is not a private company at all and the listed-company datasets apply. A `404` here means **not covered**, never "no funding".
+
+A round missing from `funding` was not sourced, which is not evidence that it did not happen. A company with no `fund_marks` is simply not held by a reporting fund.
+
+## Private company coverage
+
+About 375 companies, each reviewed by hand in October 2026: status, latest valuation, latest round and revenue. The headline card is current state, rebuilt by review passes rather than a daily feed, so there is no time series of "the valuation as of date X". Form D offerings start in 2021-10. Fund marks start with the 2019-09-30 N-PORT reporting period and exist for the roughly 70 companies that US registered funds hold.
+
+## GET /v1/private-companies/\{company_id\}
+
+The headline card for one company.
+
+- `name`, `entity_kind`, `country` and `website` identify the company.
+- `status.confirmed` says whether a 2025–26 source shows the company operating as described; `status.checked_on` is when that was last checked. `status.latest_event` is the newest status event, such as an acquisition, an announced acquisition, a controlling stake (with the stake in `ratio`), an IPO, a shutdown or a bankruptcy.
+- `valuation`, `latest_round` and `revenue` are the latest **closed** figure of each, with `value`, `unit`, `basis`, `round_label`, `period`, `as_of_date`, `as_of_precision`, `stated_by` and `sources` (`publisher`, `date`, `url`, `quote`).
+- `pending` lists figures that have not closed, each with `kind` (`valuation` or `funding_round`) and `status`.
+- `fund_marks` is the same summary that the fund-marks endpoint below returns as `summary`, or `null` when no reporting fund holds the company.
+
+<ParamField path="company_id" type="string" required>
+  The private company's `company_id`, `cmp_p…`.
+</ParamField>
+
+## GET /v1/private-companies/\{company_id\}/funding
+
+Every sourced round, newest first. `source_kind` says where a row comes from:
+
+- `news_verified` — a round, valuation, tender offer or secondary sale checked against a press report or company announcement, with `lead_investors`, `other_investors` and `sources`.
+- `sec_form_d` — the Form D the company filed for an offering: the amount actually sold in `value`, `target_amount_usd`, `n_investors`, `is_equity` and `is_debt`, `first_filed` and `last_filed`, `revenue_range` and the EDGAR `sec_url`.
+
+`metric` is `funding_round`, `valuation`, `tender_offer`, `secondary_sale` or `total_funding`. A `status` other than `closed` means the round has not closed. `amount_undisclosed: true` is a real round with no published amount. `value_min`, `value_max` and `comparator` carry ranges and "more than" figures as reported.
+
+<Warning>
+A Form D and a press report of the same financing routinely differ in amount and date. Show them side by side rather than merging them.
+</Warning>
+
+<ParamField path="company_id" type="string" required>
+  The private company's `company_id`, `cmp_p…`.
+</ParamField>
+
+This endpoint returns every row in one page; `next_cursor` is always `null`.
+
+## GET /v1/private-companies/\{company_id\}/fund-marks
+
+How US mutual funds have marked the company's shares, quarter by quarter, from SEC Form N-PORT.
+
+- `series` gives, per `report_date`, the cross-fund `median_price` per share, the number of funds (`n_funds`) and the number of holdings rows (`n_rows`).
+- `summary` gives the change since the latest closed round: `median_change`, `p25_change`, `p75_change`, `min_change` and `max_change`, measured from `base_mark_date` to `latest_mark_date` against the round named by `anchor_metric`, `anchor_period` and `anchor_date`. `n_funds` counts funds; `n_views` counts independent marks, because one manager's identical funds count once.
+- `funds=true` adds `funds`: each fund's own chain, with `fund_cik`, `fund_name`, `security`, `report_date`, `price_per_share`, `shares` and `fair_value_level`.
+
+<Warning>
+Fund marks are a signal, not a valuation. Funds hold different share classes, re-mark on their own schedules, and usually move to a new round's price only after it closes, so a flat median can mean nobody re-marked. A mark of 0 is a real write-off. Per-share prices cannot be turned into a company value without the share count, which the filings omit.
+</Warning>
+
+<ParamField path="company_id" type="string" required>
+  The private company's `company_id`, `cmp_p…`.
+</ParamField>
+
+<ParamField query="funds" type="boolean" default="false">
+  `true` adds each fund's own chain of marks.
+</ParamField>
+
+<ParamField query="since" type="string">
+  Only reporting dates on or after this day, `YYYY-MM-DD`.
+</ParamField>
+
+If the data source cannot be read, every endpoint on this page returns `503` rather than an empty result.
+
+## Related datasets
+
+See also [Company Registry](/companies/registry) to find a private company's `company_id`, [Venture Investors](/advisers/venture-investors) for the firms that back these companies, and [Institutional Holdings](/ownership/13f) for what listed-equity managers hold.
+
+<RequestExample>
+
+```bash Summary
+curl "https://api.focusalpha.ai/v1/private-companies/cmp_p002860" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```bash Funding
+curl "https://api.focusalpha.ai/v1/private-companies/cmp_p002860/funding" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```bash Fund marks
+curl "https://api.focusalpha.ai/v1/private-companies/cmp_p002860/fund-marks?since=2026-04-01&funds=true" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Summary
+{
+  "company_id": "cmp_p002860",
+  "name": "Stripe",
+  "entity_kind": "private",
+  "country": "US",
+  "website": "stripe.com",
+  "status": {
+    "confirmed": true,
+    "checked_on": "2026-10-10",
+    "latest_event": null
+  },
+  "valuation": {
+    "value": 159000000000,
+    "unit": "usd",
+    "basis": "tender_offer",
+    "round_label": null,
+    "period": "2026-02-24",
+    "as_of_date": "2026-02-24",
+    "as_of_precision": "day",
+    "stated_by": "press",
+    "sources": [
+      {
+        "url": "https://techcrunch.com/2026/02/24/stripes-valuation-soars-74-to-159-billion/",
+        "date": "2026-02-24",
+        "quote": "Stripe's valuation soars 74% to $159 billion",
+        "publisher": "TechCrunch"
+      }
+    ]
+  },
+  "latest_round": {
+    "value": 694159778,
+    "unit": "usd",
+    "basis": null,
+    "round_label": null,
+    "period": "2024-04-08",
+    "as_of_date": "2024-04-08",
+    "as_of_precision": "day",
+    "stated_by": "company",
+    "sources": null
+  },
+  "revenue": {
+    "value": 6800000000,
+    "unit": "usd",
+    "basis": "calendar_year",
+    "round_label": "total",
+    "period": "2025",
+    "as_of_date": "2025-01-01",
+    "as_of_precision": "year",
+    "stated_by": "press",
+    "sources": [
+      {
+        "url": "https://www.theinformation.com/articles/stripe-minted-3-2-billion-cash-2025-setting-acquisition-hunt",
+        "date": "2026",
+        "publisher": "The Information"
+      }
+    ]
+  },
+  "pending": [],
+  "fund_marks": {
+    "anchor_metric": "valuation",
+    "anchor_period": "2026-02-24",
+    "anchor_date": "2026-02-24",
+    "median_change": 0.0174483306836248,
+    "p25_change": -0.00169302434823457,
+    "p75_change": 0.12170095130999,
+    "min_change": -0.00677209739293827,
+    "max_change": 0.382113821138211,
+    "n_funds": 16,
+    "n_views": 4,
+    "base_mark_date": "2026-02-28",
+    "latest_mark_date": "2026-07-31"
+  },
+  "coverage": {
+    "available_from": null,
+    "available_to": null,
+    "update_frequency": "on_review",
+    "history_status": "current_state"
+  }
+}
+```
+
+```json Funding
+{
+  "data": [
+    {
+      "metric": "funding_round",
+      "source_kind": "sec_form_d",
+      "status": "closed",
+      "round_label": null,
+      "basis": null,
+      "period": "2024-04-08",
+      "value": 694159778,
+      "value_min": null,
+      "value_max": null,
+      "unit": "usd",
+      "comparator": null,
+      "amount_undisclosed": false,
+      "lead_investors": [],
+      "other_investors": [],
+      "sources": null,
+      "note": null,
+      "sec_url": "https://www.sec.gov/Archives/edgar/data/1691342/000169134224000001/",
+      "issuer_name": "Stripe, Inc.",
+      "n_investors": 17,
+      "target_amount_usd": 694159778,
+      "offering_amount_text": null,
+      "is_equity": true,
+      "is_debt": false,
+      "first_filed": "2024-04-12",
+      "last_filed": "2024-04-12",
+      "revenue_range": "Decline to Disclose"
+    }
+  ],
+  "next_cursor": null,
+  "coverage": {
+    "available_from": null,
+    "available_to": null,
+    "update_frequency": "on_review",
+    "history_status": "partial"
+  }
+}
+```
+
+```json Fund marks
+{
+  "summary": {
+    "anchor_metric": "valuation",
+    "anchor_period": "2026-02-24",
+    "anchor_date": "2026-02-24",
+    "median_change": 0.0174483306836248,
+    "p25_change": -0.00169302434823457,
+    "p75_change": 0.12170095130999,
+    "min_change": -0.00677209739293827,
+    "max_change": 0.382113821138211,
+    "n_funds": 16,
+    "n_views": 4,
+    "base_mark_date": "2026-02-28",
+    "latest_mark_date": "2026-07-31"
+  },
+  "series": [
+    { "report_date": "2026-06-30", "median_price": 63, "n_funds": 10, "n_rows": 13 },
+    { "report_date": "2026-07-31", "median_price": 63, "n_funds": 3, "n_rows": 3 }
+  ],
+  "funds": [
+    {
+      "fund_cik": "44201",
+      "fund_name": "Growth Fund of America",
+      "security": "STRIPE LLC",
+      "report_date": "2026-05-31",
+      "price_per_share": 63,
+      "shares": 12224305,
+      "fair_value_level": "3"
+    }
+  ],
+  "coverage": {
+    "available_from": "2019-09-30",
+    "available_to": null,
+    "update_frequency": "quarterly",
+    "history_status": "complete"
+  }
+}
+```
+
+</ResponseExample>

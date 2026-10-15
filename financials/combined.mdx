@@ -2,12 +2,13 @@
 title: "Combined Financial Statements"
 sidebarTitle: "Combined statements"
 description: "All three as-reported financial statements — income, balance sheet and cash flow — for one company and period range, in a single response."
+keywords: ["get_all_financials"]
 ---
 
 Combined Financial Statements returns the income statement, balance sheet and cash flow statement for a company in one response. Each observation is one fiscal period, carrying all three statements as the company filed them, in its own reporting currency and under its own accounting standard. Rows are returned newest first.
 
 <Info>
-  **Plan:** Free and above · **Credits:** 1 per call
+  **Plan:** Free and above · **Credits:** 1 per call · **MCP tool:** `get_all_financials`
 </Info>
 
 ## What You Can Use Combined Financial Statements For
@@ -28,7 +29,7 @@ Every row carries `currency`, the currency the company reported in, and `account
 
 ## Combined Financial Statements Sources
 
-Figures are read from the company's own XBRL exhibits in its SEC filings, as reported — no restatement, no normalisation, no currency conversion.
+Figures are read from the company's own XBRL exhibits in its SEC filings, as reported — no normalisation, no currency conversion. Share counts and per-share figures are restated onto the company's current share basis across stock splits; see [Income Statements](/financials/income-statements).
 
 ## Query Combined Financial Statements
 

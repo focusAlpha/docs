@@ -2,17 +2,18 @@
 title: "Document Corpus"
 sidebarTitle: "Document corpus"
 description: "List a company's documents, fetch one by id, and read its ordered text segments."
+keywords: ["list_documents", "get_document", "get_document_segments"]
 ---
 
-The Document Corpus holds the earnings call transcripts, SEC filings and company documents that [semantic retrieval](/transcripts/semantic-retrieval) searches. Three endpoints address it directly: list a company's documents, fetch one document's metadata by id, and read a document's ordered text segments. Each document is associated with a ticker, a fiscal year and quarter where it has one, and a source URL.
+The Document Corpus holds the earnings call transcripts, conference transcripts (broker and investor conferences, analyst and investor days, keynotes, deal calls and shareholder meetings), SEC filings and company documents that [semantic retrieval](/transcripts/semantic-retrieval) searches. Three endpoints address it directly: list a company's documents, fetch one document's metadata by id, and read a document's ordered text segments. Each document is associated with a ticker, a year and quarter where it has one, and, for filings, a source URL.
 
 <Info>
-  **Plan:** Free and above · **Credits:** 1 per call
+  **Plan:** Free and above · **Credits:** 1 per call · **MCP tools:** `list_documents`, `get_document`, `get_document_segments`
 </Info>
 
 ## What You Can Use the Document Corpus For
 
-Discover which periods exist for a company before searching one. Read a full document in order rather than as ranked fragments. Resolve a document id returned by retrieval back to its metadata and source link.
+Discover which periods exist for a company before searching one. Read a full document in order rather than as ranked fragments. Resolve a document id returned by retrieval back to its metadata. List the conferences and investor days a company's management appeared at, by date.
 
 ## Why to List Documents Before Searching
 
@@ -20,17 +21,17 @@ The document listing is the authoritative answer to which fiscal periods a compa
 
 ## Document Corpus Date Convention
 
-`year` and `quarter` are the **fiscal** period the document covers, as the company labels it, not the calendar date it was published. Documents are listed most recent first.
+`year` and `quarter` are the **fiscal** period the document covers, as the company labels it, not the calendar date it was published. A conference transcript is the exception: its `year` and `quarter` are the calendar quarter in which the event took place. Documents are listed most recent first.
 
 ## Key Document Corpus Fields
 
-`document_id` identifies a document and is the key the fetch and segments endpoints take. `ticker` identifies the company. `year` and `quarter` place it in fiscal time. The document type distinguishes a transcript from a filing. `source_url` links the original.
+`document_id` identifies a document and is the key the fetch and segments endpoints take. `ticker` identifies the company. `year` and `quarter` place it in fiscal time. The document type distinguishes an earnings call (`earnings_call`) from a conference transcript (`conference_transcript`) and from a filing. `source_url` links the original filing; it is `null` on every transcript, earnings call or conference.
 
 A **segment** is a contiguous ordered passage of a document. Segments are the unit retrieval ranks and cites, and reading them in order reconstructs the document.
 
 ## Document Corpus Sources
 
-Transcripts are sourced from the calls themselves; filings come from SEC EDGAR. Every document keeps its `source_url` so any passage can be traced to the original.
+Transcripts are sourced from the calls and events themselves; filings come from SEC EDGAR. Filings keep their `source_url` so any passage can be traced to the original; transcripts are served without a source link, and are traced by their `document_id`, title and date.
 
 ## List a Company's Documents
 

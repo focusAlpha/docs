@@ -3,8 +3,8 @@ title: "Plans and credits"
 description: "How FocusAlpha plans, credit metering, and rate limits work."
 ---
 
-Every FocusAlpha API key belongs to a plan. Every dataset is available on every plan,
-including Free — your plan determines how many credits you have to spend and how fast
+Every FocusAlpha API key belongs to a plan. Every dataset except [private companies](/companies/private-companies)
+(Fund only) is available on every plan, including Free — your plan determines how many credits you have to spend and how fast
 you can call the API. This page explains both.
 
 ## Plans
@@ -69,7 +69,9 @@ Two account endpoints are also free to call:
 ## Dataset access
 
 Every dataset — including screening, ETF data, live news and events, guidance, regional
-filings and the WebSocket event streams — is open to every plan. Credits and rate limits
+filings and the WebSocket event streams — is open to every plan. The one exception is
+[private companies](/companies/private-companies), which is Fund only: on Free and Professional it
+returns `402` before any credit is spent. Otherwise credits and rate limits
 are the only difference between plans, so the Free plan's 100 credits are a way to try
 any dataset before you upgrade.
 

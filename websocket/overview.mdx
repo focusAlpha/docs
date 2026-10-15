@@ -2,9 +2,12 @@
 title: "WebSocket Streaming"
 sidebarTitle: "WebSocket overview"
 description: "Connect a WebSocket and receive every company event as it lands — two interfaces on one ordered log: merged events (our conclusions, one message per revision) and raw news (every arriving item, uncollapsed)."
+keywords: ["manage_push_subscriptions"]
 ---
 
 The WebSocket stream pushes the real-time event layer to you as it is written, so you never poll. Everything FocusAlpha reads — news wires, SEC filings, Asian exchange disclosures, company IR pages, earnings calls — lands in one append-only log, and your socket receives each row the moment it is inserted.
+
+**MCP tool:** `manage_push_subscriptions` — see [Connect via MCP](/mcp-setup).
 
 ## Two interfaces, one join key
 

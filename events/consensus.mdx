@@ -1,0 +1,251 @@
+---
+title: "Analyst Consensus"
+sidebarTitle: "Analyst consensus"
+description: "What analysts expect of a company and how it has done against it: the next report's estimate, every past report's actual vs estimate and surprise, forward consensus, price targets and ratings."
+---
+
+Analyst Consensus is the street's numbers for one company. It answers two questions in one place: what analysts expect next, and how the company has done against what they expected before. One call gives the next report's EPS and revenue estimate, the recent record of actual against estimate with the surprise, the forward annual and quarterly consensus, the price-target consensus and the rating consensus.
+
+**MCP tool:** `get_consensus` — see [Connect via MCP](/mcp-setup).
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What you can use analyst consensus for
+
+Read the bar a company reports against before its next print. Build a beat-and-miss history from each report's actual and estimate. See where the price-target range sits and how ratings are split. Watch how the consensus moves day by day from 2026-10-08 with `as_of`.
+
+## The five views
+
+Pick a view with `view`. `summary` is the default.
+
+| `view` | What it returns |
+| --- | --- |
+| `summary` | One call, one page: the next report with its EPS and revenue estimate, the last 8 reports with actual vs estimate and the surprise, the next 3 annual and next 4 quarterly consensus periods, the price-target consensus and the rating consensus. |
+| `earnings` | Every report, newest first: EPS and revenue, actual and estimate, and the surprise for each. |
+| `estimates` | Annual or quarterly consensus per fiscal period: average, high and low for EPS, revenue, EBITDA, EBIT, net income and SG&A, with analyst counts. |
+| `price_targets` | The target consensus (high, low, median, consensus), counts and average targets over the last month, quarter, year and all time, and each price-target change. |
+| `ratings` | Strong buy, buy, hold, sell and strong sell counts with the consensus rating, the last 12 months of counts, and each rating action. |
+
+`summary` is a single page, so `cursor` is refused there. The other four views page with `cursor`.
+
+`estimates` defaults to the last year of fiscal periods and everything ahead. Pass `date_gte` for older periods.
+
+The surprise is `(actual − estimate) / |estimate| × 100`, in percent. It is `null` when either side is missing or the estimate is zero.
+
+## One listing by default
+
+A company is often known by several symbols: its home listing, a US ADR, Frankfurt and OTC lines. Each listing carries its numbers **in its own units**. TSMC's EPS is about 28 on `2330.TW` (TWD per share), about 4.4 on `TSM` (USD per ADR) and about 0.88 on `TSMWF`.
+
+So the endpoint returns **one listing by default**: the company's primary listing. For a foreign issuer with a US ADR, that is the ADR (`TM`, `TSM`). `symbols` names the listing you got, and `other_listings` names the rest, each with its count of `reports` and `rows`.
+
+- Pass `symbol` for one named listing, such as `7203.T` rather than `TM`. A symbol that is not a listing of this company returns `400`.
+- Pass `symbol=all` for every listing at once.
+
+<Warning>
+Never compare raw numbers across symbols. An EPS of 28 and an EPS of 4.4 can be the same quarter. Surprise percentages carry no unit and agree across listings, so compare those instead.
+</Warning>
+
+## Point in time with as_of
+
+Pass `as_of` to get every value as it stood at the end of that day. The consensus has been saved daily since **2026-10-08**. An `as_of` before that day returns `400`, because consensus from before then was never stored and cannot be rebuilt. A future date is also refused.
+
+To see what was expected before an older report, use `view=earnings`. Each report carries the estimate that was recorded against it in `eps_estimate` and `revenue_estimate`.
+
+## Reports with more than one version
+
+A report can carry `other_versions`. This happens when the source holds more than one row for the same report date, for example a restated revenue or a later update. The main row is the most recently updated one. The others are kept in `other_versions`, with the same fields, rather than dropped.
+
+## Coverage is uneven by market
+
+As measured on 2026-10-08:
+
+- EPS actual and estimate: about 17,000 listings across the US, Europe and Asia.
+- Forward estimates: about 21,000 listings.
+- Price targets: about 4,000 listings. Ratings: about 6,000 listings. Almost all are US and European.
+
+Japanese, Korean, Taiwanese and Chinese names usually have estimates and a surprise record but **no price targets or ratings**. Per-report history goes back decades for large US companies and to about 2014 for many Asian ones.
+
+<Note>
+An empty block means the listing is not covered. It never means no analyst follows the company.
+</Note>
+
+The monthly rating counts and the rating consensus are counted differently and do not add up to each other. Read each one on its own.
+
+## How this differs from other expectation datasets
+
+This dataset is **analyst** expectation. Other pages answer different questions:
+
+- What the company itself expects: [Management Guidance](/events/guidance).
+- What analysts and specialist publications wrote: [Research](/events/research).
+- The EPS line a prediction market set for a quarter, which is fixed when the contract is listed: [Earnings Consensus from Prediction Markets](/events/earnings-consensus).
+- Everything a release printed beyond EPS and revenue: [Reported Earnings Figures](/events/earnings-results).
+
+## Key analyst consensus fields
+
+- `view`, `as_of`, `symbols` and `other_listings` appear on every response.
+- `summary` returns `listings`, one entry per listing, each with `n_reports`, `next_report`, `recent_reports`, `estimates.annual`, `estimates.quarter`, `price_target` and `ratings`.
+- A report row has `report_date`, `eps_actual`, `eps_estimate`, `eps_surprise_pct`, `revenue_actual`, `revenue_estimate`, `revenue_surprise_pct`, `source_updated_on`, `other_versions` and `first_seen_on`.
+- An estimate row has `period` (`annual` or `quarter`), `fiscal_period_end`, `avg` / `high` / `low` bands for `eps`, `revenue`, `ebitda`, `ebit`, `net_income` and `sga_expense`, plus `num_analysts_eps` and `num_analysts_revenue`.
+- `view=price_targets` returns `listings[].consensus` and, in `data`, each target change: `date`, `published_at`, `firm`, `analyst`, `price_target`, `adj_price_target` and `price_when_posted`.
+- `view=ratings` returns `listings[].consensus`, `listings[].monthly` and, in `data`, each action: `date`, `firm`, `previous_grade`, `new_grade` and `action`.
+- `first_seen_on` is the first day FocusAlpha saw that row.
+
+## GET /v1/companies/\{company\}/consensus
+
+<ParamField path="company" type="string" required>
+  A `company_id`, ticker, CIK, ISIN or local symbol (`2330.TW`, `7203.T`, `005930.KS`). Not a company name.
+</ParamField>
+
+<ParamField query="view" type="string" default="summary">
+  `summary`, `earnings`, `estimates`, `price_targets` or `ratings`.
+</ParamField>
+
+<ParamField query="period" type="string">
+  `view=estimates` only: `annual` or `quarter`. Omit for both.
+</ParamField>
+
+<ParamField query="symbol" type="string">
+  One listing of the company, such as `7203.T`, or `all` for every listing. Default is the primary listing.
+</ParamField>
+
+<ParamField query="as_of" type="string">
+  Values as they stood at the end of this day, `YYYY-MM-DD`. From 2026-10-08.
+</ParamField>
+
+<ParamField query="date_gte" type="string">
+  Earliest report date, fiscal period end or action date, `YYYY-MM-DD`. `date_lte` sets the ceiling.
+</ParamField>
+
+<ParamField query="limit" type="integer">
+  Rows per page for the list views, between 1 and 500. Defaults: 40 for `earnings`, 200 for `estimates`, 50 for `price_targets` and `ratings` actions. Page through with `cursor`, passing back `next_cursor` unchanged.
+</ParamField>
+
+If the data source cannot be read, the endpoint returns `503` rather than an empty result.
+
+## Related datasets
+
+See also [Management Guidance](/events/guidance) and [Guidance Changes](/events/guidance-changes) for the company's own outlook, [Reported Earnings Figures](/events/earnings-results) for what the release printed, and [Earnings Consensus from Prediction Markets](/events/earnings-consensus) for a bar that does not drift.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/AAPL/consensus" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```bash One listing
+curl "https://api.focusalpha.ai/v1/companies/TSM/consensus?view=earnings&symbol=2330.TW&limit=8" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "view": "summary",
+  "as_of": null,
+  "symbols": ["AAPL"],
+  "other_listings": [
+    { "symbol": "APC.DE", "reports": 0, "rows": 1 }
+  ],
+  "listings": [
+    {
+      "symbol": "AAPL",
+      "n_reports": 164,
+      "next_report": {
+        "symbol": "AAPL",
+        "report_date": "2026-11-02",
+        "eps_actual": null,
+        "eps_estimate": 1.99,
+        "eps_surprise_pct": null,
+        "revenue_actual": null,
+        "revenue_estimate": 113364700000,
+        "revenue_surprise_pct": null,
+        "source_updated_on": "2026-10-14",
+        "other_versions": [],
+        "first_seen_on": "2026-10-14"
+      },
+      "recent_reports": [
+        {
+          "symbol": "AAPL",
+          "report_date": "2026-07-30",
+          "eps_actual": 2.02,
+          "eps_estimate": 1.89,
+          "eps_surprise_pct": 6.88,
+          "revenue_actual": 109417000000,
+          "revenue_estimate": 109038900000,
+          "revenue_surprise_pct": 0.35,
+          "source_updated_on": "2026-10-14",
+          "other_versions": [],
+          "first_seen_on": "2026-10-14"
+        }
+      ],
+      "estimates": {
+        "annual": [
+          {
+            "symbol": "AAPL",
+            "period": "annual",
+            "fiscal_period_end": "2027-09-27",
+            "eps": { "avg": 9.61543, "high": 10.5427, "low": 9.08124 },
+            "revenue": { "avg": 524941474602, "high": 558087976441, "low": 503067220630 },
+            "ebitda": { "avg": 179891714540, "high": 204003595647, "low": 177651526515 },
+            "ebit": { "avg": 167298033153, "high": 191409914260, "low": 165057845128 },
+            "net_income": { "avg": 138125417720, "high": 158190019072, "low": 136261254593 },
+            "sga_expense": { "avg": 33786523886, "high": 35919914236, "low": 32378643122 },
+            "num_analysts_eps": 30,
+            "num_analysts_revenue": 30,
+            "first_seen_on": "2026-10-14"
+          }
+        ],
+        "quarter": [
+          {
+            "symbol": "AAPL",
+            "period": "quarter",
+            "fiscal_period_end": "2026-12-27",
+            "eps": { "avg": 2.91996, "high": 3.11061, "low": 2.68917 },
+            "revenue": { "avg": 152405969043, "high": 157118627355, "low": 146982910007 },
+            "ebitda": { "avg": 55120529496, "high": 58499919226, "low": 51029633322 },
+            "ebit": { "avg": 51758105611, "high": 55137495341, "low": 47667209437 },
+            "net_income": { "avg": 43070291830, "high": 45882436907, "low": 39666069632 },
+            "sga_expense": { "avg": 9809222861, "high": 10112541136, "low": 9460181449 },
+            "num_analysts_eps": 14,
+            "num_analysts_revenue": 13,
+            "first_seen_on": "2026-10-13"
+          }
+        ]
+      },
+      "price_target": {
+        "target_high": 400,
+        "target_low": 245,
+        "target_median": 357.5,
+        "target_consensus": 341.68,
+        "last_month": { "count": 3, "avg_target": 371.67 },
+        "last_quarter": { "count": 16, "avg_target": 341.1 },
+        "last_year": { "count": 65, "avg_target": 317.68 },
+        "all_time": { "count": 263, "avg_target": 234.17 }
+      },
+      "ratings": {
+        "strong_buy": 1,
+        "buy": 70,
+        "hold": 32,
+        "sell": 9,
+        "strong_sell": 0,
+        "consensus": "Buy"
+      }
+    }
+  ],
+  "coverage": {
+    "available_from": null,
+    "snapshots_from": "2026-10-08",
+    "update_frequency": "daily",
+    "history_status": "partial",
+    "note": "Per-report actuals and estimates go back as far as the feed has them (decades for large US issuers, ~2014 for many Asian ones). Point-in-time values (as_of) exist from 2026-10-08, the first daily snapshot."
+  }
+}
+```
+
+</ResponseExample>

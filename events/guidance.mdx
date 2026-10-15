@@ -2,12 +2,13 @@
 title: "Management Guidance"
 sidebarTitle: "Management guidance"
 description: "Forward-looking guidance a US company gave in its 8-K earnings release and on its earnings call, with the metric, the value as phrased, the direction and the verbatim quote."
+keywords: ["get_guidance"]
 ---
 
 Management Guidance is what a company said it expects, in its own words. Each observation is one guided metric for one period, carrying the value as management phrased it, the direction of the change, and the quote it was read from. Guidance comes from two documents — the 8-K earnings release and the earnings call — and is distinct from any filed financial-statement figure.
 
 <Info>
-  **Plan:** Free and above · **Credits:** 1 per call
+  **Plan:** Free and above · **Credits:** 1 per call · **MCP tool:** `get_guidance`
 </Info>
 
 ## What You Can Use Management Guidance For
@@ -48,7 +49,22 @@ A company that files an 8-K and holds a call hours later states the same figure 
 
 ## Key Management Guidance Fields
 
-`metric_key` is the normalised metric — `revenue`, `ebitda`, `core_eps`. `direction` is `new`, `raise`, `cut` or `maintain`.
+`metric_key` is the normalised metric — `revenue`, `ebitda`, `core_eps`. `direction` is `new`, `raise`, `cut`, `maintain`, `narrow` or `widen`.
+
+## direction Is Computed, claimed Is What the Document Said
+
+`direction` is the same answer [Guidance Changes](/events/guidance-changes) gives, not the word the document used. When the event has a comparable same-period prior, `direction` is that pair's direction, computed from the two ranges: `raise`, `cut` or `maintain`, or `narrow` / `widen` for a range tightened or loosened around an unchanged midpoint. Management can say "raised" while the range went down — LLY on 2026-08-05 "raised" non-GAAP EPS while it went $35.50–37.00 to $35.50–36.50, so `direction` is `cut` — and a document that never says "raised" can still carry a `raise`.
+
+`claimed` is what the **document** said (`raise`, `cut` or `maintain`), shown beside it. When the two differ, report both.
+
+`direction_source` says which rule answered:
+
+| `direction_source` | Meaning |
+|---|---|
+| `change` | The change layer: a comparable same-period pair exists. |
+| `document` | No comparable pair, so the document's own word. |
+| `none` | The same period was guided before, but no direction can be stated. `direction` is null and `direction_note` gives the reason, for example `perimeter_changed` after a spin-off. |
+| `first_on_record` | `new`: this period was never guided before in the ledger. |
 
 `new_value` is the value **as the company phrased it**, for example `9% to 11%`, with the previous phrasing beside it. `quote` is the sentence it came from.
 
@@ -99,7 +115,7 @@ Use the guidance endpoints for one company. `view` selects which of the three th
 </ParamField>
 
 <ParamField query="direction" type="string">
-  `new`, `raise`, `cut` or `maintain`.
+  `new`, `raise`, `cut`, `maintain`, `narrow` or `widen`. Filters on the computed `direction`, not on `claimed`.
 </ParamField>
 
 <ParamField query="year" type="integer">
@@ -145,6 +161,8 @@ curl "https://api.focusalpha.ai/v1/companies/AAPL/guidance-latest" \
       "label": "gross margin",
       "direction": "new",
       "claimed": null,
+      "direction_source": "first_on_record",
+      "direction_note": null,
       "new_value": "between 47% and 48%",
       "prior_value": null,
       "value_low": "47.0",

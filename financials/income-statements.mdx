@@ -2,12 +2,13 @@
 title: "Income Statements"
 sidebarTitle: "Income statements"
 description: "As-reported income statements for SEC filers by fiscal year, quarter or trailing twelve months, in the currency and accounting standard the company filed."
+keywords: ["get_income_statements"]
 ---
 
 Income Statements provides as-reported income statements for SEC filers. Each observation is one fiscal period for one company, carrying revenue through to net income as the company filed it, in its own reporting currency and under its own accounting standard. Rows are returned newest first.
 
 <Info>
-  **Plan:** Free and above · **Credits:** 1 per call
+  **Plan:** Free and above · **Credits:** 1 per call · **MCP tool:** `get_income_statements`
 </Info>
 
 ## What You Can Use Income Statements For
@@ -38,6 +39,18 @@ This matters because a bottom line can be negative purely because of a disposal 
 
 These two fields exist on the income statement only.
 
+## Interest and Non-Operating Lines
+
+`interest_expense` is the **gross** interest expense. A filer that prints only a net interest line — interest income less expense — has it in `interest_income_expense_net`, signed as printed, so positive is net income.
+
+`nonoperating_income_expense` is the filer's own non-operating total where it tags one, on its own definition, which may exclude interest. Otherwise it is pretax income less operating income, which includes net interest.
+
+## Share Counts and Per-Share Figures Are on the Current Share Basis
+
+Share counts and per-share figures on every row are on the company's **current** share basis — restated across stock splits and stock dividends, so years compare directly. `split_adjustment_factor` is what the filing's own share counts were multiplied by, and its per-share figures divided by, to get there: `1` is as filed, `10` means filed before a 10-for-1 split. `share_basis_as_of` is the filing date the current basis starts from.
+
+A null `share_basis_as_of` beside a factor of `1` means the company never split. Both null on a row with share figures means the basis was not established — 20-F rows, or a company whose filings disagree in a way no split explains — and the figures are as filed; check them before comparing years.
+
 ## Income Statements Date Convention
 
 `report_period` is the end of the fiscal period the figures cover, and it is what the `report_period`, `report_period_gte`, `report_period_lte`, `report_period_gt` and `report_period_lt` filters apply to. Rows are returned newest first.
@@ -46,7 +59,7 @@ These two fields exist on the income statement only.
 
 ## Income Statements Sources
 
-Figures are read from the company's own XBRL exhibits in its SEC filings. They are as reported: no restatement, no normalisation, and no currency conversion.
+Figures are read from the company's own XBRL exhibits in its SEC filings. They are as reported: no normalisation and no currency conversion. The one adjustment is that share counts and per-share figures are restated onto the current share basis, as described above.
 
 ## Query Income Statements
 
