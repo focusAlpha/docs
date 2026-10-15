@@ -34,6 +34,7 @@
           "quickstart",
           "mcp-setup",
           "mcp-tools",
+          "concepts/agent-guide",
           "authentication"
         ]
       },
