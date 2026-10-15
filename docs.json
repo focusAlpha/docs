@@ -45,7 +45,8 @@
           "concepts/errors",
           "concepts/pagination",
           "concepts/company-identifiers",
-          "concepts/coverage"
+          "concepts/coverage",
+          "concepts/data-quality"
         ]
       },
       {

@@ -1,7 +1,7 @@
 ---
 title: "ETF Taxonomy"
 sidebarTitle: "Four-level taxonomy"
-description: "FocusAlpha's four-level ETF classification computed from holdings — 8 asset classes, 38 categories, over 300 segments and over 500 specializations, as dotted-path codes with a stated semantic for every node."
+description: "FocusAlpha's four-level ETF classification computed from holdings — 8 asset classes, about 40 categories, over 300 segments and over 500 specializations, as dotted-path codes with a stated semantic for every node."
 keywords: ["get_etf_taxonomy"]
 ---
 
@@ -15,7 +15,7 @@ The ETF Taxonomy is FocusAlpha's four-level classification of what an ETF's hold
 
 **Level 1 — `asset_class`** (8 values): `equity`, `fixed_income`, `multi_asset`, `commodity`, `crypto`, `currency`, `volatility`, and `unknown`. Crypto is deliberately split from currency, and volatility (VIX-futures funds) from alternatives, because their risk shapes have nothing in common with their neighbours.
 
-**Level 2 — `category`** (38 values) splits each asset class by the fund's structural approach. Equity splits into `equity.size_style`, `equity.sector`, `equity.thematic`, `equity.dividend_income`, `equity.active_select`, `equity.leveraged_inverse`, `equity.option_income`, `equity.structured_outcome`. Fixed income splits into `broad_market`, `government`, `corporate`, `municipal`, `securitized`, plus its own `leveraged_inverse` and `option_income`. Multi-asset splits into `allocation`, `target_date`, `long_short`, `managed_futures`, `market_neutral`, `merger_arb`, `risk_parity`. Commodity and crypto each split into `physical`, `futures`, `leveraged_inverse`, `option_income`; currency into `single_pair`, `basket`, `leveraged_inverse`; volatility into `long_vol`, `short_vol`, `tail_hedge`.
+**Level 2 — `category`** (about 40 values) splits each asset class by the fund's structural approach. Equity splits into `equity.size_style`, `equity.sector`, `equity.thematic`, `equity.dividend_income`, `equity.active_select`, `equity.leveraged_inverse`, `equity.option_income`, `equity.structured_outcome`. Fixed income splits into `broad_market`, `government`, `corporate`, `municipal`, `securitized`, plus its own `leveraged_inverse` and `option_income`. Multi-asset splits into `allocation`, `target_date`, `long_short`, `managed_futures`, `market_neutral`, `merger_arb`, `risk_parity`. Commodity and crypto each split into `physical`, `futures`, `leveraged_inverse`, `option_income`; currency into `single_pair`, `basket`, `leveraged_inverse`; volatility into `long_vol`, `short_vol`, `tail_hedge`.
 
 **Level 3 — `segment`** (over 300 values) is **the peer-group key** — the level at which funds are genuinely comparable. Under `equity.sector` it is the eleven sectors (`technology`, `health_care`, `financials`, `energy`, `industrials`, `materials`, `real_estate`, `utilities`, `consumer_discretionary`, `consumer_staples`, `communication_services`). Under `equity.size_style` it is regions and countries (`us`, `global`, `developed_ex_us`, `emerging`, `region_europe`, `country_cn`, `country_jp`, `country_in`, …). Under fixed-income categories it is credit quality (`investment_grade`, `high_yield`, `broad_credit`). Under `equity.leveraged_inverse` it is the underlying (`single_stock`, `us_large_cap`, `nasdaq_100`, `sector_technology`, …).
 

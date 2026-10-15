@@ -35,10 +35,10 @@ Omit `basis` to see both, but do not aggregate across it.
 
 `cleared_confirmed` is an **independent reading** of the same question against the EPS the company printed in its earnings release, with `reported_eps` and `reported_source_url` beside it so it can be checked. `check_status` says why the check could not run, rather than leaving a bare null.
 
-They stay separate columns because they are separate claims. Where both could be computed they agreed on 421 of 422 cases, and the single exception traced to the release data, not to the settlement.
+They stay separate columns because they are separate claims. Where both could be computed they almost always agreed, and the rare disagreement traced to the release data, not to the settlement.
 
 <Warning>
-The independent check runs on about a **third** of settled contracts — 422 of 1,251 — which is a limit of the release data rather than a verdict. Most of the rest are `basis_unknown`, where the release printed an EPS without saying whether it was GAAP or adjusted.
+The independent check runs on about a **third** of settled contracts, which is a limit of the release data rather than a verdict. Most of the rest are `basis_unknown`, where the release printed an EPS without saying whether it was GAAP or adjusted.
 
 A null `cleared_confirmed` therefore means **not checked**, never that `cleared` is wrong.
 </Warning>
