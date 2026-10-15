@@ -60,7 +60,7 @@ Quote `value` for what the market saw on the day; use the restated figure or the
 
 ## Release Facts Coverage
 
-Coverage is still narrow and grows as releases are read: the last three quarterly earnings releases of most S&P 500 companies, from late 2025 on. Releases filed only as PDF are not read. Read the `coverage` block on the response for the current count and date range. For other companies and older quarters, [Reported Earnings Figures](/events/earnings-results) holds the headline figures of far more releases.
+Most S&P 500 companies and, for nearly all of them, every quarterly earnings release filed since January 2025 — seven quarters by October 2026. The layer is not yet updated daily: a release filed after `coverage.available_to` has not been read yet, so the newest quarter can be missing here while [Reported Earnings Figures](/events/earnings-results) already has its headline figures. Releases filed only as PDF are not read. Read the `coverage` block on the response for the current count and date range. For other companies and earlier quarters, [Reported Earnings Figures](/events/earnings-results) holds the headline figures of far more releases.
 
 ## GET /v1/companies/\{company_id\}/8k-release-facts
 
@@ -209,10 +209,10 @@ curl "https://api.focusalpha.ai/v1/companies/NVDA/8k-release-facts?segment=Data%
   ],
   "next_cursor": "WyIyMDI2LTA4LTI2VDIwOjIxOjE5LjAwMDAwMFoiLC…",
   "coverage": {
-    "available_from": "2025-01-22",
+    "available_from": "2025-01-10",
     "available_to": "2026-10-09",
     "companies": 488,
-    "releases": 1455,
+    "releases": 3394,
     "update_frequency": "as releases are read; not yet daily",
     "history_status": "partial"
   }
