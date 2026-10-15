@@ -19,7 +19,7 @@ Read a Hong Kong company's results as it printed them, and check any figure agai
 
 `source=filing` rows are extracted from the results announcement. They carry `filing_url`, `page_no` and `disclosed_at`, the minute HKEXnews released the announcement, so any number can be checked against its page. This leg starts in 2026 — the extent of the announcement index — and covers about 2,400 issuers.
 
-`source=aggregated` rows are standardized statement data reaching back to 2013 for about 2,530 issuers. They carry no document reference, and their date field is the period end, so they tell you what the numbers were — never when the market learned them.
+`source=aggregated` rows are standardized statement data reaching back to 2013 for about 2,500 issuers. They carry no document reference, and their date field is the period end, so they tell you what the numbers were — never when the market learned them.
 
 The endpoint prefers `filing` where both exist. Where the two legs differ for the same cell, **the announcement wins**: the number served is the one the company printed, checked against the page it appears on.
 
@@ -68,7 +68,7 @@ The response carries a top-level `metrics` block: margins, returns (including `r
 
 ## Hong Kong Financials Coverage
 
-The filing leg runs from 2026 for about 2,400 issuers; the aggregated leg runs from 2013 for about 2,530. `coverage.history_status` on the response is `filing_leg_from_2026_aggregated_leg_from_2013`.
+The filing leg runs from 2026 for about 2,400 issuers; the aggregated leg runs from 2013 for about 2,500. `coverage.history_status` on the response is `filing_leg_from_2026_aggregated_leg_from_2013`.
 
 ## Hong Kong Financials Sources
 

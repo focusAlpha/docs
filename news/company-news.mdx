@@ -34,7 +34,7 @@ Only items scoring 40 or above on the rule scorer are read by a model — roughl
 <Warning>
 Those nulls exist because **nothing produced them**, never because a model read the article and had no view.
 
-Do not describe an unread row as unimportant: it was never assessed. On the day after NVIDIA reported, 107 of the 166 articles carrying NVDA sat below the bar.
+Do not describe an unread row as unimportant: it was never assessed. On the day after NVIDIA reported, about two-thirds of the articles carrying NVDA sat below the bar.
 </Warning>
 
 `score`, the rule pass on a 0 to 100 scale, is present on **every** row and is what to rank on when you want everything. `min_impact` filters to the read half.
@@ -53,7 +53,7 @@ Never present an unconfirmed value as a tradable security.
 
 ## Key Company News Article Fields
 
-`channel` says what kind of source it is: `wire`, `sec_filing`, `exchange_filing`, `company_ir`, `earnings_call` or `primary_source`. `publisher` names the outlet. `event_type` is one of the 34 coarse families, matched with normalisation on both sides so a canonical name and a legacy spelling of the same family — `m&a`, `fda`, `litigation` — reach the same rows across the whole history.
+`channel` says what kind of source it is: `wire`, `sec_filing`, `exchange_filing`, `company_ir`, `earnings_call` or `primary_source`. `publisher` names the outlet. `event_type` is one of the coarse event families, matched with normalisation on both sides so a canonical name and a legacy spelling of the same family — `m&a`, `fda`, `litigation` — reach the same rows across the whole history.
 
 `relation` is `direct` when the article names the company, or `knock_on` when the company is reached through a filed relationship, which makes the row an inference.
 
@@ -86,7 +86,7 @@ Use the company news endpoint for one company.
 </ParamField>
 
 <ParamField query="event_type" type="string">
-  One of the 34 coarse families.
+  One of the coarse event families.
 </ParamField>
 
 <ParamField query="min_impact" type="integer">

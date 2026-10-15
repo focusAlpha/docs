@@ -34,6 +34,7 @@
           "quickstart",
           "mcp-setup",
           "mcp-tools",
+          "concepts/agent-guide",
           "authentication"
         ]
       },
@@ -45,7 +46,8 @@
           "concepts/errors",
           "concepts/pagination",
           "concepts/company-identifiers",
-          "concepts/coverage"
+          "concepts/coverage",
+          "concepts/data-quality"
         ]
       },
       {

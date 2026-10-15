@@ -63,31 +63,31 @@ The turnover denominators are not yet the same everywhere: Korea and Taiwan aver
 
 ## Coverage: Any Ratio Filter Narrows the Universe
 
-Valuation and fundamentals reach about **20,490 companies — roughly 68% of the screen** — from six sources. `fundamentals_source` on each row says which one it came from:
+Valuation and fundamentals reach about **20,000 companies — roughly two-thirds of the screen** — from six sources. `fundamentals_source` on each row says which one it came from:
 
 | `fundamentals_source` | Market | Companies | Grain |
 |---|---|---|---|
-| `sec_us_gaap` | US SEC filers (a tracked cohort) | ~3,790 | TTM where the filer reports quarterly, otherwise annual |
-| `china_cas` | Mainland A-shares | ~5,590 | Annual |
-| `japan_edinet` | Japanese statutory annual reports | ~3,770 | Annual |
-| `korea_dart_ifrs` | Korean DART annual reports | ~2,675 | Annual |
-| `hongkong_hkfrs` | Hong Kong results announcements | ~2,343 | Annual |
-| `taiwan_mops_ifrs` | Taiwan summary financials | ~2,328 | Annual |
+| `sec_us_gaap` | US SEC filers (a tracked cohort) | ~3,800 | TTM where the filer reports quarterly, otherwise annual |
+| `china_cas` | Mainland A-shares | ~5,600 | Annual |
+| `japan_edinet` | Japanese statutory annual reports | ~3,800 | Annual |
+| `korea_dart_ifrs` | Korean DART annual reports | ~2,700 | Annual |
+| `hongkong_hkfrs` | Hong Kong results announcements | ~2,300 | Annual |
+| `taiwan_mops_ifrs` | Taiwan summary financials | ~2,300 | Annual |
 
-Where a company appears in more than one source, SEC wins, so ADRs keep their US-GAAP numbers; an A-share annual wins over the Hong Kong announcement for the ~148 companies listed in both places.
+Where a company appears in more than one source, SEC wins, so ADRs keep their US-GAAP numbers; an A-share annual wins over the Hong Kong announcement for the roughly 150 companies listed in both places.
 
 `has_fundamentals=true` asks what is screenable at all, and the free facets endpoint reports the count. Any ratio filter silently narrows the screen to that cohort, so "the cheapest companies in the world on PE" really means "the cheapest of the companies we hold statements for". A null is *missing data in that source*, never *this company has no financials* and never a zero.
 
 **Each source is missing what it does not publish**, so filtering on a field also narrows to the markets that carry it:
 
 - `dividend_yield`, `payout_ratio`, `debt_to_equity` and `return_on_invested_capital` are null for **every** Taiwanese and A-share row. Korea carries dividends and debt for part of its companies.
-- `return_on_invested_capital` reaches Japan (~2,584), the US (~1,897), Hong Kong (~1,127) and Korea (~895).
-- `ebitda` reaches Japan (~3,561), the US (~2,660), Taiwan (~2,284), Hong Kong (~2,248) and Korea (~353), and is null for every A-share row. The Korean figure is small on purpose: a filer whose depreciation is split across several lines is left null rather than partially summed.
-- The four liquidity ratios are null for A-share rows except about 71 of the largest companies, whose full statement carries current-asset and current-liability totals; the summary source behind the rest carries no current/non-current split, and banks, insurers and brokers have none at all. `current_ratio` reaches 957 of the ~7,265 China-domiciled companies — 886 of them listed outside the mainland — and `working_capital_turnover` 765.
-- `return_on_equity` and `book_value_growth_yoy` are on parent-only equity, so they are null for A-share rows except the largest (96 today), whose full statement carries parent-only equity; the summary source for the rest carries only total equity, which includes minority interests.
+- `return_on_invested_capital` reaches Japan (~2,600), the US (~1,900), Hong Kong (~1,100) and Korea (~900).
+- `ebitda` reaches Japan (~3,600), the US (~2,700), Taiwan (~2,300), Hong Kong (~2,200) and Korea (~350), and is null for every A-share row. The Korean figure is small on purpose: a filer whose depreciation is split across several lines is left null rather than partially summed.
+- The four liquidity ratios are null for A-share rows except about the 70 largest companies, whose full statement carries current-asset and current-liability totals; the summary source behind the rest carries no current/non-current split, and banks, insurers and brokers have none at all. `current_ratio` reaches about 950 of the roughly 7,300 China-domiciled companies — most of them listed outside the mainland — and `working_capital_turnover` about 750.
+- `return_on_equity` and `book_value_growth_yoy` are on parent-only equity, so they are null for A-share rows except about the 100 largest, whose full statement carries parent-only equity; the summary source for the rest carries only total equity, which includes minority interests.
 - `receivables_turnover`, `days_sales_outstanding`, `operating_cycle` and `interest_coverage` are null for every Taiwanese row: the source has no receivables balance and no interest-expense line.
 - Japanese rows are read from full statements and carry every ratio column. Consolidated and parent-only accounts are never mixed in one row.
-- Hong Kong reports in eleven currencies, more CNY than HKD. Read `fundamentals_currency` before comparing amounts.
+- Hong Kong reports in about ten currencies, more CNY than HKD. Read `fundamentals_currency` before comparing amounts.
 
 A null `pe_ttm` or `pb` on a Korean, Taiwanese or A-share row is usually a missing **market cap** rather than a loss, because the price ratios need `market_cap_usd`.
 

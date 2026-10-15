@@ -68,11 +68,11 @@ Set `list_facets` to true to get the filterable vocabulary with counts, free of 
 
 ## Always Look Up Product Terms First
 
-The product vocabulary holds 60,620 terms, and it expands **spellings, not concepts**. `memory`, `dram`, `nand` and `memory chips` are four separate terms with four separate company lists, so `makes_term=memory` on its own misses Kioxia, Winbond and Nanya.
+The product vocabulary holds about 60,000 terms, and it expands **spellings, not concepts**. `memory`, `dram`, `nand` and `memory chips` are four separate terms with four separate company lists, so `makes_term=memory` on its own misses Kioxia, Winbond and Nanya.
 
 Use `find_terms` to list the spellings first, then pass every spelling it shows you.
 
-Coverage on this axis is 3,130 companies carrying a product term out of 25,206, and 4,403 companies reachable by `peer_of` or `competitor_of`. An empty result means FocusAlpha holds nothing for that company on that axis — never that the company makes nothing or has no peers — and it is worth saying which.
+Coverage on this axis is far narrower than the registry: about 3,000 companies carry a product term, and about 4,400 are reachable by `peer_of` or `competitor_of`. An empty result means FocusAlpha holds nothing for that company on that axis — never that the company makes nothing or has no peers — and it is worth saying which.
 
 ## Every Match Carries Its Evidence
 

@@ -1,0 +1,90 @@
+---
+title: "Guide for AI agents"
+sidebarTitle: "Guide for AI agents"
+description: "How an AI agent should use FocusAlpha: which tool to call first, how to resolve a company, and the rules that keep it from reporting a wrong number — nulls, units, cumulative periods, point-in-time dates and source citations."
+keywords: ["agent", "llm", "ai", "mcp", "best practices", "routing", "list_datasets", "pitfalls"]
+---
+
+This page is for AI agents and the people who build them. It covers how to find the right tool and the rules that keep an answer correct. Read it with the [MCP tool reference](/mcp-tools), which lists every tool, its key arguments and its REST endpoint.
+
+## A workflow that works
+
+1. **Not sure which tool answers the question?** Call `list_datasets` (free). It returns every dataset, the tools that serve it, its coverage and its known traps. The "Pick the right tool" table in the [MCP tool reference](/mcp-tools#pick-the-right-tool) settles the common look-alikes.
+2. **Resolve the company only when you need to.** Company tools accept a ticker, CIK, ISIN, local symbol (`2330.TW`, `7203.T`, `005930.KS`) or `cmp_…` id directly. Call `search_companies` when a name is ambiguous, or when an SEC-only tool needs the CIK. No CIK means the company files nothing with the SEC, so SEC-only datasets are empty for it. ETFs are not companies: use `search_etfs`.
+3. **Take numbers from structured tools, words from `retrieve`.** Statements, guidance, consensus, release figures, segments and ownership all have their own tools. `retrieve` is for what management *said*. Searching transcripts for a number that a statement tool serves returns prose, and costs a call.
+4. **Page until the end.** Pass `next_cursor` back unchanged until it comes back empty. See [Pagination](/concepts/pagination).
+5. **Cite the source.** Rows carry the document they came from (`filing_url`, `accession_number`, `doc_id`, a verbatim `quote`, or the matched passage). Put it in your answer. See [Data quality and sources](/concepts/data-quality).
+
+## Whose words is it?
+
+Keep these four kinds of statement apart, and say which one you are quoting.
+
+| Kind | Tool | Say it as |
+| --- | --- | --- |
+| What the company filed or reported | Statement tools, `get_8k_earnings_results`, `get_8k_company_measures` | "The company reported…" |
+| What management expects | `get_guidance`, `get_guidance_changes` | "Management guided…" |
+| What analysts expect or wrote | `get_consensus`, `get_research` | "Analysts expect…" / "\<publication\> wrote…" |
+| FocusAlpha's own reading | `direction`, `impact_score` and knock-on rows in the news tools | "FocusAlpha rates this…" — never as a reported fact or a price forecast |
+
+## Rules that prevent wrong numbers
+
+### Null and empty are not zero
+
+- A null field means **not reported**, not zero. Never fill it with 0 or with a figure from a different line.
+- An empty result or an empty block means **not covered**. It does not mean "the company has none" or "no analyst follows it". Read the response's `coverage` block to see what history exists.
+
+### Check currency, standard and basis before you compare
+
+- Statement rows are in the company's own `currency` and `accounting_standard` and are never converted. Do not add or rank amounts across companies without converting them first.
+- Consolidated and parent-only figures are different series. In Japan, read `basis` and `context_id`. In Korea, `basis` is `consolidated` or `separate`. Never mix them.
+- In Hong Kong, check `currency` on every row. Many issuers report in CNY or USD.
+- In analyst consensus, each listing carries its own units: TSMC's EPS is about 28 on `2330.TW` (TWD per share) and about 4.4 on `TSM` (USD per ADR). Compare surprise percentages, not raw numbers across symbols.
+
+### Many markets file cumulative year-to-date figures
+
+A "quarter" is often the year so far. Reading it as one quarter overstates later quarters badly.
+
+| Market | What is cumulative | What to use |
+| --- | --- | --- |
+| Taiwan | Income statement values | `*_q` for the single quarter, `*_ytd` for as filed; `quarter_basis` says how `_q` was made |
+| Mainland China | 中报 (six months) and 三季报 (nine months) | Subtract the previous report: Q3 = 三季报 − 中报 |
+| Japan | 決算短信 (TDnet) values | `period_grain` (3M / 6M / 9M / FY); subtract two grains for one quarter |
+| Korea | Interim cash flow, and some interim income statements | `amount_span` where present; difference cash flow (q3 − half) |
+
+### Read units and scales from the response
+
+- Taiwan amounts are in TWD thousands, except per-share fields, which are plain TWD.
+- The `metrics` block on regional financials gives amounts in whole units, and ratios as fractions (0.2 = 20%), except the two day counts.
+- Percent fields such as Taiwan foreign ownership are on a 0–100 scale. News impact scores are 0–100 too.
+
+### The `metrics` block is the latest period only
+
+Regional financial tools return a `metrics` block for the **latest** period only. `metrics.period` says which period that is. It does not follow the year or period filters on the rows beside it.
+
+### Use the right date for point-in-time questions
+
+- For when a mainland China report became public, use `disclosed_at` (or `get_china_report_timing`), not `announced_on`.
+- `get_consensus` takes `as_of` for values as they stood at the end of a day, from 2026-10-08. For what was expected ahead of an older report, read that report's `eps_estimate`.
+- Daily prices from `get_market_data` start 2025-07-14. An empty result before that is the start of the series, not a missing price.
+
+### Some figures are withheld on purpose
+
+When the filings contradict each other, FocusAlpha withholds a value rather than guess. A missing derived fourth quarter or a withheld segment bucket is deliberate. Report it as not available. Don't reconstruct it from another basis.
+
+## Errors an agent should handle
+
+| Status | Meaning | What to do |
+| --- | --- | --- |
+| `400` | A parameter failed validation, a required combination is missing, or a cursor was changed | Read the message; it names the fix |
+| `402` | Out of credits, or the dataset needs the Fund plan (private companies) | Tell the user; retrying does not help |
+| `404` | The company identifier did not resolve, or the company is not covered by that dataset | Resolve with `search_companies`, or report that it is not covered |
+| `429` | Rate limit on `retrieve` | Back off and retry; see [Rate limits](/concepts/rate-limits) |
+
+See [Errors](/concepts/errors) for the full list.
+
+## Reading these docs as an agent
+
+- Every page is available as Markdown: add `.md` to its URL, for example `https://docs.focusalpha.ai/events/guidance.md`.
+- [`/llms.txt`](https://docs.focusalpha.ai/llms.txt) lists every page with the MCP tools it covers, and `/llms-full.txt` holds the whole site in one file.
+- `https://docs.focusalpha.ai/mcp` serves these docs over MCP (search and read), with no key required. Connect it next to the data server at `https://mcp.focusalpha.ai/mcp`.
+- Each dataset page names its MCP tool in the box under its title.

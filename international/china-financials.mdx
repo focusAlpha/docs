@@ -60,10 +60,10 @@ The typed columns — `revenue`, `operating_profit`, `net_profit`, `net_profit_i
 `_meta.template` says which layout the statement uses: general, bank, securities or insurance. Banks, insurers and brokers have no current/non-current split.
 
 <Warning>
-`full_statement` is filled for the **100 largest A-share companies so far** and is `null` elsewhere. A null means the complete statement has not been fetched for that company yet — not that the company does not disclose those lines.
+`full_statement` is filled for **about the 100 largest A-share companies so far** and is `null` elsewhere. A null means the complete statement has not been fetched for that company yet — not that the company does not disclose those lines.
 </Warning>
 
-`org_type` is the source's industry name (128 values, for example 汽车零部件), **not** a reporting template. It does not tell you which chart of accounts a row uses — though banks, insurers and brokers do file different lines from industrials, so compare `revenue` across those with care.
+`org_type` is the source's industry name (for example 汽车零部件), **not** a reporting template. It does not tell you which chart of accounts a row uses — though banks, insurers and brokers do file different lines from industrials, so compare `revenue` across those with care.
 
 ## The metrics Block Is the Latest Period Only
 
@@ -115,7 +115,7 @@ Statements for one mainland-listed company, newest period first.
 
 ## Related Datasets
 
-See also [Mainland China Report Timing](/international/china-report-timing) for when each report became public, [Mainland China Disclosures](/international/china-disclosures) for the announcements themselves, [Hong Kong Financials](/international/hong-kong-financials) for the ~148 companies listed in both places, and [Screen Companies by Fundamentals](/screening/companies/by-fundamentals) for the cross-market ratios.
+See also [Mainland China Report Timing](/international/china-report-timing) for when each report became public, [Mainland China Disclosures](/international/china-disclosures) for the announcements themselves, [Hong Kong Financials](/international/hong-kong-financials) for the roughly 150 companies listed in both places, and [Screen Companies by Fundamentals](/screening/companies/by-fundamentals) for the cross-market ratios.
 
 <RequestExample>
 

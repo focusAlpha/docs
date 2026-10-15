@@ -1,7 +1,7 @@
 ---
 title: "Event Labels"
 sidebarTitle: "Event labels"
-description: "The label taxonomy both streams speak: one canonical vocabulary of 34 event families and 203 subtypes, with each market's own classification system mapped into it — SEC 8-K items, Japan, Korea and Hong Kong disclosure categories, news-side labels, and company IR pages."
+description: "The label taxonomy both streams speak: one canonical vocabulary of event families and subtypes, with each market's own classification system mapped into it — SEC 8-K items, Japan, Korea and Hong Kong disclosure categories, news-side labels, and company IR pages."
 ---
 
 Every label you see on either stream — an event's `state.labels`, a raw item's `labels` — is a `[family, subtype]` pair from **one vocabulary**. Sources as different as an 8-K item code, a Korean disclosure category and a wire headline all resolve into the same names, so "show me every buyback, in every market, from every source" is one filter, not five.
@@ -10,7 +10,7 @@ Every label you see on either stream — an event's `state.labels`, a raw item's
 
 ## Layer 1 — the canonical vocabulary
 
-34 families, 203 subtypes. Names are lowercase with underscores — they survive as SQL identifiers, JSON keys and URL segments unchanged.
+The families are listed below, with about 200 subtypes beneath them. Names are lowercase with underscores — they survive as SQL identifiers, JSON keys and URL segments unchanged.
 
 **Results and the outlook**
 
@@ -101,7 +101,7 @@ The impact reading that travels with news items (`direction`, `score`) is separa
 
 ## Layer 4 — company IR pages
 
-Company newsrooms are a door of their own: IR press releases are collected daily from companies' own websites and classified by a rule-matched taxonomy (102 subtypes across 28 families, measured against real release titles) that feeds the **same** vocabulary — an earnings release on a company's site and the wire story about it land in the same event with the same labels. IR items carry `channel: "company_ir"`, and guidance read out of a release or an earnings call joins the same events through the guidance ledger.
+Company newsrooms are a door of their own: IR press releases are collected daily from companies' own websites and classified by a rule-matched taxonomy (about 100 subtypes across most of the families, built against real release titles) that feeds the **same** vocabulary — an earnings release on a company's site and the wire story about it land in the same event with the same labels. IR items carry `channel: "company_ir"`, and guidance read out of a release or an earnings call joins the same events through the guidance ledger.
 
 ## Using labels
 

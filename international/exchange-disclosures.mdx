@@ -5,7 +5,7 @@ description: "What a company filed, wherever it filed it — SEC 8-K and 6-K cov
 keywords: ["get_company_disclosures"]
 ---
 
-Exchange Disclosures is the filing index across six venues: the SEC (8-K and 6-K), Japan (TDnet), Korea (DART), Taiwan (TWSE and TPEx), Hong Kong (HKEXnews) and mainland China (cninfo). Each observation is one filing, newest first, in the language it was published in, with a link to the original document. One call covers every venue: omit `market` and it searches every venue the company files in.
+Exchange Disclosures is the filing index across the SEC (8-K and 6-K), Japan (TDnet), Korea (DART), Taiwan (TWSE and TPEx), Hong Kong (HKEXnews) and mainland China (cninfo). Each observation is one filing, newest first, in the language it was published in, with a link to the original document. One call covers every venue: omit `market` and it searches every venue the company files in.
 
 <Info>
   **Plan:** Free and above · **Credits:** 1 per call · **MCP tool:** `get_company_disclosures`
@@ -25,9 +25,9 @@ A foreign private issuer may also furnish a local announcement to the SEC on For
 
 `markets_searched` names the venues that were actually consulted for the company.
 
-An empty result with an empty `markets_searched` means the company files in none of the six venues — a different fact from a company that files in one and announced nothing.
+An empty result with an empty `markets_searched` means the company files in none of these venues — a different fact from a company that files in one and announced nothing.
 
-## Three Venues Are Archives, Three Are Weeks Old
+## Some Venues Are Archives, Others Are Weeks Old
 
 <Warning>
 Each venue starts on a different date:
@@ -60,7 +60,7 @@ Do not build historical studies on the Japan, Taiwan and Korea feeds. Use the fi
 
 **Mainland China** carries the filer's own numeric `announcement_types` and `has_clock_time`. A real clock exists only when `has_clock_time` is true. [Mainland China Disclosures](/international/china-disclosures) adds the type-code filter.
 
-## Category Filtering Excludes Four Venues
+## Category Filtering Excludes the Other Venues
 
 Only Japan and Hong Kong classify their rows. `category` matches Japan's own classification or Hong Kong's headline category; filtering on it excludes the SEC, Korea, Taiwan and mainland-China rows entirely rather than returning them unfiltered.
 
@@ -89,7 +89,7 @@ Filings for one company across every venue it files in, newest first.
 </ParamField>
 
 <ParamField query="category" type="string">
-  Japan's own classification, for example `earnings_flash`, or Hong Kong's headline category. Filtering on it excludes the other four venues.
+  Japan's own classification, for example `earnings_flash`, or Hong Kong's headline category. Filtering on it excludes every other venue.
 </ParamField>
 
 <ParamField query="date_gte" type="string">
