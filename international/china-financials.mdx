@@ -2,12 +2,13 @@
 title: "Mainland China Financials"
 sidebarTitle: "China financials"
 description: "Income, balance-sheet and cash-flow headline lines for about 5,600 Shanghai-, Shenzhen- and Beijing-listed companies, 2023 Q1 onward, in CNY."
+keywords: ["get_china_financials"]
 ---
 
 Mainland China Financials serves the financial statements of companies listed in Shanghai, Shenzhen and Beijing, newest period first. Each observation is one company, one period end and one statement, with typed headline columns beside the source's own summary fields. Coverage is about 5,600 A-share companies from 2023 Q1 onward, amounts in CNY.
 
 <Info>
-  **Plan:** Free and above · **Credits:** 1 per call
+  **Plan:** Free and above · **Credits:** 1 per call · **MCP tool:** `get_china_financials`
 </Info>
 
 ## What You Can Use China Financials For
@@ -46,9 +47,23 @@ Each row carries two dates, and only one of them is the publication date.
 
 The typed columns — `revenue`, `operating_profit`, `net_profit`, `net_profit_incl_nci`, `total_assets`, `total_liabilities`, `total_equity`, `ocf` — are the headline lines only, and each is filled on the statement it belongs to.
 
-`data` holds the source's **summary** fields verbatim, about 46–57 field codes per row — not every account. It has **no R&D, no EPS and no minority-interest lines**, so do not report those as undisclosed. Total equity in this dataset **includes** minority interests; there is no parent-only equity here.
+`data` holds the source's **summary** fields verbatim, about 46–57 field codes per row — not every account. It has **no R&D, no EPS and no minority-interest lines**, so do not report those as undisclosed. Total equity in `data` **includes** minority interests.
 
-`org_type` is the source's industry name (128 values, for example 汽车零部件), **not** a reporting template. It does not tell you which chart of accounts a row uses — though banks, insurers and brokers do file different lines from industrials, so compare `revenue` across those with care.
+## The full_statement Field
+
+`full_statement`, where present, is the **complete statement** for the same period and basis, about 200–320 field codes. It carries the lines `data` lacks:
+
+- `RESEARCH_EXPENSE`, `BASIC_EPS` and `DILUTED_EPS`, and `MINORITY_INTEREST`.
+- `TOTAL_PARENT_EQUITY`, the parent-only equity; `TOTAL_PARENT_EQUITY` plus `MINORITY_EQUITY` is `TOTAL_EQUITY`.
+- `TOTAL_CURRENT_ASSETS`, `TOTAL_CURRENT_LIAB` and `CONTRACT_LIAB`.
+
+`_meta.template` says which layout the statement uses: general, bank, securities or insurance. Banks, insurers and brokers have no current/non-current split.
+
+<Warning>
+`full_statement` is filled for **about the 100 largest A-share companies so far** and is `null` elsewhere. A null means the complete statement has not been fetched for that company yet — not that the company does not disclose those lines.
+</Warning>
+
+`org_type` is the source's industry name (for example 汽车零部件), **not** a reporting template. It does not tell you which chart of accounts a row uses — though banks, insurers and brokers do file different lines from industrials, so compare `revenue` across those with care.
 
 ## The metrics Block Is the Latest Period Only
 
@@ -57,7 +72,8 @@ The response carries a top-level `metrics` block: margins, returns, liquidity, e
 - It describes **one period, the latest**, named in `metrics.period`. It does not move with the `year` or `period_end` filters on the rows beside it.
 - `metrics.amounts` are in whole units of `metrics.currency`.
 - `metrics.ratios` are fractions (`0.2` is 20%), except `days_sales_outstanding` and `operating_cycle`, which are days.
-- For A-shares, `return_on_invested_capital`, `debt_to_equity`, `payout_ratio`, `ebitda` and the four liquidity ratios are always null, because the source publishes no debt total, dividend, share count, depreciation line or current-asset and current-liability totals.
+- For A-shares, `return_on_invested_capital`, `debt_to_equity`, `payout_ratio` and `ebitda` are always null, because the source publishes no debt total, dividend, share count or depreciation line.
+- `return_on_equity` and the four liquidity ratios need parent-only equity and current-asset and current-liability totals, which only `full_statement` carries, so they are null except for the largest companies whose complete statement has been fetched.
 
 `metrics: null` means we hold no fundamentals for the company at all — a different fact from a null field inside it.
 
@@ -99,7 +115,7 @@ Statements for one mainland-listed company, newest period first.
 
 ## Related Datasets
 
-See also [Mainland China Report Timing](/international/china-report-timing) for when each report became public, [Mainland China Disclosures](/international/china-disclosures) for the announcements themselves, [Hong Kong Financials](/international/hong-kong-financials) for the ~148 companies listed in both places, and [Screen Companies by Fundamentals](/screening/companies/by-fundamentals) for the cross-market ratios.
+See also [Mainland China Report Timing](/international/china-report-timing) for when each report became public, [Mainland China Disclosures](/international/china-disclosures) for the announcements themselves, [Hong Kong Financials](/international/hong-kong-financials) for the roughly 150 companies listed in both places, and [Screen Companies by Fundamentals](/screening/companies/by-fundamentals) for the cross-market ratios.
 
 <RequestExample>
 

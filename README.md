@@ -25,6 +25,10 @@ mint dev            # http://localhost:3000
 
 Pushes to `main` deploy to production automatically via the Mintlify GitHub app. Open a PR to get a preview deployment first.
 
+## llms.txt
+
+`llms.txt` is generated from `docs.json` and page frontmatter. Run `python3 scripts/build_llms_txt.py` after adding, renaming or retitling a page, and commit the result.
+
 ## Keeping docs accurate
 
 The API surface is defined by the backend service (controllers and DTOs). When endpoints change there, update the matching page here. Per-dataset coverage windows and caveats live in the backend's MCP dataset catalog — treat it as the source of truth for coverage prose.

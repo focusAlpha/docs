@@ -1,0 +1,51 @@
+---
+title: "Data quality and sources"
+sidebarTitle: "Data quality and sources"
+description: "How FocusAlpha keeps financial data correct: figures as the company filed them, continuous cleaning across the full history, and a link from each figure back to the filing it came from."
+keywords: ["data quality", "source", "filing_url", "provenance", "restatement", "accuracy"]
+---
+
+Data quality comes first at FocusAlpha. A figure you get from the API should be the figure the company published, and you should be able to check it against the document it came from.
+
+## Figures as the company filed them
+
+- **Nothing is converted or normalized away.** Statement rows carry the company's own reporting `currency` and `accounting_standard`; amounts are never converted to USD.
+- **A null means not reported, not zero.** When a company does not disclose a line, the field is null. We do not fill it from a substitute quantity or an estimate.
+- **Withheld rather than guessed.** When the filings disagree in a way the data cannot settle, such as a derived fourth quarter that the annual report contradicts, the value is withheld instead of served.
+- **Company speech stays separate from filed figures.** Management guidance, analyst consensus and outside research each have their own datasets. None of them is mixed into a statement figure.
+
+## Continuous cleaning
+
+Financial statement data is cleaned continuously, and each round of cleaning is re-run across the full history, not just the newest filings.
+
+- **The statements must agree with themselves.** Assets equal liabilities plus equity, and gross profit, operating income and net income bridge line by line. Cash movement reconciles to the change in cash, and per-share figures match the share count they sit beside. A row that breaks an identity is investigated and corrected, not silently dropped.
+- **One basis within a series.** Share counts and per-share figures are restated onto the company's current share basis across splits, so years compare directly. A quarter is derived only from figures on the same basis as the year it belongs to.
+- **Restatements and amendments are applied.** When a company restates, or files an amendment, you get the corrected figure by default.
+- **Every defect becomes a check.** When we find an error, we correct it across every company it affects. The case also becomes a permanent check, so the same error cannot come back.
+
+## Every figure traces to its source
+
+Where the market publishes its filings as documents, each row names the filing it was read from and links to it:
+
+| Market | What each row carries |
+| --- | --- |
+| United States (SEC) | `filing_url` and `accession_number` of the 10-K, 10-Q, 8-K or 20-F |
+| Japan | `filing_url` of the EDINET filing or the TDnet 決算短信, with `doc_id` |
+| Korea | `filing_url` of the original DART document |
+| Hong Kong | `filing_url` and `page_no` of the results announcement, for `source=filing` rows (2026 onward) |
+| Mainland China, Taiwan | The period and report it belongs to; mainland China rows also carry `announcement_id`, the filing that made the report public |
+
+The `source` field on regional rows says what kind of evidence stands behind a figure. `filing` means read from the published document, and `aggregated` means standardized statement data without a document reference. Filing-level evidence is being extended to more markets and more history.
+
+The same applies beyond statements. Guidance, earnings-release figures and 8-K events carry the quote or the document they were read from, and [semantic retrieval](/transcripts/semantic-retrieval) returns the passage it matched.
+
+## Related pages
+
+<CardGroup cols={2}>
+  <Card title="Coverage and freshness" icon="clock" href="/concepts/coverage">
+    What each dataset covers and how often it refreshes.
+  </Card>
+  <Card title="Financial statements" icon="file-invoice-dollar" href="/financials/combined">
+    Income, balance sheet and cash flow, as reported.
+  </Card>
+</CardGroup>

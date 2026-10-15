@@ -2,12 +2,13 @@
 title: "Korea DART Financials"
 sidebarTitle: "Korea DART financials"
 description: "Financial facts for Korean-listed companies as filed to DART, in the filer's own account concepts rather than a normalised statement."
+keywords: ["get_korea_financials"]
 ---
 
 Korea DART Financials provides financial facts for a Korean-listed company as filed to DART, the Korean regulator's disclosure system. Each observation is one account line for one reporting period, in KRW, carrying the filer's own account concept and label. Coverage runs from 2022 onward.
 
 <Info>
-  **Plan:** Free and above · **Credits:** 1 per call
+  **Plan:** Free and above · **Credits:** 1 per call · **MCP tool:** `get_korea_financials`
 </Info>
 
 ## What You Can Use Korea DART Financials For
@@ -30,8 +31,19 @@ Each row carries `account_id`, the machine concept — for example `ifrs-full_Co
 
 ## An Interim Row Does Not Always Cover the Period Its Name Suggests
 
+DART prints both a three-month and a year-to-date column in interim reports. Rows re-fetched since 2026-09-30 — about the 100 largest Korean companies so far — carry both, and `amount_span` says what `amount` covers:
+
+| `amount_span` | Meaning |
+|---|---|
+| `point_in_time` | A balance-sheet row. |
+| `full_year` | An annual-report row. |
+| `three_months` | A `q1` row, or a `half` / `q3` income or comprehensive-income row filed with the year-to-date beside it. That year-to-date figure is `amount_year_to_date`. |
+| `null` | The row predates the re-fetch, or is an interim cash-flow or changes-in-equity row. The measured rule below applies. |
+
+On those rows the year-earlier comparatives are `amount_prior_year_period` (the same three months a year earlier) and `amount_prior_year_to_date`. On interim income, cash-flow and equity rows `amount_prior_period` is empty and the year-earlier comparative is `amount_prior_year_period`; an interim balance sheet keeps its prior year-end in `amount_prior_period`. The two can be equal on a line that only moved inside the quarter.
+
 <Warning>
-DART prints both a three-month and a year-to-date column in interim reports, the filer decides which to fill, and only the first is served. The two statements behave differently:
+On rows where `amount_span` is null, only one of DART's two columns was stored, and the filer decided which to fill. The two statements behave differently:
 
 - **Income figures** in a `half` or `q3` row are the **single quarter** for most filers, but year-to-date for some. To check, divide the half-year figure by the `q1` figure: about 1 means the quarter alone, about 2 means year-to-date. Or reconcile against the annual report.
 - **Cash-flow figures** in interim rows are **year-to-date**: the half-year cash flow covers six months and the `q3` cash flow covers nine.
@@ -53,7 +65,7 @@ Two definitions also vary by filer: SG&A may or may not include R&D, and `Financ
 
 `statement` selects one of `balance_sheet`, `income`, `comprehensive_income`, `cash_flow` or `changes_in_equity`.
 
-Each row carries the amount in the row's `currency`, which is KRW, plus **the two prior periods as filed** in `amount_prior_period` and `amount_two_periods_prior`.
+Each row carries the amount in the row's `currency`, which is KRW. Annual rows also carry **the two prior periods as filed** in `amount_prior_period` and `amount_two_periods_prior`. Every row also carries `amount_span`, `amount_year_to_date`, `amount_prior_year_period` and `amount_prior_year_to_date`, described above; the three extra amounts are null on rows not yet re-fetched.
 
 Every row carries `filing_url`, the original DART document behind the figure. Cite that when quoting a number.
 
@@ -149,6 +161,10 @@ curl "https://api.focusalpha.ai/v1/companies/005930.KS/kr/financials?year=2025&r
       "amount": "43601051000000.0",
       "amount_prior_period": "32725961000000.0",
       "amount_two_periods_prior": "6566976000000.0",
+      "amount_year_to_date": null,
+      "amount_prior_year_period": null,
+      "amount_prior_year_to_date": null,
+      "amount_span": "full_year",
       "currency": "KRW",
       "rcept_no": "20260310002820",
       "filing_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820",

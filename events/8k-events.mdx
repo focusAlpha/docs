@@ -2,12 +2,13 @@
 title: "Structured 8-K Events"
 sidebarTitle: "8-K events"
 description: "What an SEC 8-K filing said, as structured fields: officer changes, debt obligations, mergers, bankruptcies and eleven more event families, extracted within minutes of filing."
+keywords: ["get_8k_events"]
 ---
 
 Structured 8-K Events turns what an SEC 8-K filing said into fields rather than text. Each observation is one concrete fact: an officer appointment with the person, role, effective date and predecessor; a borrowing with principal, rate, maturity and lender; a listing-deficiency notice with the rule, deadline and planned remedy. Rows are extracted within minutes of the filing reaching EDGAR.
 
 <Info>
-  **Plan:** Free and above · **Credits:** 1 per call; the families vocabulary is free
+  **Plan:** Free and above · **Credits:** 1 per call; the families vocabulary is free · **MCP tool:** `get_8k_events`
 </Info>
 
 ## What You Can Use Structured 8-K Events For
@@ -16,7 +17,7 @@ Get deal, debt and issuance terms as fields instead of parsing filing prose. Scr
 
 For the filing's own prose, use [8-K Exhibits](/events/8k-exhibits). For Item 2.02 earnings numbers, use [Reported Earnings Figures](/events/earnings-results) — results are deliberately not in this dataset.
 
-## The Fourteen 8-K Event Families
+## The 8-K Event Families
 
 `officer_director_change`, `debt_obligation`, `unregistered_equity_sale`, `asset_transaction_completed`, `merger_announcement`, `auditor_change`, `listing_deficiency`, `charter_amendment`, `exit_or_disposal_plan`, `material_impairment`, `earnings_restatement`, `bankruptcy`, `obligation_acceleration`, `cybersecurity_incident`.
 
@@ -24,7 +25,7 @@ Set `list_families` to true — it is free — to get the families, their fields
 
 ## Structured 8-K Event Latency
 
-Measured on 2026-08-13: the median is **12 minutes** from SEC acceptance to extraction, and 94% of filings are extracted within 30 minutes.
+The median is about **12 minutes** from SEC acceptance to extraction, and over 90% of filings are extracted within 30 minutes.
 
 That is recent enough to act on but not instant. A filing accepted in the last few minutes may not have its rows yet, and an empty result for one is that gap rather than an absence of events.
 
@@ -32,7 +33,7 @@ That is recent enough to act on but not instant. A filing accepted in the last f
 
 `announced_at` is the **SEC acceptance instant** — when the market learned. Windows and ordering on this endpoint run on `announced_at`, and `announced_gte` and `announced_lte` filter it.
 
-`occurred_on` is the **event's own date**. It is earlier than `announced_at` on 59% of rows, by a median of 3 days, 46 days at the 99th percentile, and years in the tail — an 8-K/A amending an old restructuring plan, for instance.
+`occurred_on` is the **event's own date**. It is earlier than `announced_at` on more than half of rows, typically by a few days, by over a month at the far end, and by years in the tail — an 8-K/A amending an old restructuring plan, for instance.
 
 Use `occurred_on` only to date the event itself, never to order or window a feed.
 
@@ -51,7 +52,7 @@ Use `occurred_on` only to date the event itself, never to order or window a feed
 ## Counting 8-K Events Correctly
 
 <Warning>
-Filter or de-duplicate on `is_amendment`. 2.5% of rows come from an 8-K/A, and the amending filing usually carries the **whole event again**, not just the correction — 52 measured events hold rows from both the original and its amendment.
+Filter or de-duplicate on `is_amendment`. A small share of rows come from an 8-K/A, and the amending filing usually carries the **whole event again**, not just the correction, so some events hold rows from both the original and its amendment.
 
 Do not de-duplicate by person or amount instead. An amendment routinely renames the same person ("John Fraser" becomes "John (Jack) Fraser") and re-scopes roles, so the rows do not match field by field.
 </Warning>
@@ -59,7 +60,7 @@ Do not de-duplicate by person or amount instead. An amendment routinely renames 
 <Warning>
 A filing can yield several rows — two officers, three note tranches — ordered by `seq`. Never add a row whose `attrs.is_total` is `yes` to its siblings.
 
-But do not assume the siblings sum to it either. Measured over 75 groups, 69 reconcile and 6 do not, because the same section can also carry a separate offering, a cumulative-to-date series total, only the insider subset of a wider placement, or unenumerated tranches such as "additional tranches of $250,000 each". A gap is a question to check in the filing, not a missing row.
+But do not assume the siblings sum to it either. Most groups reconcile, but some do not, because the same section can also carry a separate offering, a cumulative-to-date series total, only the insider subset of a wider placement, or unenumerated tranches such as "additional tranches of $250,000 each". A gap is a question to check in the filing, not a missing row.
 </Warning>
 
 ## Structured 8-K Events Sources

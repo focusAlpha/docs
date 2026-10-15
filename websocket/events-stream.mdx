@@ -2,9 +2,12 @@
 title: "Events Interface (merged stream)"
 sidebarTitle: "Events interface"
 description: "One message per event revision — the conclusion. A stable event_id, monotonic revisions, the full label state, what changed, accumulated facts, and our per-ticker impact reading."
+keywords: ["manage_push_subscriptions"]
 ---
 
 The Events interface (`stream: "merged"`) is FocusAlpha's conclusion layer. Everything that turns out to be about the same thing — the wire write-ups, the 8-K, our reading of the guidance, the analyst reactions — hangs onto one stable `event_id`, and you receive one message per **revision** of that event, not one per article.
+
+**MCP tool:** `manage_push_subscriptions` — see [Connect via MCP](/mcp-setup).
 
 Measured on a real replay, an event averages **about two pushes**: the first arrival, then one more when a materially new label lands. Nine arrivals about one earnings print become three messages, not nine.
 

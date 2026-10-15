@@ -2,17 +2,20 @@
 title: "Semantic Retrieval over Filings and Calls"
 sidebarTitle: "Semantic retrieval"
 description: "Search what management discussed across earnings call transcripts and SEC filings, returning ranked source passages with citations rather than a generated answer."
+keywords: ["retrieve"]
 ---
 
 Semantic Retrieval searches company language across earnings call transcripts, SEC filings and other corpus documents. It takes a natural-language query and returns the most relevant source passages with their citations. It returns passages, not a generated answer: there is no model in the loop on the FocusAlpha side, so the caller chooses the model, the prompt and the reasoning.
 
 <Info>
-  **Plan:** Free and above · **Credits:** 1 per call
+  **Plan:** Free and above · **Credits:** 1 per call · **MCP tool:** `retrieve`
 </Info>
 
 ## What You Can Use Semantic Retrieval For
 
 Answer open-ended qualitative questions — what did management say about AI, how did they explain the margin move, what risks did they highlight, what was said about pricing or tariffs. Ground an LLM answer in citable source text. Compare how several companies described the same issue in the same quarter.
+
+The transcripts are not only earnings calls. Retrieval also searches management's non-earnings appearances — broker and investor conference fireside chats, analyst and investor days, keynotes, strategic-deal calls and shareholder meetings — so "what did the CEO say at the investor conference" or "what did they tell analysts at investor day" is a retrieval question too. Both kinds are searched together by default.
 
 ## Semantic Retrieval Complements the Structured Endpoints
 
@@ -28,19 +31,23 @@ With no period set, the search covers the whole corpus and ranks recent document
 
 Setting `year` restricts candidates to that fiscal year. Setting both `year` and `quarter` additionally **turns the recency preference off**.
 
+For an earnings call, `year` and `quarter` are the fiscal period the call reports on. For a conference transcript, they are the calendar quarter in which the event took place.
+
 <Warning>
 Do not infer a period from your own sense of the current date. A guessed year silently returns stale passages rather than an error. To learn which periods exist for a company, call the [document listing](/transcripts/documents) first — it returns that ticker's documents most recent first.
 </Warning>
 
 ## What a Retrieval Result Carries
 
-Each returned passage carries the text itself plus the provenance needed to cite it: the company, the fiscal year and quarter, the document type, the source URL, and page numbers where the source has them.
+Each returned passage carries the text itself plus the provenance needed to cite it: the company, the year and quarter, the document type, the source URL, and page numbers where the source has them.
+
+`documentType` is `earnings_call` or `conference_transcript`, and `documentTitle` is a dated title naming the call or event. Transcripts carry no source link: `sourceUrl` is `null` for both earnings calls and conference transcripts.
 
 Because every passage is traceable to a specific document and period, an answer built from them can always be checked against the original.
 
 ## Semantic Retrieval Sources
 
-Retrieval runs over the FocusAlpha document corpus: earnings call transcripts and SEC filings and company documents. The ranking is computed by FocusAlpha; the text is the source document's own.
+Retrieval runs over the FocusAlpha document corpus: earnings call transcripts, a separate store of non-earnings management speech (conference firesides, analyst and investor days, keynotes, deal calls and shareholder meetings), and SEC filings and company documents. Earnings calls and conference transcripts are searched together and merged unless you pass `filters.source_types`. The ranking is computed by FocusAlpha; the text is the source document's own.
 
 ## Query Semantic Retrieval
 
@@ -63,7 +70,7 @@ Use the retrieve endpoint with a natural-language query. It is a `POST`, and it 
 </ParamField>
 
 <ParamField body="filters.source_types" type="string[]">
-  Restrict to these document or source types.
+  Document types to search: `earnings_call` and/or `conference_transcript`. Omit it to search both, merged — the right default. `["conference_transcript"]` searches only conference fireside chats, analyst and investor days, keynotes, deal calls and shareholder meetings; `["earnings_call"]` searches only earnings calls. A list that names neither type is treated as no filter.
 </ParamField>
 
 <ParamField body="top_k" type="integer">

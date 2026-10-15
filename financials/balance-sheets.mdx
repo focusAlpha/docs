@@ -2,13 +2,16 @@
 title: "Balance Sheets"
 sidebarTitle: "Balance sheets"
 description: "As-reported balance sheets for SEC filers by fiscal year, quarter or trailing twelve months, in the currency and accounting standard the company filed."
+keywords: ["get_balance_sheets"]
 ---
 
 Balance Sheets provides as-reported balance sheets for SEC filers. Each observation is one fiscal period for one company, carrying assets, liabilities and equity as the company filed them, in its own reporting currency and under its own accounting standard. Rows are returned newest first.
 
 <Info>
-  **Plan:** Free and above · **Credits:** 1 per call
+  **Plan:** Free and above · **Credits:** 1 per call · **MCP tool:** `get_balance_sheets`
 </Info>
+
+Every row carries the `filing_url` and `accession_number` of the filing it was read from, and the data is cleaned continuously across the full history. See [Data quality and sources](/concepts/data-quality).
 
 ## What You Can Use Balance Sheets For
 
@@ -21,6 +24,18 @@ Coverage is SEC filers. Figures are read from each company's own XBRL data as fi
 ## Key Balance Sheets Fields
 
 The statement carries the reported asset, liability and equity line items, together with `report_period`, `period`, `currency` and `accounting_standard`.
+
+## Deposits and Contract Liabilities
+
+`deposit_liabilities` is **deposits**: a bank's customer deposits, or deposits a non-bank holds for others, such as a stablecoin issuer's reserves. It is null for an ordinary company.
+
+Unearned revenue is `contract_liabilities`, the whole contract liability, current plus noncurrent. `deferred_revenue` is the current part of it.
+
+## Share Counts Are on the Current Share Basis
+
+`outstanding_shares` is on the company's **current** share basis — restated across stock splits and stock dividends, so years compare directly. `split_adjustment_factor` is what the filing's own share count was multiplied by to get there: `1` is as filed, `10` means filed before a 10-for-1 split. `share_basis_as_of` is the filing date the current basis starts from.
+
+A null `share_basis_as_of` beside a factor of `1` means the company never split. Both null on a row with a share count means the basis was not established — 20-F rows, or a company whose filings disagree in a way no split explains — and the count is as filed; check it before comparing years.
 
 ## Currency and Accounting Standard
 
@@ -40,7 +55,7 @@ Every row carries `currency` and `accounting_standard`.
 
 ## Balance Sheets Sources
 
-Figures are read from the company's own XBRL exhibits in its SEC filings. They are as reported: no restatement, no normalisation, and no currency conversion.
+Figures are read from the company's own XBRL exhibits in its SEC filings. They are as reported: no normalisation and no currency conversion. The one adjustment is the share count, which is restated onto the current share basis as described above.
 
 ## Query Balance Sheets
 
@@ -111,6 +126,7 @@ curl "https://api.focusalpha.ai/v1/financials/balance-sheets?ticker=AAPL&period=
       "non_current_debt": 78328000000,
       "total_debt": 98657000000,
       "deferred_revenue": 9055000000,
+      "deposit_liabilities": null,
       "trade_and_non_trade_payables": 69860000000,
       "shareholders_equity": 73733000000,
       "retained_earnings": -14264000000,

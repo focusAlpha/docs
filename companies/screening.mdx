@@ -2,12 +2,13 @@
 title: "Company Screening"
 sidebarTitle: "Company screening"
 description: "Find companies by what is true of them — size, valuation, momentum, profitability, guidance changes, corporate events, positioning, products and peer relationships — across roughly 25,000 listed companies in 82 countries."
+keywords: ["screen_companies"]
 ---
 
 Company Screening finds companies by condition rather than by identifier. It ranks a universe of roughly 25,000 listed companies across 82 countries on ten combinable axes, and any axis can also be the sort. One row is returned per company.
 
 <Info>
-  **Plan:** Free and above · **Credits:** 1 per call; screen facets and terms are free
+  **Plan:** Free and above · **Credits:** 1 per call; screen facets and terms are free · **MCP tool:** `screen_companies`
 </Info>
 
 This is the cross-company question no per-company endpoint can answer: which companies raised guidance this quarter, who filed for bankruptcy, which Japanese companies revised their forecast this month, who manufactures memory.
@@ -67,11 +68,11 @@ Set `list_facets` to true to get the filterable vocabulary with counts, free of 
 
 ## Always Look Up Product Terms First
 
-The product vocabulary holds 60,620 terms, and it expands **spellings, not concepts**. `memory`, `dram`, `nand` and `memory chips` are four separate terms with four separate company lists, so `makes_term=memory` on its own misses Kioxia, Winbond and Nanya.
+The product vocabulary holds about 60,000 terms, and it expands **spellings, not concepts**. `memory`, `dram`, `nand` and `memory chips` are four separate terms with four separate company lists, so `makes_term=memory` on its own misses Kioxia, Winbond and Nanya.
 
 Use `find_terms` to list the spellings first, then pass every spelling it shows you.
 
-Coverage on this axis is 3,130 companies carrying a product term out of 25,206, and 4,403 companies reachable by `peer_of` or `competitor_of`. An empty result means FocusAlpha holds nothing for that company on that axis — never that the company makes nothing or has no peers — and it is worth saying which.
+Coverage on this axis is far narrower than the registry: about 3,000 companies carry a product term, and about 4,400 are reachable by `peer_of` or `competitor_of`. An empty result means FocusAlpha holds nothing for that company on that axis — never that the company makes nothing or has no peers — and it is worth saying which.
 
 ## Every Match Carries Its Evidence
 

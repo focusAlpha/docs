@@ -1,0 +1,241 @@
+---
+title: "Push Subscriptions (Webhooks)"
+sidebarTitle: "Push subscriptions"
+description: "How to have FocusAlpha POST events or news to your own HTTPS endpoint as they land — creating, listing, pausing and resuming subscriptions, verifying signatures, and handling retries."
+---
+
+Push subscriptions deliver the real-time event log to **your** endpoint, so you never poll. You register an HTTPS URL and optional filters, and FocusAlpha POSTs each matching row to it, in log order, signed with a secret only you hold. Push subscriptions configure delivery; they never return event or news content themselves. To read content, use [Company News Events](/news/news-events) and [Company News Articles](/news/company-news).
+
+**MCP tool:** `manage_push_subscriptions` — see [Connect via MCP](/mcp-setup).
+
+<Info>
+  **Plan:** Free and above · **Credits:** none — managing subscriptions is not a data read
+</Info>
+
+## Two doors, two products
+
+There are two subscription endpoints, and they carry different things. They are the same two interfaces as the [WebSocket stream](/websocket/overview).
+
+| Door | Endpoint | What one delivered row is |
+| --- | --- | --- |
+| **Events** | `/v1/events/subscriptions` | One **event revision**: the merged conclusion (an earnings print, a guidance cut, a deal) with its labels, accumulated facts, what changed in this revision, and FocusAlpha's reading of the trigger. Payloads are documented in [Events interface](/websocket/events-stream). |
+| **News** | `/v1/news/subscriptions` | One **arriving item**, uncollapsed: wire articles and the rows extracted from filings, guidance and dividend sources, each joined to its event by `event_id` but never merged. Payloads are documented in [Raw news interface](/websocket/news-stream). |
+
+<Note>
+The news door carries **no model scoring, by design**. `impacts` is removed from every news payload before delivery: this door reports what arrived, not what FocusAlpha thinks of it. If you want scored push, use the events door.
+</Note>
+
+You do not choose a stream in the request body; the door you call decides it. Each door lists and changes only its own subscriptions.
+
+## Filters
+
+A subscription can narrow what it receives:
+
+- `symbols` — only rows whose payload `symbols` include one of these tickers (case-insensitive).
+- `company_ids` — only rows whose payload `company_id` is one of these.
+- `label_families` — only rows carrying one of these label families, such as `earnings`, `guidance` or `merger_acquisition`. See [Event labels](/websocket/event-labels).
+
+Filters you set are combined with AND. A filter you leave out passes everything, so a subscription with no filters receives every row on its door.
+
+## Where delivery starts
+
+By default a new subscription starts at the current end of the log: "from now on". Pass `from_seq` to replay instead, and you receive every matching row with a `seq` greater than it.
+
+## The signing secret is shown once
+
+<Warning>
+The `secret` (prefixed `whsec_`) appears **only in the response to create**. It is never listed back. Store it immediately; if you lose it, deactivate the subscription and create a new one.
+</Warning>
+
+## What a delivery looks like
+
+Each delivery is a `POST` to your URL with a JSON body and these headers:
+
+- `Content-Type: application/json`
+- `X-FA-Signature: t=<unix seconds>,v1=<hex>` — the signature, described below.
+- `X-FA-Subscription` — the subscription `id`.
+
+The body carries a batch of rows in log order:
+
+```json
+{
+  "subscription_id": "3f6d2a9e-8c1b-4e0f-9a51-6b7c2d4e8f10",
+  "stream": "merged",
+  "rows": [
+    { "seq": 2308415, "payload": { "event_id": "AAPL:earnings:20260730", "revision": 2 } }
+  ],
+  "next_after_seq": 2308415
+}
+```
+
+`stream` is `merged` for the events door and `raw` for the news door. `next_after_seq` is your position in the log once you have processed this delivery. Each `payload` is the full message documented on the [Events](/websocket/events-stream) and [Raw news](/websocket/news-stream) pages.
+
+Respond with any `2xx` status to acknowledge. Any other status, a redirect, a timeout or a connection error counts as a failed delivery.
+
+## Verify the signature
+
+The signature is HMAC-SHA256, keyed with your `secret`, over the string `<t>.<raw body>`, where `t` is the timestamp in the header and the raw body is the exact bytes you received. To verify:
+
+1. Parse `t` and `v1` from `X-FA-Signature`.
+2. Reject the delivery if `t` is more than **5 minutes** from your current time. This stops a captured delivery from being replayed later.
+3. Compute the HMAC over `<t>.<raw body>` and compare it with `v1` using a constant-time comparison.
+
+```typescript
+import { createHmac, timingSafeEqual } from "crypto";
+
+function verify(secret: string, header: string, rawBody: string): boolean {
+  const match = /^t=(\d+),v1=([0-9a-f]{64})$/.exec(header.trim());
+  if (!match) return false;
+  const t = Number(match[1]);
+  if (Math.abs(Date.now() / 1000 - t) > 300) return false;
+  const expected = createHmac("sha256", secret).update(`${t}.${rawBody}`).digest();
+  const received = Buffer.from(match[2], "hex");
+  return expected.length === received.length && timingSafeEqual(expected, received);
+}
+```
+
+Compute the HMAC over the raw body, before any JSON parsing. Re-serialising parsed JSON changes the bytes and the signature will not match.
+
+## Delivery semantics
+
+- **At-least-once.** The same row can arrive more than once. Dedupe events-door rows on `(event_id, revision)` and news-door rows on the payload's `id`; both are stable across re-deliveries.
+- **In order.** A subscription's position is one integer, `cursor_seq`. Delivery never skips ahead after a failure, so order per subscription is preserved and a retry resumes exactly where delivery stopped.
+- **Filtered rows still move the cursor.** `cursor_seq` tracks position in the log, not the last row delivered to you.
+- **Freshness is about 2 minutes end to end**, because the log is written in 2-minute cycles. Push removes polling; it does not make the underlying data arrive sooner.
+
+## Failures and suspension
+
+After a failed delivery, the subscription waits before trying again: 1 minute, then 5 minutes, 30 minutes, 2 hours, and 6 hours for every later retry. A successful delivery resets the count.
+
+After **25 consecutive failures** the subscription suspends itself. `suspended_at` and `suspended_reason` on a listed subscription say so, and `consecutive_failures` shows the count. Fix your endpoint, then call resume: delivery picks up from the stored cursor and nothing is skipped, so a subscription that was suspended for a long time delivers a burst.
+
+## Limits
+
+Each door allows **10 active subscriptions** per account. Creating an eleventh returns `403`; deactivate one first. Suspended subscriptions are still active and count toward the limit. The URL must use `https`; plain `http` is rejected with `400`.
+
+## POST /v1/events/subscriptions
+
+Creates a subscription on the events door. `POST /v1/news/subscriptions` takes the same body and creates one on the news door.
+
+<ParamField body="url" type="string" required>
+  The HTTPS endpoint that deliveries POST to. Up to 2,000 characters.
+</ParamField>
+
+<ParamField body="symbols" type="string[]">
+  Only rows naming one of these tickers. Up to 500.
+</ParamField>
+
+<ParamField body="company_ids" type="string[]">
+  Only rows about one of these `company_id`s. Up to 500.
+</ParamField>
+
+<ParamField body="label_families" type="string[]">
+  Only rows carrying one of these label families. Up to 50.
+</ParamField>
+
+<ParamField body="from_seq" type="integer">
+  Replay every matching row with a `seq` greater than this. Omit to start from now.
+</ParamField>
+
+The response is the subscription, with its `secret` included this one time.
+
+## GET /v1/events/subscriptions
+
+Lists your subscriptions on the events door, oldest first. `GET /v1/news/subscriptions` lists the news door. Each subscription has `id`, `url`, `stream`, `symbols`, `company_ids`, `label_families`, `active`, `cursor_seq`, `consecutive_failures`, `suspended_at`, `suspended_reason` and `created_at`. The secret is never included.
+
+## DELETE /v1/events/subscriptions/\{id\}
+
+Deactivates a subscription on the events door; `DELETE /v1/news/subscriptions/{id}` does the same on the news door. Deactivation is soft: delivery stops, and the subscription's cursor and history are kept. Returns `{ "id": "…", "active": false }`. An `id` that is not one of your subscriptions on that door returns `404`.
+
+<ParamField path="id" type="string" required>
+  The subscription `id` from create or list.
+</ParamField>
+
+## POST /v1/events/subscriptions/\{id\}/resume
+
+Lifts a failure suspension on the events door; `POST /v1/news/subscriptions/{id}/resume` does the same on the news door. It also clears the retry wait and the failure count, and marks the subscription active. Delivery resumes from the stored cursor. Returns `{ "id": "…", "active": true, "resumed": true }`.
+
+<ParamField path="id" type="string" required>
+  The subscription `id` from create or list.
+</ParamField>
+
+## The live stream instead of webhooks
+
+If you would rather hold a WebSocket open than receive POSTs, `GET /v1/events/stream-token` returns a short-lived credential for the live stream, with a `filter` value per door and a paged `catch_up` URL for filling gaps after a disconnect. The WebSocket has no server-side filtering by symbol, company or label; webhook subscriptions do. See [WebSocket overview](/websocket/overview) for how to connect.
+
+## Related pages
+
+See also [Real-time events overview](/realtime/overview) for what each live dataset covers, [WebSocket overview](/websocket/overview), [Events interface](/websocket/events-stream) and [Raw news interface](/websocket/news-stream) for the payloads, and [Event labels](/websocket/event-labels) for the label families you can filter on.
+
+<RequestExample>
+
+```bash Create
+curl -X POST "https://api.focusalpha.ai/v1/events/subscriptions" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com/hooks/focusalpha",
+    "symbols": ["AAPL", "NVDA"],
+    "label_families": ["earnings", "guidance"]
+  }'
+```
+
+```bash List
+curl "https://api.focusalpha.ai/v1/news/subscriptions" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```bash Deactivate
+curl -X DELETE "https://api.focusalpha.ai/v1/events/subscriptions/3f6d2a9e-8c1b-4e0f-9a51-6b7c2d4e8f10" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```bash Resume
+curl -X POST "https://api.focusalpha.ai/v1/events/subscriptions/3f6d2a9e-8c1b-4e0f-9a51-6b7c2d4e8f10/resume" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Create
+{
+  "id": "3f6d2a9e-8c1b-4e0f-9a51-6b7c2d4e8f10",
+  "url": "https://example.com/hooks/focusalpha",
+  "stream": "merged",
+  "symbols": ["AAPL", "NVDA"],
+  "company_ids": null,
+  "label_families": ["earnings", "guidance"],
+  "active": true,
+  "cursor_seq": 2308414,
+  "consecutive_failures": 0,
+  "suspended_at": null,
+  "suspended_reason": null,
+  "created_at": "2026-10-14T09:30:00.000Z",
+  "secret": "whsec_…"
+}
+```
+
+```json List
+{
+  "subscriptions": [
+    {
+      "id": "8a1c4e2b-5d6f-4a7b-9c0d-1e2f3a4b5c6d",
+      "url": "https://example.com/hooks/news",
+      "stream": "raw",
+      "symbols": null,
+      "company_ids": null,
+      "label_families": ["merger_acquisition"],
+      "active": true,
+      "cursor_seq": 2308101,
+      "consecutive_failures": 25,
+      "suspended_at": "2026-10-12T04:10:00.000Z",
+      "suspended_reason": "suspended after 25 consecutive delivery failures; resume to retry from cursor 2308101",
+      "created_at": "2026-10-01T12:00:00.000Z"
+    }
+  ]
+}
+```
+
+</ResponseExample>

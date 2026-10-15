@@ -2,12 +2,13 @@
 title: "Economic Calendar"
 sidebarTitle: "Economic calendar"
 description: "Scheduled releases and central-bank decisions for about 160 economies with previous, consensus and actual, and a daily snapshot history of how consensus moved before each print."
+keywords: ["get_economic_calendar"]
 ---
 
 The economic calendar lists what is due when — CPI, payrolls, GDP, PMIs, rate decisions — with the previous figure, the consensus estimate and the actual once published. Beside those rows it carries the **release schedules the statistics offices and central banks publish themselves**, which reach years further out, and the days each Asian market is closed. A second view keeps the daily history of the consensus, so "what did the market expect a week before the print" is answered from the row captured that day.
 
 <Info>
-  **Plan:** Free and above · **Credits:** 1 per call
+  **Plan:** Free and above · **Credits:** 1 per call · **MCP tool:** `get_economic_calendar`
 </Info>
 
 ## What you can use the calendar for
@@ -20,6 +21,10 @@ Oldest first. The default window is today to 30 days ahead; pass `date_gte` and 
 
 <ParamField query="view" type="string" default="schedule">
   `schedule` returns the calendar as it stands. `snapshots` returns the point-in-time history: one row per event per day it was captured.
+</ParamField>
+
+<ParamField query="type" type="string">
+  Only one kind of row: `release` (a data release or central-bank decision), `election` (a national election or referendum) or `holiday` (a market or public holiday). Schedule view only — with `view=snapshots` it returns `400`, because only releases have a consensus history.
 </ParamField>
 
 <ParamField query="country" type="string">
@@ -53,11 +58,25 @@ So a date more than four months out will have no `estimate`, and that is not a g
 
 ## `status` is the publisher's own word
 
-Official-schedule rows may carry `status`: `provisional` (the date is announced but not fixed), `confirmed`, or `postponed` (announced, then moved). Rows without it are simply dated. The United Kingdom marks the most rows this way, and a `provisional` date months out does move — treat it as the plan it is.
+Official-schedule release rows may carry `status`: `provisional` (the date is announced but not fixed), `confirmed`, or `postponed` (announced, then moved). Rows without it are simply dated. The United Kingdom marks the most rows this way, and a `provisional` date months out does move — treat it as the plan it is.
 
 ## Market holidays are rows too
 
-The days the Japanese, Taiwanese, Korean, Hong Kong and mainland Chinese markets are closed appear as calendar events (`Market holiday` / `Public holiday`), through 2027 for most of them. They are the reason a daily series has no observation on a date, and the reason a filing deadline slips — worth reading before concluding a series stopped updating.
+The days the Japanese, Taiwanese, Korean, Hong Kong and mainland Chinese markets are closed appear as calendar events (`Market holiday` / `Public holiday`), through 2027 for most of them, with `event_type: "holiday"`. They are the reason a daily series has no observation on a date, and the reason a filing deadline slips — worth reading before concluding a series stopped updating.
+
+## Elections are rows too
+
+National elections and referendums appear with `event_type: "election"`, about 18 months ahead, one row per country and voting day (`Election: General`, `Election: Presidential (second round)`). Pass `type=election` to get only those.
+
+An election row's `status` says how firm the date is:
+
+| `status` | Meaning |
+|---|---|
+| `confirmed` | An official page — the election body, the official gazette, the government or the US FEC — prints that date. |
+| `unverified` | The date has been formally set, but it has not yet been found on an official page. |
+| `expected` | The vote has not been formally called yet, so no official date exists to confirm. |
+
+US state elections — primaries, runoffs and special elections, each state on its own day — are separate rows with `subdivision` set to the ISO 3166-2 code (`US-GA`); the national row has no `subdivision`. Election dates before October 2026 come from the market calendar and are often incomplete.
 
 ## One release is several rows
 
@@ -77,7 +96,7 @@ A CPI day carries the index, the year-on-year rate and the month-on-month rate a
 
 ## Key calendar fields
 
-Schedule rows carry `country`, `country_name`, `event`, `scheduled_date`, `scheduled_at` (UTC, when the source gives a time), `period_hint`, `unit`, `impact`, `previous`, `estimate`, `actual`, `official_meeting`, which is `true` for FOMC and ECB Governing Council decisions taken from the central bank's own schedule, plus `official_schedule` and `status` described above. Snapshot rows carry `country`, `event`, `scheduled_date`, `snapshot_date`, `estimate`, `previous` and `actual`.
+Schedule rows carry `country`, `country_name`, `event`, `scheduled_date`, `scheduled_at` (UTC, when the source gives a time), `period_hint`, `unit`, `impact`, `previous`, `estimate`, `actual`, `official_meeting`, which is `true` for FOMC and ECB Governing Council decisions taken from the central bank's own schedule, plus `official_schedule` and `status` described above, `event_type` (`release`, `election` or `holiday`) and `subdivision` (an ISO 3166-2 code on US state election rows, otherwise `null`). Snapshot rows carry `country`, `event`, `scheduled_date`, `snapshot_date`, `estimate`, `previous` and `actual`.
 
 The response's `coverage` block states `schedule_from`, `schedule_to_days_ahead`, `official_schedule_to_days_ahead`, `official_schedule_from`, `snapshots_from` and the snapshot window — two horizons because one number would be a lie about half the rows.
 
@@ -85,11 +104,11 @@ Publishers are named on the [attribution list](/macro/overview#sources-attributi
 
 ## Taiwan and Hong Kong used to be nearly empty
 
-They are not any more: as of 2026-09-26 both carry about 190 future rows, from the Directorate-General of Budget, Accounting and Statistics and the Census and Statistics Department respectively, running through 2026 and 2027. Those rows are `official_schedule: true`, so they carry dates and no consensus. Taiwan's statistics themselves are in [Series](/macro/series).
+They are not any more: both now carry the official release schedules from the Directorate-General of Budget, Accounting and Statistics and the Census and Statistics Department respectively, running through 2026 and 2027. Those rows are `official_schedule: true`, so they carry dates and no consensus. Taiwan's statistics themselves are in [Series](/macro/series).
 
 ## Related datasets
 
-See [Series](/macro/series) for the values a release updates, [Earnings consensus](/events/earnings-consensus) for company-level expectations, and [Prediction markets](/events/prediction-markets) for traded odds on macro outcomes.
+See [Series](/macro/series) for the values a release updates, [Analyst consensus](/events/consensus) for company-level estimates, [Earnings consensus](/events/earnings-consensus) for prediction-market EPS bars, and [Prediction markets](/events/prediction-markets) for traded odds on macro outcomes.
 
 <RequestExample>
 
@@ -123,7 +142,9 @@ curl "https://api.focusalpha.ai/v1/macro/calendar?view=snapshots&country=US&q=No
       "previous": 0.3,
       "estimate": null,
       "actual": null,
-      "official_meeting": false
+      "official_meeting": false,
+      "event_type": "release",
+      "subdivision": null
     }
   ],
   "next_cursor": "WyIyMDI2LTA5LTExIiwiVVMiLCJDbGV2ZWxhbmQgQ1BJIE1vTSAoQXVnKSJd",

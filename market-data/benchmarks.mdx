@@ -1,13 +1,14 @@
 ---
 title: "Index and Commodity Benchmarks"
 sidebarTitle: "Benchmarks"
-description: "Daily prices for 425 equity indices and 40 commodities, with ten years of history from 2015."
+description: "Daily prices for about 425 equity indices and 40 commodities, with ten years of history from 2015."
+keywords: ["get_benchmark_prices"]
 ---
 
-Index and Commodity Benchmarks provides daily prices for 425 equity indices and 40 commodities — the S&P 500, the Nikkei, the Hang Seng, gold, WTI, copper. Each observation is one benchmark symbol on one date. History runs from 2015, ten years, which is far longer than the one-year window on [company prices](/market-data/prices).
+Index and Commodity Benchmarks provides daily prices for about 425 equity indices and 40 commodities — the S&P 500, the Nikkei, the Hang Seng, gold, WTI, copper. Each observation is one benchmark symbol on one date. History runs from 2015, ten years, which is far longer than the one-year window on [company prices](/market-data/prices).
 
 <Info>
-  **Plan:** Free and above · **Credits:** 1 per call
+  **Plan:** Free and above · **Credits:** 1 per call · **MCP tool:** `get_benchmark_prices`
 </Info>
 
 ## What You Can Use Benchmarks For
@@ -21,7 +22,7 @@ No company identifier works on this endpoint. It serves benchmark symbols only. 
 ## Look Up the Benchmark Symbol First
 
 <Warning>
-Benchmark symbols are vendor spellings and are **not guessable**. The S&P 500 is `^GSPC` and gold is `GCUSD`, but 37 indices carry no caret at all: `XIN9.FGI` is the FTSE China A50, `DX-Y.NYB` is the dollar index, and `000001.SS` is the Shanghai Composite despite looking exactly like a listed share.
+Benchmark symbols are vendor spellings and are **not guessable**. The S&P 500 is `^GSPC` and gold is `GCUSD`, but dozens of indices carry no caret at all: `XIN9.FGI` is the FTSE China A50, `DX-Y.NYB` is the dollar index, and `000001.SS` is the Shanghai Composite despite looking exactly like a listed share.
 </Warning>
 
 Pass `search` with a name — `gold`, `Nikkei`, `DAX` — to get the registry back, optionally narrowed with `kind` to `index` or `commodity`. Search takes precedence when both `search` and `symbol` are supplied.
@@ -29,7 +30,7 @@ Pass `search` with a name — `gold`, `Nikkei`, `DAX` — to get the registry ba
 ## Read close_major for a Commodity
 
 <Warning>
-Twelve agricultural contracts quote in **US cents**, with a `currency` of `USX`. Corn's close of `508.5` is $5.085 a bushel, not $508.50.
+About a dozen agricultural contracts quote in **US cents**, with a `currency` of `USX`. Corn's close of `508.5` is $5.085 a bushel, not $508.50.
 
 Read `close_major` and `currency_major`, which are the same figure folded into the major unit. For every other benchmark they equal `close` and `currency`, so reading them is always safe.
 </Warning>

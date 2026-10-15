@@ -2,12 +2,13 @@
 title: "US Presentation Decks"
 sidebarTitle: "US presentation decks"
 description: "The slides US companies showed at earnings calls, broker conferences and investor days, read from each company's investor-relations website."
+keywords: ["get_us_presentation_deck"]
 ---
 
 US Presentation Decks are the slide decks a US company posts on its own investor-relations website: earnings-call presentations, broker-conference and investor-day decks, standing "Investor Presentation" decks, and the financial supplements posted alongside a results call. Each row is one document, with the event it was posted under, a link to the file, and — on request — its extracted text.
 
 <Info>
-  **Plan:** Free and above · **Credits:** 1 per call
+  **Plan:** Free and above · **Credits:** 1 per call · **MCP tool:** `get_us_presentation_deck`
 </Info>
 
 A deck is at most an 8-K exhibit on the day of a call, and a broker-conference deck is usually filed nowhere, so the company's investor-relations website is often the only place these slides exist.
@@ -20,11 +21,11 @@ Read the charts and KPIs management chose to show on a results call, next to wha
 
 A document is served here only when its **text** reads as a deck — the event title alone cannot tell, because one "Q2 Earnings Conference Call" page may carry the slides, the earnings release, the call notice and SEC filings together. Only the slides and the financial supplement are returned; releases, notices, transcripts and filings posted on the same page are not.
 
-The typing is not perfect: an audit of 60 rows found 51 real decks or supplements, with the rest being results tables, press releases, prepared remarks or a filing that passed the text rules. `classifier_version` on each row says which rule set typed it.
+The typing is not perfect: in a sample audit most rows were real decks or supplements, with the rest being results tables, press releases, prepared remarks or a filing that passed the text rules. `classifier_version` on each row says which rule set typed it.
 
 ## US presentation deck coverage
 
-Coverage is a fixed set of about 1,470 US companies whose investor-relations websites are read continuously — not the whole market. The response's `coverage.companies_covered` gives the current count. History is as deep as each site's own archive; `coverage.available_from` and `available_to` give the range for the company you asked about.
+Coverage is a fixed set of about 1,500 US companies whose investor-relations websites are read continuously — not the whole market. The response's `coverage.companies_covered` gives the current count. History is as deep as each site's own archive; `coverage.available_from` and `available_to` give the range for the company you asked about.
 
 <Warning>
 `company.in_ir_web_universe: false` means FocusAlpha does not read that company's investor-relations website. It never means the company posted no decks.

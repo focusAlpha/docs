@@ -33,6 +33,8 @@
           "index",
           "quickstart",
           "mcp-setup",
+          "mcp-tools",
+          "concepts/agent-guide",
           "authentication"
         ]
       },
@@ -44,7 +46,8 @@
           "concepts/errors",
           "concepts/pagination",
           "concepts/company-identifiers",
-          "concepts/coverage"
+          "concepts/coverage",
+          "concepts/data-quality"
         ]
       },
       {
@@ -136,7 +139,8 @@
               "companies/identifiers",
               "companies/listings",
               "companies/corporate-events",
-              "companies/calendar"
+              "companies/calendar",
+              "companies/private-companies"
             ]
           },
           {
@@ -187,6 +191,7 @@
               "international/taiwan-foreign-ownership",
               "international/taiwan-ownership",
               "international/taiwan-investor-conferences",
+              "international/taiwan-presentation-decks",
               "international/korea-dart-financials",
               "international/korea-dart-shareholders",
               "international/korea-dart-capital",
@@ -262,6 +267,7 @@
         "group": "Real-time events",
         "pages": [
           "realtime/overview",
+          "realtime/push-subscriptions",
           {
             "group": "Guidance and changes",
             "pages": [
@@ -292,6 +298,7 @@
           {
             "group": "Market expectations",
             "pages": [
+              "events/consensus",
               "events/prediction-markets",
               "events/earnings-consensus"
             ]

@@ -2,12 +2,13 @@
 title: "Financial Metrics"
 sidebarTitle: "Financial metrics"
 description: "Computed financial ratios and per-share figures per reporting period: margins, returns, leverage and valuation inputs."
+keywords: ["get_financial_metrics"]
 ---
 
 Financial Metrics provides computed ratios and per-share figures for a company, one row per reporting period. Each observation is derived from that period's as-reported statements — margins, returns, leverage measures and per-share figures. Rows are returned newest first.
 
 <Info>
-  **Plan:** Free and above · **Credits:** 1 per call
+  **Plan:** Free and above · **Credits:** 1 per call · **MCP tool:** `get_financial_metrics`
 </Info>
 
 ## What You Can Use Financial Metrics For
@@ -21,6 +22,10 @@ Coverage follows the underlying statements: SEC filers, for the periods their XB
 ## Key Financial Metrics Fields
 
 Rows carry margin measures, return measures, per-share figures and leverage measures, alongside `report_period`, `period`, `currency` and `accounting_standard`.
+
+<Warning>
+The eight valuation fields are **always null** here: `enterprise_value`, `price_to_earnings_ratio`, `price_to_book_ratio`, `price_to_sales_ratio`, `enterprise_value_to_ebitda_ratio`, `enterprise_value_to_revenue_ratio`, `free_cash_flow_yield` and `peg_ratio`. This endpoint reads filings only and joins no price, so a null there is not missing data. For current valuation use [Screen Companies by Fundamentals](/screening/companies/by-fundamentals), which serves `pe_ttm`, `pb`, `ps_ttm`, `fcf_yield` and `dividend_yield`, or [daily market cap](/market-data/market-cap) for the raw series.
+</Warning>
 
 ## Currency and Accounting Standard
 

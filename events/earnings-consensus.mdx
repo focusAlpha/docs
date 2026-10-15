@@ -2,12 +2,13 @@
 title: "Earnings Consensus from Prediction Markets"
 sidebarTitle: "Earnings consensus"
 description: "The EPS level a prediction-market contract settles against for a company's quarter, and whether the company cleared it."
+keywords: ["get_prediction_markets_consensus"]
 ---
 
 Earnings Consensus from Prediction Markets reports where the market set the bar for a US company's quarterly EPS, and whether the company cleared it. Each observation is one contract for one quarter, carrying the EPS threshold it settles against, the basis it is written on, and the settlement outcome.
 
 <Info>
-  **Plan:** Free and above · **Credits:** 1 per call
+  **Plan:** Free and above · **Credits:** 1 per call · **MCP tool:** `get_prediction_markets_consensus`
 </Info>
 
 ## What You Can Use Earnings Consensus For
@@ -18,7 +19,7 @@ Read the bar a quarter was judged against, struck at a date you can point to. Co
 
 `eps_threshold` is a property **of the contract**: the EPS level that decides how it settles, struck where expectations sat when the contract was written.
 
-It is fixed at listing and never revised afterwards, so it does not drift with later news the way a running consensus estimate does. That makes it a stable historical bar, and a different thing from a sell-side consensus number.
+It is fixed at listing and never revised afterwards, so it does not drift with later news the way a running consensus estimate does. That makes it a stable historical bar, and a different thing from a sell-side consensus number — for analyst estimates, actual vs estimate and surprises, use [Analyst Consensus](/events/consensus).
 
 ## GAAP and Non-GAAP Are Different Contracts
 
@@ -34,10 +35,10 @@ Omit `basis` to see both, but do not aggregate across it.
 
 `cleared_confirmed` is an **independent reading** of the same question against the EPS the company printed in its earnings release, with `reported_eps` and `reported_source_url` beside it so it can be checked. `check_status` says why the check could not run, rather than leaving a bare null.
 
-They stay separate columns because they are separate claims. Where both could be computed they agreed on 421 of 422 cases, and the single exception traced to the release data, not to the settlement.
+They stay separate columns because they are separate claims. Where both could be computed they almost always agreed, and the rare disagreement traced to the release data, not to the settlement.
 
 <Warning>
-The independent check runs on about a **third** of settled contracts — 422 of 1,251 — which is a limit of the release data rather than a verdict. Most of the rest are `basis_unknown`, where the release printed an EPS without saying whether it was GAAP or adjusted.
+The independent check runs on about a **third** of settled contracts, which is a limit of the release data rather than a verdict. Most of the rest are `basis_unknown`, where the release printed an EPS without saying whether it was GAAP or adjusted.
 
 A null `cleared_confirmed` therefore means **not checked**, never that `cleared` is wrong.
 </Warning>

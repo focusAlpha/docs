@@ -2,12 +2,13 @@
 title: "Company Facts"
 sidebarTitle: "Company facts"
 description: "Basic issuer information as filed with the SEC: name, identifiers and related filing metadata."
+keywords: ["get_company_facts"]
 ---
 
 Company Facts provides basic information about an SEC issuer as filed: its name, its identifiers and related metadata. Each observation is one issuer, addressed by ticker or CIK. It is the lightweight lookup for confirming who a filer is before querying its filings or financials.
 
 <Info>
-  **Plan:** Free and above · **Credits:** 1 per call; the two coverage endpoints are free
+  **Plan:** Free and above · **Credits:** 1 per call; the two coverage endpoints are free · **MCP tool:** `get_company_facts`
 </Info>
 
 ## What You Can Use Company Facts For
@@ -18,7 +19,7 @@ Confirm that a ticker resolves to the issuer you expect before running a larger 
 
 Coverage is SEC filers. Two free discovery endpoints enumerate it: one lists every covered ticker, the other every covered CIK, zero-padded to ten characters. Both cost no credits.
 
-A company absent from these lists files nothing with the SEC that FocusAlpha holds, so every SEC-scoped dataset will be empty for it regardless of how it is queried. That is a different fact from the company not existing — see [the company registry](/companies/registry), which covers roughly 25,000 companies across 82 countries, most of which are not SEC filers.
+A company absent from these lists files nothing with the SEC that FocusAlpha holds, so every SEC-scoped dataset will be empty for it regardless of how it is queried. That is a different fact from the company not existing — see [the company registry](/companies/registry), which covers roughly 25,000 companies across about 80 countries, most of which are not SEC filers.
 
 ## Key Company Facts Fields
 

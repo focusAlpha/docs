@@ -2,12 +2,13 @@
 title: "Guidance Changes"
 sidebarTitle: "Guidance changes"
 description: "How a US company's guidance moved between earnings events — only the metrics that changed, with both values, both documents, and a flag for metrics where up is bad."
+keywords: ["get_guidance_changes"]
 ---
 
 Guidance Changes reports how a company's guidance **moved**. Each observation is one metric compared against the same metric at the company's previous earnings event, carrying both values and both documents' ids. Only the metrics that changed appear, newest first.
 
 <Info>
-  **Plan:** Free and above · **Credits:** 1 per call
+  **Plan:** Free and above · **Credits:** 1 per call · **MCP tool:** `get_guidance_changes`
 </Info>
 
 ## What You Can Use Guidance Changes For
@@ -34,7 +35,11 @@ An empty result can also simply mean the company reiterated everything. Pair wit
 
 ## Key Guidance Change Fields
 
-`metric_key` is the normalised metric. `current_value` and `prior_value` are the two phrasings, and `change` is the movement between them. `higher_is_worse` says which direction is good for this metric. `prior_transcript_id` identifies the earlier document, so both sides of the comparison can be checked.
+`metric_key` is the normalised metric. `current_value` and `prior_value` are the two phrasings, and `change` is the movement between them. `higher_is_worse` says which direction is good for this metric.
+
+`change` is computed from the two ranges; `claimed` is the word the **document** used — `raise`, `cut` or `maintain`, or null when it used none. They can disagree, and the row is still served when both figures reconcile with their own quotes: LLY on 2026-08-05 "raised" non-GAAP EPS while the range went $35.50–37.00 to $35.50–36.50, so `change` is `cut` and `claimed` is `raise`. Report both. A pair across a spin-off, a divestiture, a stock split or a move to "continuing operations" is refused, not served as a cut.
+
+`prior_transcript_id` identifies the earlier document, so both sides of the comparison can be checked.
 
 ## Guidance Changes Date Convention
 
@@ -104,7 +109,8 @@ curl "https://api.focusalpha.ai/v1/companies/AAPL/guidance-changes?year=2026" \
       "range_move": "moved_above",
       "within_prior_range": false,
       "prior_source": "paired",
-      "value_unit": "usd"
+      "value_unit": "usd",
+      "claimed": null
     }
   ],
   "next_cursor": null,

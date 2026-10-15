@@ -2,12 +2,13 @@
 title: "Taiwan Monthly Revenue"
 sidebarTitle: "Taiwan monthly revenue"
 description: "Monthly revenue filed by every Taiwan-listed company about ten days after month end, with month-on-month, year-on-year and year-to-date figures."
+keywords: ["get_taiwan_monthly_revenue"]
 ---
 
 Taiwan Monthly Revenue provides the monthly revenue every Taiwan-listed company files. Each observation is one month for one company, in TWD thousands, with month-on-month and year-on-year percentages and the year-to-date cumulative. History runs from 2001-06.
 
 <Info>
-  **Plan:** Free and above · **Credits:** 1 per call
+  **Plan:** Free and above · **Credits:** 1 per call · **MCP tool:** `get_taiwan_monthly_revenue`
 </Info>
 
 This is Taiwan's distinctive disclosure: every listed company files revenue every month, roughly ten days after month end — years before the equivalent is known in most other markets.
@@ -34,7 +35,7 @@ The two therefore do not reconcile exactly, and a difference between them is the
 Before 2013, `revenue_ytd` accumulates over each company's own **fiscal** year, not the calendar year. Taiwan allowed non-calendar fiscal years until the 2013 IFRS transition, so the month the cumulative resets differs by company, and a January row is not necessarily the first month of its cumulative.
 </Warning>
 
-The emerging board (`market` of `emerging`) also changes at the source: 186 emerging-board companies filed monthly revenue for 2012-12 and 33 for 2013-01. That is a real change, not a gap, so an emerging-board aggregate is not comparable across that boundary.
+The emerging board (`market` of `emerging`) also changes at the source: far fewer emerging-board companies filed monthly revenue for 2013-01 than for 2012-12. That is a real change, not a gap, so an emerging-board aggregate is not comparable across that boundary.
 
 ## Taiwan Monthly Revenue Date Convention
 

@@ -1,0 +1,151 @@
+---
+title: "Taiwan Presentation Decks"
+sidebarTitle: "Taiwan presentation decks"
+description: "The text of the 法說會 slides that the largest Taiwan-listed companies uploaded to MOPS since 2019, one row per file, with every conference that showed it."
+---
+
+Taiwan Presentation Decks serves the **text** of the slides a Taiwan-listed company uploaded to MOPS, the Market Observation Post System, for its 法人說明會 (institutional investor conferences). Each row is one file, newest first, so you can read, quote and compare the slides rather than only link to them. Each file lists every conference that showed it, because a results deck is usually shown again at several brokers' forums.
+
+**MCP tool:** `get_taiwan_presentation_deck` — see [Connect via MCP](/mcp-setup).
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call
+</Info>
+
+## What you can use Taiwan presentation decks for
+
+Read the outlook slide from a Taiwanese company's latest results conference. Find every deck that mentions a phrase, such as a product, a customer segment or a capex figure. Compare how a company described the same topic across quarters. See which broker forums showed a given results deck.
+
+## Slides and conferences
+
+The schedule of conferences, with links to the slides and recordings for **every** Taiwan-listed company since 2005, is [Taiwan Investor Conferences](/international/taiwan-investor-conferences). This page is the text behind those slide links, for a narrower set of companies.
+
+Each deck lists the conferences that showed it in `conferences`, with each conference's `conference_id`, `conference_date`, `conference_date_end`, `place` and `summary`. The `conference_id` is the same identifier Taiwan Investor Conferences uses, so the two join.
+
+`file_date` is the date in the uploaded file's name. A results deck is usually first shown at the company's own results conference on that date, then again at later broker forums.
+
+## Languages
+
+`language` is `zh` for the Chinese file (MOPS names it `…M001`) and `en` for the English file (`…E001`). A company often uploads both, as two separate rows. Pass `language` to keep one.
+
+## Taiwan presentation deck coverage
+
+Coverage is **about the 100 largest Taiwan companies by market cap, from 2019**, updated daily as those companies upload new files. It is not the whole market.
+
+<Warning>
+`in_scope: false` means FocusAlpha has no slide text for that company yet: it is outside the scope, or its decks are still being read. It never means the company has no slides. Its slide links are in [Taiwan Investor Conferences](/international/taiwan-investor-conferences).
+</Warning>
+
+A row whose `status` is not `ok` says why it has no text, for example scanned slides, a file MOPS failed to serve, or a legacy `.ppt` file.
+
+## Key Taiwan presentation deck fields
+
+- `company_id`, `local_security_code`, `market` (`twse` or `tpex`) and `company_name` (as filed, in Chinese) identify the company.
+- `file_name`, `language`, `file_date`, `url` and `format` describe the file. `url` points to the file on MOPS.
+- `status`, `n_pages` and `n_chars` describe the extracted text.
+- `conferences` lists every conference that showed the file.
+
+## Taiwan presentation deck text
+
+Pass `include_text=true` to add each deck's extracted `text`, capped at `max_chars` per deck, with `text_truncated` saying whether it was cut. Pages are marked `--- page N ---`. Text is extracted from slides, so tables and charts lose their layout: quote it, but take reported figures from [Taiwan Financials](/international/taiwan-financials) and [Taiwan Monthly Revenue](/international/taiwan-monthly-revenue).
+
+`q` matches the slide text, case-insensitively, and works with or without `include_text`.
+
+## GET /v1/companies/\{company\}/tw/presentation-decks
+
+<ParamField path="company" type="string" required>
+  A Taiwan security code such as `2330`, a suffixed ticker (`2330.TW`, `6976.TWO`), an ISIN or a `company_id`.
+</ParamField>
+
+<ParamField query="date_gte" type="string">
+  Earliest `file_date`, `YYYY-MM-DD`. `date_lte` sets the ceiling.
+</ParamField>
+
+<ParamField query="language" type="string">
+  `zh` for the Chinese file or `en` for the English file.
+</ParamField>
+
+<ParamField query="q" type="string">
+  Only decks whose text contains this phrase, case-insensitive.
+</ParamField>
+
+<ParamField query="include_text" type="boolean" default="false">
+  `true` adds each deck's extracted text.
+</ParamField>
+
+<ParamField query="max_chars" type="integer" default="20000">
+  Text cap per deck when `include_text=true`, between 500 and 200,000.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="50">
+  Decks per page, between 1 and 200. Defaults to 5 when `include_text=true`. Page through with `cursor`, passing back `next_cursor` unchanged.
+</ParamField>
+
+An identifier that cannot be resolved returns `404`. If the data source cannot be read, the endpoint returns `503` rather than an empty list.
+
+## Related datasets
+
+See also [Taiwan Investor Conferences](/international/taiwan-investor-conferences) for the conference schedule and recordings, [Taiwan Financials](/international/taiwan-financials) and [Taiwan Monthly Revenue](/international/taiwan-monthly-revenue) for the numbers the slides discuss, and [Management Guidance](/events/guidance) for forward-looking statements.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/companies/2330/tw/presentation-decks?language=en&limit=1" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```bash With text
+curl "https://api.focusalpha.ai/v1/companies/2330.TW/tw/presentation-decks?q=gross%20margin&include_text=true&max_chars=5000" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "data": [
+    {
+      "company_id": "cmp_008395",
+      "local_security_code": "2330",
+      "market": "twse",
+      "company_name": "台積電",
+      "file_name": "233020260716E001.pdf",
+      "language": "en",
+      "file_date": "2026-07-16",
+      "url": "https://mopsov.twse.com.tw/nas/STR/233020260716E001.pdf",
+      "format": "pdf",
+      "status": "ok",
+      "n_pages": 12,
+      "n_chars": 5766,
+      "conferences": [
+        {
+          "place": "台北文華東方酒店B2 文華廳（台北市松山區敦化北路158號）",
+          "summary": "(1)公布本公司2026年第2季財務報告及2026年第3季業績展望。(2)參加方式：請參見https://investor.tsmc.com/chinese/quarterly-results/2026/q2",
+          "conference_id": "a9b821da7e187e533799d7a8959754ef",
+          "conference_date": "2026-07-16",
+          "conference_date_end": null
+        },
+        {
+          "place": "W Hotel Taipei",
+          "summary": "本公司受邀參加瑞銀證券所舉辦之『UBS Taiwan Summit 2026』，會中就本公司7/16法說會已公開之財務數字、經營績效等相關資訊進行說明。",
+          "conference_id": "df4e5d5045c441bf06893c08ef153ff7",
+          "conference_date": "2026-09-14",
+          "conference_date_end": null
+        }
+      ]
+    }
+  ],
+  "next_cursor": "WyIyMDI2LTA3LTE2IiwiMjMzMDIwMjYwNzE2RTAwMS5wZGYiXQ",
+  "in_scope": true,
+  "coverage": {
+    "available_from": "2019-01-01",
+    "available_to": null,
+    "update_frequency": "daily (new MOPS uploads for the companies in scope)",
+    "history_status": "top_100_by_market_cap_from_2019"
+  }
+}
+```
+
+</ResponseExample>

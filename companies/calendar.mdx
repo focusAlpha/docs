@@ -2,12 +2,13 @@
 title: "Company Calendar"
 sidebarTitle: "Company calendar"
 description: "Scheduled company events across markets — reporting dates, ex-dividend, split and IPO dates, investor days, conference appearances, shareholder meetings and record dates — one row per event with the one date FocusAlpha stands behind."
+keywords: ["get_company_calendar"]
 ---
 
 The Company Calendar lists dated, scheduled events for listed companies, ahead or behind: reporting dates, ex-dividend, split and IPO dates, investor and analyst days, appearances at broker conferences, shareholder meetings, record dates, and the entries a company's own investor-relations calendar lists. It answers "what is on next week", "when does this company report" and "who is holding an investor day in October". The company is a filter, not a requirement.
 
 <Info>
-  **Plan:** Free and above · **Credits:** 1 per call
+  **Plan:** Free and above · **Credits:** 1 per call · **MCP tool:** `get_company_calendar`
 </Info>
 
 This is the forward-looking dataset. For what has already happened, see [News Events](/news/news-events); for macro releases and central-bank decisions, see the [Economic Calendar](/macro/calendar).
@@ -20,7 +21,7 @@ Find a company's next catalyst. Build a week-ahead list of reporting dates for a
 
 Several sources often date the same event, and they do not always agree. The calendar does that adjudication for you and returns **one row per company, per event type, per day**, carrying the date it stands behind rather than the candidates:
 
-- **Sources.** Within one company, one event type and 21 days, the source closest to the company wins the date: `filing` > `press_release` > `ir_site` > `calendar_feed`. For mainland-China reporting dates, the date a company books with its exchange matched the actual disclosure date for 5,546 of 5,550 companies on the last disclosed quarter.
+- **Sources.** Within one company, one event type and 21 days, the source closest to the company wins the date: `filing` > `press_release` > `ir_site` > `calendar_feed`. For mainland-China reporting dates, the date a company books with its exchange matched the actual disclosure date for nearly every company on the last disclosed quarter.
 - **Listings.** When a company has several listings that disagree, the main listing wins — NVDA's 2026-11-18 is served, not the 11-17 on its Frankfurt line.
 - **Labels.** When a company page lists one event under several wordings, they collapse into one row.
 

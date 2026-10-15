@@ -2,12 +2,13 @@
 title: "Form 20-F Data"
 sidebarTitle: "Form 20-F"
 description: "Form 20-F content for foreign private issuers: filing profile, as-reported segments, disclosed ownership, notes and the filing's own XBRL facts."
+keywords: ["get_adr_20f_data", "get_adr_20f_notes"]
 ---
 
 Form 20-F Data serves the content of a foreign private issuer's annual Form 20-F filing with the SEC. Each observation belongs to one filing, addressed by section: the filing profile, as-reported segments, disclosed ownership, the notes, and the filing's own XBRL facts. A 20-F is an **annual** filing — there are no quarterly rows in this dataset.
 
 <Info>
-  **Plan:** Free and above · **Credits:** 1 per call
+  **Plan:** Free and above · **Credits:** 1 per call · **MCP tools:** `get_adr_20f_data`, `get_adr_20f_notes`
 </Info>
 
 ## What You Can Use Form 20-F Data For
@@ -56,7 +57,7 @@ All content is read from the issuer's own Form 20-F filing on SEC EDGAR, includi
 
 ## Form 20-F Coverage
 
-Coverage is 321 foreign private issuers filing Form 20-F, from 2014-12, updated annually as each issuer files.
+Coverage is about 320 foreign private issuers filing Form 20-F, from 2014-12, updated annually as each issuer files.
 
 ## GET /v1/companies/\{company_id\}/20f/profile
 
