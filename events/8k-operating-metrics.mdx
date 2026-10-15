@@ -1,16 +1,17 @@
 ---
-title: "Every Figure in the Earnings Release"
-sidebarTitle: "8-K release facts"
-description: "Every number a company printed in its earnings release — each table cell and each figure in the text — with the table, row and column or the sentence it came from."
+title: "Operating Metrics & KPIs"
+sidebarTitle: "8-K operating metrics & KPIs"
+keywords: ["get_8k_operating_metrics", "operating metrics", "KPIs"]
+description: "The operating metrics and KPIs a company printed in its earnings release, and every other number in it — each table cell and each figure in the text — with the table, row and column or the sentence it came from."
 ---
 
-Release Facts are every number a company printed in its earnings release: each cell of each table and each figure in the text. Each row is one figure, carrying where it was printed — the table title, the row label and the rows above it, the column header, or the sentence — together with what it is: the metric, the segment, the basis and the period.
+Operating Metrics & KPIs holds the operating metrics a company printed in its earnings release — units, prices, store counts, same-store sales, backlog, bookings, subscribers, rent per square foot — and every other number in it: each cell of each table and each figure in the text. Each row is one figure, carrying where it was printed — the table title, the row label and the rows above it, the column header, or the sentence — together with what it is: the metric, the segment, the basis and the period.
 
 <Info>
-  **Plan:** Free and above · **Credits:** 1 per call
+  **Plan:** Free and above · **Credits:** 1 per call · **MCP tool:** `get_8k_operating_metrics`
 </Info>
 
-## What You Can Use Release Facts For
+## What You Can Use It For
 
 Read the parts of a release the headline figures leave out: the segment and product-line tables, the KPI pages (units, prices, store counts, same-store sales, backlog, bookings, subscribers), the non-GAAP reconciliation line by line, the statements and cash flow as printed, and the guidance tables. [Reported Earnings Figures](/events/earnings-results) keeps the handful of figures a reader looks at first; this dataset is the whole document.
 
@@ -58,11 +59,11 @@ Two **different** values under one metric are both returned and never merged. Th
 
 Quote `value` for what the market saw on the day; use the restated figure or the [Financial Statements](/financials/combined) to compare across periods. The restated version is attached to the headline figures checked against the company's filings — revenue, operating income, net income, gross profit and diluted EPS.
 
-## Release Facts Coverage
+## Coverage
 
 Most S&P 500 companies and, for nearly all of them, every quarterly earnings release filed since January 2025 — seven quarters by October 2026. The layer is not yet updated daily: a release filed after `coverage.available_to` has not been read yet, so the newest quarter can be missing here while [Reported Earnings Figures](/events/earnings-results) already has its headline figures. Releases filed only as PDF are not read. Read the `coverage` block on the response for the current count and date range. For other companies and earlier quarters, [Reported Earnings Figures](/events/earnings-results) holds the headline figures of far more releases.
 
-## GET /v1/companies/\{company_id\}/8k-release-facts
+## GET /v1/companies/\{company_id\}/8k-operating-metrics
 
 The table of contents of a company's newest release, or its figures, depending on the parameters.
 
@@ -133,7 +134,7 @@ See also [Reported Earnings Figures](/events/earnings-results) for the headline 
 <RequestExample>
 
 ```bash cURL
-curl "https://api.focusalpha.ai/v1/companies/NVDA/8k-release-facts?segment=Data%20Center&current=true&limit=1" \
+curl "https://api.focusalpha.ai/v1/companies/NVDA/8k-operating-metrics?segment=Data%20Center&current=true&limit=1" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 ```
 
