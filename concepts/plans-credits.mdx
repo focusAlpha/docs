@@ -25,12 +25,19 @@ For current pricing, see your [account settings](https://app.focusalpha.ai/setti
 
 ## How credits are metered
 
-The billing rule is deliberately simple:
+Every metered request costs a fixed number of credits for its dataset — never a
+function of how many rows it returns. There are three tiers:
 
-<Note>
-**1 call = 1 credit.** Every metered request costs exactly one credit, flat, regardless
-of which dataset it hits or how much data it returns.
-</Note>
+| Credits per call | Datasets |
+|---|---|
+| **0** | Company registry (`GET /v1/companies`, profile, identifiers, listings, corporate events), company calendar (`GET /v1/calendar`), and every discovery / vocabulary endpoint listed below |
+| **2** | Semantic retrieval (`POST /v1/retrieve`), full documents (`/v1/documents`), the company, ETF and adviser screeners, 13F institutional holdings, ETF data (`/v1/etfs`), and news |
+| **1** | Everything else — financials, filings, events, guidance, transcripts, insider trades, market data, regional filings, macro, and the rest |
+
+Each dataset page states its price in the header line. The same prices apply whether a
+call comes from your API key, an MCP client, or the FocusAlpha app: the app's chat
+assistant bills every data lookup it makes on your behalf to the same balance at the
+same per-call price.
 
 The credit is charged when your request is accepted, before the handler runs. If the
 request then fails — a validation error, a missing resource, a server fault — the charge
@@ -75,12 +82,31 @@ returns `402` before any credit is spent. Otherwise credits and rate limits
 are the only difference between plans, so the Free plan's 100 credits are a way to try
 any dataset before you upgrade.
 
+## Buying more credits
+
+Free, Explore and Professional accounts can buy credit packs from
+[Settings → Plan → Buy credits](https://app.focusalpha.ai/settings) (a one-time card
+payment through Stripe):
+
+| Pack | Price |
+|---|---|
+| 500 credits | $100 |
+| 2,000 credits | $360 |
+
+Purchased credits **never expire** and are spent only after your monthly allowance is
+used up, so a pack bought mid-month is still there next month. They show up in your
+dashboard as a separate "purchased credits" line under the monthly bar. Fund plans are
+unlimited and have nothing to top up.
+
 ## When you run out of credits
 
-A metered call with an empty balance returns `402 Payment Required`:
+A metered call with an empty balance (monthly allowance and purchased credits both at
+zero) returns `402 Payment Required`:
 
 - On the Free plan the message is `Free credits used up. Upgrade to keep making requests.`
 - On a paid plan it tells you that you are out of credits for the current billing period.
+
+Either way, a [credit pack](#buying-more-credits) or an upgrade restores access at once.
 
 See [Errors](/concepts/errors) for the envelope shape.
 
