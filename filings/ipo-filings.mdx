@@ -1,0 +1,157 @@
+---
+title: "IPO Filings"
+sidebarTitle: "IPO filings"
+description: "Which companies filed to go public in the US, their price range, whether the deal priced and at what price, upsizes and withdrawals — one row per offering from SEC registration statements."
+keywords: ["get_ipo_filings", "ipo", "s-1", "f-1", "prospectus", "registration statement"]
+---
+
+IPO Filings lists US initial public offerings from SEC registration statements. Each row is one offering: every filing under one `333-` registration number, plus the confidential drafts that led to it. A row tells you where the deal stands — draft, filed, marketing at a price range, priced or withdrawn — with the range, the final price and size, and every filing's accession number. It answers "who filed to go public this week", "what range did they set" and "did it price".
+
+<Info>
+  **Plan:** Free and above · **Credits:** 1 per call · **MCP tool:** `get_ipo_filings`
+</Info>
+
+## What you can use IPO filings for
+
+Track the IPO pipeline day by day. See which deals set a range, priced, upsized or were withdrawn. Find a company that has not listed yet and get its CIK, so you can read its prospectus section by section with [SEC Filing Items](/filings/items) (`filing_type=S-1`).
+
+## IPO filings coverage
+
+Registration statements filed on EDGAR from January 2026, updated daily: `S-1`, `F-1`, `S-11` and their amendments, confidential drafts (`DRS`) once the SEC releases them, 462(b) upsizes (`S-1MEF`, `F-1MEF`), final prospectuses (`424B4`, `424B1`) and withdrawals (`RW`). Each response carries `coverage.available_from` and `coverage.latest_public_date`.
+
+IPOs are the default. SPACs, direct listings, mutual-bank conversions, self-underwritten shells and exchange-traded products (for example spot-crypto trusts) are separate kinds you ask for with `kind`.
+
+<Note>
+An S-1 is not necessarily an IPO. Most S-1s are resale or follow-on registrations by companies that already trade, and they are not here. The kind of an offering comes from what its cover says, not from the form type. To list every registration statement a company filed, use the [SEC Filings Index](/filings/index).
+</Note>
+
+## How offerings are grouped
+
+- Every filing that shares one `333-` registration number is one offering: the S-1, its amendments, the final prospectus and any withdrawal.
+- An upsize under Rule 462(b) gets its own registration number. It joins the offering it names.
+- A confidential draft carries a `377-` number, not the `333-`. It joins the company's first public offering of the same kind filed on or after the draft's last submission. A company that withdraws one IPO and files a new draft for a second keeps the two apart.
+- A withdrawal marks the offering `withdrawn` only when no other filing follows it.
+
+## Key IPO filing fields
+
+| Field | Meaning |
+| --- | --- |
+| `offering_id` | The `333-` registration number, or the `377-` draft number for a draft with no public filing yet |
+| `company_name`, `cik` | The issuer. Most issuers have no `company_id` yet, because they have not listed |
+| `symbol`, `exchange` | The ticker and exchange proposed on the cover |
+| `kind` | `ipo`, `spac`, `direct_listing`, `mutual_conversion`, `self_underwritten` or `exchange_traded_product` |
+| `status` | `draft` (only the confidential draft is public), `filed` (public, no range yet), `price_range` (an amendment printed a range), `priced` (final prospectus filed) or `withdrawn` |
+| `price_low`, `price_high` | The latest price range |
+| `offer_price`, `shares_offered`, `offer_amount` | From the final prospectus, or from a fixed-price offering. `offer_amount` is gross, before the over-allotment |
+| `upsized` | An upsize registration was filed |
+| `has_selling_holders`, `emerging_growth` | As the cover states |
+| `first_public_date`, `draft_public_date`, `registration_public_date`, `priced_date`, `withdrawn_date`, `last_filing_date` | Dates each stage became public on EDGAR |
+| `filings` | Every filing of the offering, newest first: `form`, `public_date`, `filing_date`, `accession`, `readable_sections`, `primary_doc_url`, `index_url` |
+
+<Warning>
+A preliminary prospectus that prints a range also prints a pricing table at an **assumed** price, often the midpoint of the range. That is not an offering price. `offer_price` is only ever the final or fixed price.
+</Warning>
+
+## IPO filings date convention
+
+Dates are the day a filing became public on EDGAR. A confidential draft is often submitted months before it is made public, so `filings[].filing_date` (the date on the filing) can be much earlier than `public_date`. `date_gte` and `date_lte` match an offering when any of its filings became public inside the window.
+
+## IPO filings sources
+
+Registration statements and prospectuses as filed on SEC EDGAR. The price range, price, share count and offering kind are read from the cover. Each filing links to its document and EDGAR index page.
+
+## GET /v1/ipo-filings
+
+<ParamField query="company" type="string">
+  Company name (or the start of a word in it), proposed ticker, or SEC CIK.
+</ParamField>
+
+<ParamField query="kind" type="string[]" default="ipo">
+  Kinds of first sale to include, repeatable or comma-separated: `ipo`, `spac`, `direct_listing`, `mutual_conversion`, `self_underwritten`, `exchange_traded_product`.
+</ParamField>
+
+<ParamField query="status" type="string[]">
+  Only offerings currently at these stages: `draft`, `filed`, `price_range`, `priced`, `withdrawn`.
+</ParamField>
+
+<ParamField query="date_gte" type="string">
+  Offerings with a filing made public on or after this date, `YYYY-MM-DD`.
+</ParamField>
+
+<ParamField query="date_lte" type="string">
+  Offerings with a filing made public on or before this date, `YYYY-MM-DD`.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="20">
+  Offerings per page, 1 to 100.
+</ParamField>
+
+<ParamField query="cursor" type="string">
+  The `next_cursor` from the previous page.
+</ParamField>
+
+Offerings come latest activity first.
+
+## Related datasets
+
+See also [SEC Filing Items](/filings/items) to read a prospectus section by section, the [SEC Filings Index](/filings/index) for every registration statement a company filed (including resales and follow-ons), and the [Company Calendar](/companies/calendar) (event type `ipo`) for the exchange's expected first-trading date.
+
+<RequestExample>
+
+```bash cURL
+curl "https://api.focusalpha.ai/v1/ipo-filings?status=priced&date_gte=2026-10-01" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response (one offering, filings shortened)
+{
+  "data": [
+    {
+      "offering_id": "333-299057",
+      "registration_number": "333-299057",
+      "company_name": "Iambic Therapeutics, Inc.",
+      "cik": 1997038,
+      "company_id": null,
+      "symbol": "IAM",
+      "exchange": "Nasdaq Global Select Market",
+      "kind": "ipo",
+      "status": "priced",
+      "first_public_date": "2026-09-21",
+      "draft_public_date": "2026-09-21",
+      "registration_public_date": "2026-09-21",
+      "priced_date": "2026-10-15",
+      "withdrawn_date": null,
+      "last_filing_date": "2026-10-15",
+      "price_low": 15,
+      "price_high": 17,
+      "offer_price": 16,
+      "shares_offered": 9375000,
+      "offer_amount": 150000000,
+      "upsized": false,
+      "has_selling_holders": false,
+      "emerging_growth": true,
+      "sic": "2836",
+      "state_of_incorporation": "DE",
+      "filings": [
+        {
+          "form": "424B4",
+          "public_date": "2026-10-15",
+          "filing_date": "2026-10-15",
+          "accession": "0001193125-26-422865",
+          "readable_sections": 21,
+          "primary_doc_url": "https://www.sec.gov/Archives/edgar/data/1997038/000119312526422865/iambic_inception_424b4.htm",
+          "index_url": "https://www.sec.gov/Archives/edgar/data/1997038/000119312526422865/0001193125-26-422865-index.htm"
+        }
+      ]
+    }
+  ],
+  "next_cursor": null,
+  "coverage": { "available_from": "2026-01-02", "latest_public_date": "2026-10-21" }
+}
+```
+
+</ResponseExample>

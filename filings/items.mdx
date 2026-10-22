@@ -1,11 +1,11 @@
 ---
 title: "SEC Filing Items"
 sidebarTitle: "SEC filing items"
-description: "A single SEC filing split into its constituent items with full text — Item 1A risk factors, Item 7 MD&A, 8-K event items and more."
+description: "A single SEC filing split into its constituent items with full text — Item 1A risk factors, Item 7 MD&A, 8-K event items, and the sections of an IPO prospectus (S-1, F-1, S-11, 424B4)."
 keywords: ["get_filing_items"]
 ---
 
-SEC Filing Items splits a single SEC filing into the numbered items the form defines, each with its text. Each observation is one item of one filing — Item 1A risk factors, Item 7 management's discussion and analysis, an 8-K event item. This is the endpoint for reading a named section of a named filing, as opposed to searching across filings by meaning.
+SEC Filing Items splits a single SEC filing into the numbered items the form defines, each with its text. Each observation is one item of one filing — Item 1A risk factors, Item 7 management's discussion and analysis, an 8-K event item, or a section of an IPO prospectus. This is the endpoint for reading a named section of a named filing, as opposed to searching across filings by meaning.
 
 <Info>
   **Plan:** Free and above · **Credits:** 1 per call · **MCP tool:** `get_filing_items`
@@ -13,11 +13,11 @@ SEC Filing Items splits a single SEC filing into the numbered items the form def
 
 ## What You Can Use SEC Filing Items For
 
-Read a company's risk factors or MD&A in full. Diff one year's Item 1A against the previous year's. Pull the exact 8-K item text behind a structured event. Feed a specific section into a model rather than the whole filing.
+Read a company's risk factors or MD&A in full. Diff one year's Item 1A against the previous year's. Pull the exact 8-K item text behind a structured event. Read an IPO prospectus's use of proceeds, dilution or underwriting section. Feed a specific section into a model rather than the whole filing.
 
 ## SEC Filing Items Coverage
 
-The form types supported are `10-K`, `10-Q` and `8-K`. The [item types endpoint](/filings/coverage) lists which item codes exist for each form type.
+The form types supported are `10-K`, `10-Q` and `8-K`, split from EDGAR on request, and registration statements — `S-1`, `F-1`, `S-11`, their amendments, released `DRS` drafts and final `424B4` / `424B1` prospectuses — filed from January 2026, stored daily with their sections. The [item types endpoint](/filings/coverage) lists which item codes exist for each 10-K, 10-Q and 8-K form type.
 
 ## How to Address One Filing
 
@@ -30,6 +30,27 @@ For a **10-Q**, also pass `quarter` as 1 to 4.
 For an **8-K**, also pass the `accession_number`, because a company files many 8-Ks in a year. Get it from the [SEC Filings Index](/filings/index).
 
 `year` is the calendar year of the filing's **period of report**, not the year it was filed.
+
+## Read an IPO prospectus
+
+Pass `filing_type=S-1` to read a company's newest registration document, whichever form it is: S-1, F-1 or S-11, an amendment, a released draft or the final prospectus. `F-1`, `S-11`, `424B4` or `DRS` narrow it to that form, and `accession_number` picks one filing. No `year` is needed.
+
+Address the company by `ticker`, the proposed ticker, or `cik`. A company that has not listed has no ticker, so take the CIK from [IPO Filings](/filings/ipo-filings), which also lists every filing's accession number.
+
+A prospectus's items are section names: `cover` (offering terms and underwriters), `summary`, `the_offering`, `summary_financial_data`, `risk_factors`, `forward_looking`, `market_data`, `use_of_proceeds`, `dividend_policy`, `capitalization`, `dilution`, `mdna`, `business`, `management`, `executive_compensation`, `related_party`, `principal_holders`, `selling_holders`, `description_of_securities`, `shares_eligible`, `tax`, `underwriting`, `legal_matters`, `experts`, `where_to_find` and `financial_statements`. The 10-K codes `Item-1`, `Item-1A`, `Item-7`, `Item-8` and `Item-10` to `Item-13` name the same sections, so one `item` works on both forms. `item=all` returns the whole document.
+
+<Note>
+A prospectus runs to a million characters. Asked for with no `item`, it returns only its summary plus `table_of_contents`, which lists every section and its length. Ask for the sections you need by name. Through the MCP tool, a section too long for one result is cut and names the `text_offset` to read on from.
+</Note>
+
+A prospectus response also carries `form`, `public_date` (the day it became public on EDGAR), `offering_kind`, `primary_doc_url` and `index_url`. An S-1 is not necessarily an IPO: `offering_kind` says whether this one is.
+
+### Prospectus tables
+
+Two options are for programs that parse a prospectus's tables. They are on the REST endpoint only, not the MCP tool:
+
+- `text_format=sec-html-1` returns the stored table-preserving text — one table row per line, cells separated by ` | ` — instead of the body. A format not stored for the filing returns `404`.
+- `include_tables=true` adds `tables`: every figure in the prospectus's tables, by table, with its row label and path, column header, value as printed and in units, unit, currency, scale, period and period end, and a `url` that opens the document at the figure. A prospectus prints thousands of figures, so this is off by default. A filing whose tables have not been read yet returns an empty `tables` with a `tables_note`.
 
 ## Items Incorporated by Reference
 
@@ -55,16 +76,20 @@ Item text is taken from the filing itself on SEC EDGAR and split along the form'
 
 Use the filing items endpoint to split one filing.
 
-<ParamField query="ticker" type="string" required>
-  The issuer's ticker.
+<ParamField query="ticker" type="string">
+  The issuer's ticker. Required for a 10-K, 10-Q or 8-K; for a prospectus, pass this, `cik` or `accession_number`.
+</ParamField>
+
+<ParamField query="cik" type="string">
+  SEC CIK. Prospectus only, for a company with no ticker yet.
 </ParamField>
 
 <ParamField query="filing_type" type="string" required>
-  `10-K`, `10-Q` or `8-K`.
+  `10-K`, `10-Q`, `8-K`, or a prospectus: `S-1` (any registration statement or prospectus of the company), `F-1`, `S-11`, `424B4` or `DRS`.
 </ParamField>
 
-<ParamField query="year" type="integer" required>
-  Calendar year of the filing's period of report.
+<ParamField query="year" type="integer">
+  Calendar year of the filing's period of report. Required for a 10-K, 10-Q or 8-K; for a prospectus, optional — the year it was filed.
 </ParamField>
 
 <ParamField query="quarter" type="integer">
@@ -72,11 +97,19 @@ Use the filing items endpoint to split one filing.
 </ParamField>
 
 <ParamField query="accession_number" type="string">
-  The filing's accession number. Required for an 8-K.
+  The filing's accession number. Required for an 8-K; for a prospectus, picks one filing.
 </ParamField>
 
 <ParamField query="item" type="string[]">
-  Specific item codes to return, repeatable — for example `Item-1A` and `Item-7`. Omit to return all items.
+  Specific item codes to return, repeatable — for example `Item-1A` and `Item-7`, or prospectus sections such as `risk_factors` and `use_of_proceeds` (`all` for the whole prospectus). Omit to return all items of a 10-K, 10-Q or 8-K, or a prospectus's summary and table of contents.
+</ParamField>
+
+<ParamField query="text_format" type="string" default="body">
+  Prospectus only: `sec-html-1` returns the stored table-preserving text, one table row per line.
+</ParamField>
+
+<ParamField query="include_tables" type="boolean" default="false">
+  Prospectus only: also return every figure of the prospectus's tables, by table.
 </ParamField>
 
 <ParamField query="include_exhibits" type="boolean" default="false">
@@ -91,12 +124,17 @@ This route returns a bare wrapper key rather than the standard envelope, and use
 
 ## Related Datasets
 
-See also [SEC Filings Index](/filings/index) to find the filing and its accession number, [Semantic Retrieval](/transcripts/semantic-retrieval) when you want to search across filings by meaning rather than read one section, and [8-K Events](/events/8k-events) for structured events extracted from 8-K filings.
+See also [SEC Filings Index](/filings/index) to find the filing and its accession number, [IPO Filings](/filings/ipo-filings) to find a prospectus and the CIK of a company that has not listed, [Semantic Retrieval](/transcripts/semantic-retrieval) when you want to search across filings by meaning rather than read one section, and [8-K Events](/events/8k-events) for structured events extracted from 8-K filings.
 
 <RequestExample>
 
 ```bash cURL
 curl "https://api.focusalpha.ai/v1/filings/items?ticker=AAPL&filing_type=10-K&year=2025&item=Item-1A" \
+  -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
+```
+
+```bash Prospectus section
+curl "https://api.focusalpha.ai/v1/filings/items?filing_type=S-1&cik=2133022&item=use_of_proceeds" \
   -H "Authorization: Bearer $FOCUSALPHA_API_KEY"
 ```
 
