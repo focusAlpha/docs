@@ -111,9 +111,10 @@ curl "https://api.focusalpha.ai/v1/documents/by-ticker/AAPL?limit=50&offset=50" 
 
 ## Choosing a page size
 
-Every request costs one credit regardless of how many rows it returns, so **larger
-pages are cheaper**: sweeping 10,000 companies at `limit=1000` costs 10 credits; the
-same sweep at the default limit costs far more. Use the largest `limit` the route
+Every request costs its dataset's fixed price (1 credit, or 2 on the heavier datasets)
+regardless of how many rows it returns, so **larger pages are cheaper**: sweeping
+10,000 rows at `limit=1000` is ten calls' worth of credits; the same sweep at the
+default limit costs far more. Use the largest `limit` the route
 allows unless response size is a constraint on your side.
 
 ## Related pages
@@ -122,5 +123,5 @@ allows unless response size is a constraint on your side.
   The malformed-cursor 400 and the rest of the status-code table.
 </Card>
 <Card title="Plans and credits" href="/concepts/plans-credits" icon="credit-card">
-  Why page size matters: one call is one credit, whatever the page holds.
+  Why page size matters: a call costs the same, whatever the page holds.
 </Card>
