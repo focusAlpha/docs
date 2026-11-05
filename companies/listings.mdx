@@ -29,6 +29,18 @@ Each row carries the `symbol`, the `exchange` it trades on, whether that venue i
 
 The validity dates describe when the **symbol** was in force on that exchange, not when the company existed. A company can have overlapping listings across exchanges at the same time.
 
+## ADS Ratio for ADR Issuers
+
+For a company whose US listing is an American depositary share (ADS), the listing row carries `ads_ratio`: the number of ordinary shares one ADS stands for (`0.1` means ten ADSs per share). Multiply per-ordinary-share EPS by `ads_ratio` to get per-ADS EPS; divide a per-ADS figure by it to get per share.
+
+<Warning>
+A per-share or per-ADS figure is stated at the ratio in force on the filed date of the document it was read from. A filing made after a ratio change restates earlier periods per ADS at the new ratio, so look the ratio up with `as_of` = that document's filed date, not the period end. Without `as_of` the ratio is today's; never apply today's ratio to an older figure.
+</Warning>
+
+Each value carries `ads_ratio_share_class` (as printed, for example `Class A ordinary shares`), `ads_ratio_source` (`form`, `accession`, `filed`, `url`, `quote` — the exact words of the filing), `ads_ratio_effective_from` and `ads_ratio_effective_to`, and `ads_ratio_history`, every span of the listing. `effective_to` is the day before the next span starts; a null `effective_from` means the ratio was in force before a dated change and the start is not documented. `ads_ratio` is null when no document states the ratio on that date, or when documents disagree — then `ads_ratio_conflict` is true and `ads_ratio_candidates` lists the ratios they state. Listings that are not depositary shares carry the same fields as null.
+
+The ratio is read from the issuer's own filings: the cover of the 20-F or 10-K, its Item 12.D and definitions, the depositary's Form F-6, and ratio-change announcements on Form 6-K or 8-K. Global depositary shares are kept apart (`program_kind` `GDS`).
+
 ## Company Listings Sources
 
 Listings come from exchange listing registries, kept as an append-only history so a symbol that has been superseded remains addressable.
@@ -39,6 +51,10 @@ Use the company listings endpoint with a canonical `company_id`.
 
 <ParamField path="company_id" type="string" required>
   Canonical company id, for example `cmp_014081`.
+</ParamField>
+
+<ParamField query="as_of" type="string">
+  The ADS ratio in force on this date, `YYYY-MM-DD`. To convert a per-share or per-ADS figure, pass the filed date of the document it was read from. Default: today.
 </ParamField>
 
 ## Related Datasets

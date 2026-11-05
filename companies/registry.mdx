@@ -33,6 +33,8 @@ The registry is a **current snapshot**, not a history. A company's earlier name 
 
 `company_id` is the canonical identifier. Name, country, sector and industry describe the company. The primary listing carries the symbol and exchange. `market_cap` sizes it.
 
+For an ADR issuer the record also carries `ads_ratio` — ordinary shares per American depositary share — for its primary depositary listing, and `ads_listings` with every depositary listing. Multiply per-ordinary-share EPS by `ads_ratio` to get per-ADS EPS. A per-share or per-ADS figure is stated at the ratio in force on the filed date of the document it was read from. A filing made after a ratio change restates earlier periods per ADS at the new ratio, so look the ratio up with `as_of` = that document's filed date, not the period end. Without `as_of` the ratio is today's; never apply today's ratio to an older figure. Pass `as_of=YYYY-MM-DD` to `GET /v1/companies/{company_id}`. The fields are described under [Company Listings](/companies/listings#ads-ratio-for-adr-issuers).
+
 <Warning>
 `market_cap` is denominated in `market_cap_currency`, which is **not** the row's `currency`. The row's `currency` is what the listing's price is quoted in. For London-listed names the price currency is GBp — pence — while the market cap is in GBP. To compare sizes across countries, use [Company Screening](/companies/screening), which converts to US dollars.
 </Warning>
