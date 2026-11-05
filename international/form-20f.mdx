@@ -25,7 +25,7 @@ Look for a 20-F filer's statements on the ordinary statement endpoints, not here
 
 ## The Form 20-F Sections
 
-`profile` says which filing this is: its date, its accession number, its reporting currency, and whether it reports under IFRS or US GAAP.
+`profile` says which filing this is: its date, its accession number, its reporting currency, and whether it reports under IFRS or US GAAP. It also carries the ADS ratio: `ads_ratio`, ordinary shares per American depositary share, with its source and history. Multiply per-ordinary-share EPS by `ads_ratio` to get per-ADS EPS. A per-share or per-ADS figure is stated at the ratio in force on the filed date of the document it was read from. A filing made after a ratio change restates earlier periods per ADS at the new ratio, so look the ratio up with `as_of` = that document's filed date, not the period end. Without `as_of` the ratio is today's; never apply today's ratio to an older figure.
 
 `segments` carries as-reported business and geographic breakdowns, filterable by `dimension`, `metric` or `fiscal_year`.
 
@@ -61,10 +61,14 @@ Coverage is about 320 foreign private issuers filing Form 20-F, from 2014-12, up
 
 ## GET /v1/companies/\{company_id\}/20f/profile
 
-Which filing this is: one object, not a list. It carries `ticker`, `name`, `country`, `form`, `filing_date`, `accession`, `filing_url`, the reporting `currency`, the `taxonomy` (`ifrs-full` or US GAAP), and `ownership_status` and `ownership_as_of` for the ownership section.
+Which filing this is: one object, not a list. It carries `ticker`, `name`, `country`, `form`, `filing_date`, `accession`, `filing_url`, the reporting `currency`, the `taxonomy` (`ifrs-full` or US GAAP), and `ownership_status` and `ownership_as_of` for the ownership section. It also carries `ads_ratio`, `ads_ratio_share_class`, `ads_ratio_source`, `ads_ratio_effective_from`, `ads_ratio_effective_to`, `ads_ratio_conflict`, `ads_ratio_history` and `ads_listings` — see [Company Listings](/companies/listings#ads-ratio-for-adr-issuers).
 
 <ParamField path="company_id" type="string" required>
   A ticker, CIK, ISIN or `company_id`.
+</ParamField>
+
+<ParamField query="as_of" type="string">
+  The ADS ratio in force on this date, `YYYY-MM-DD`. To convert a per-share or per-ADS figure, pass the filed date of the document it was read from. Default: today.
 </ParamField>
 
 ## GET /v1/companies/\{company_id\}/20f/notes
