@@ -23,6 +23,10 @@ Coverage follows SEC EDGAR. The supported form types include `10-K`, `10-Q`, `8-
 13F-HR filings are indexed here too, but only institutional investment managers file them and most managers have no ticker. Reach those filings by `cik`. The positions inside them are served by [13F Institutional Holdings](/ownership/13f).
 </Note>
 
+<Note>
+Registration statements are indexed here too: `S-1`, `F-1`, `S-11` and their `/A` amendments, released `DRS` drafts, `S-1MEF` / `F-1MEF` upsizes, `424B4` / `424B1` final prospectuses and `RW` withdrawals. A company that has not listed has no ticker, so pass its `cik`. Counting S-1 rows counts registrations, not IPOs: most S-1s are resales or follow-ons by listed companies. [IPO Filings](/filings/ipo-filings) lists the IPOs, with the price range and pricing.
+</Note>
+
 ## Key SEC Filing Index Fields
 
 `cik` identifies the filer. `accession_number` identifies the filing and is the key that other endpoints take. `filing_type` is the SEC form type. `ticker` is the filer's ticker where it has one. `url` links the filing folder on EDGAR.

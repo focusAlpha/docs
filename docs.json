@@ -148,6 +148,7 @@
             "pages": [
               "filings/index",
               "filings/items",
+              "filings/ipo-filings",
               "filings/coverage"
             ]
           },

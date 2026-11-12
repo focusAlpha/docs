@@ -30,6 +30,7 @@ Several datasets sound alike but answer different questions. Use this table befo
 | Index, commodity and crypto prices | `get_benchmark_prices` | `get_macro_series` |
 | Companies that match a condition | `screen_companies` | `search_companies` |
 | An ETF (ETFs are not in the company registry) | `search_etfs`, `get_etf` | `search_companies` |
+| Which companies filed to go public, and their range and pricing | `get_ipo_filings` | `get_filings` (an S-1 is often a resale, not an IPO) |
 
 ## Discovery and identity
 
@@ -55,7 +56,8 @@ Several datasets sound alike but answer different questions. Use this table befo
 | `get_segmented_financials` | Business and geographic segments from SEC filings | **ticker or cik**, `period`, `report_period_gte` | `GET /v1/financials/segments` | [Segmented financials](/financials/segments) |
 | `get_company_facts` | Basic issuer facts as filed | **ticker or cik** | `GET /v1/company/facts` | [Company facts](/financials/company-facts) |
 | `get_filings` | The SEC filing index for a company | **ticker or cik**, `filing_type`, `filed_at_gte` | `GET /v1/filings` | [SEC filings index](/filings/index) |
-| `get_filing_items` | One 10-K, 10-Q or 8-K split into its items, with text | **`ticker`**, **`filing_type`**, **`year`**, `quarter`, `accession_number`, `item`, `include_exhibits` | `GET /v1/filings/items` | [SEC filing items](/filings/items) |
+| `get_filing_items` | One 10-K, 10-Q or 8-K split into its items, or one section of an IPO prospectus (S-1, F-1, S-11, 424B4), with text | **`filing_type`**, `ticker`, `cik`, `year`, `quarter`, `accession_number`, `item`, `text_offset` | `GET /v1/filings/items` | [SEC filing items](/filings/items) |
+| `get_ipo_filings` | US IPOs from SEC registration statements: price range, pricing, upsizes, withdrawals | `company`, `kind`, `status`, `date_gte`, `date_lte` | `GET /v1/ipo-filings` | [IPO filings](/filings/ipo-filings) |
 
 ## Earnings, guidance and expectations
 
