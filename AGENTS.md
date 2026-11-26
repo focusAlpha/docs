@@ -8,7 +8,7 @@
 
 ## Terminology
 
-- Plans are **Free**, **Professional**, and **Fund** — never "enterprise", "explore", or "internal" in public copy
+- Plans are **Free**, **Explorer**, **Pro**, and **Fund** — never "enterprise", "explore", or "internal" in public copy
 - Usage is metered in **credits** per call: 1 for most datasets, 2 for retrieval / documents / screeners / 13F / ETFs / news, 0 for the company registry, calendar and discovery/vocabulary endpoints (see concepts/plans-credits.mdx)
 - The canonical company identifier is the **`cmp_…` id**; company-scoped routes also accept ticker, CIK, or ISIN
 - API keys have the prefix `fa_live_`; use `$FOCUSALPHA_API_KEY` as the placeholder in examples

@@ -11,7 +11,6 @@ you can call the API. This page explains both.
 
 | | Free trial | Explorer | Pro | Fund |
 |---|---|---|---|---|
-| Price | No card required | $19 a month billed yearly ($228), or $29 monthly | $99 a month billed yearly ($1,188), or $149 monthly | $3,000 per user a year |
 | Credits | 500, one-time | 400 per month | 5,000 per month | Unlimited, fair use |
 | Credit renewal | Never — a trial grant | Monthly | Monthly | Not applicable |
 | Rate limit | 20 requests/min | 60 requests/min | 120 requests/min | 600 requests/min |
@@ -20,18 +19,10 @@ you can call the API. This page explains both.
 
 The Free plan's 500 credits never expire, but they also never renew — they are a trial
 allowance for evaluating the API. Explorer and Pro balances reset to their full
-grant at the start of each billing period; unused credits do not roll over. Explorer and
-Pro each come with 1 model included. Fund is unlimited under fair use and priced per
-user.
+grant at the start of each billing period; unused credits do not roll over. Fund is
+unlimited under fair use.
 
-Everything you pay for uses one currency: credits. One credit is about 2 cents — the
-[top-up](#buying-more-credits) sells 1,000 for $20.
-
-The same table is served as JSON at `GET https://api.focusalpha.ai/v1/billing/pricing`,
-a public endpoint that needs no API key. It is the machine-readable source of these
-numbers: each plan's price, monthly credits and included model, what each action in the
-app costs, and the top-up pack. Your [account settings](https://app.focusalpha.ai/settings)
-show the same prices.
+For current pricing, see your [account settings](https://app.focusalpha.ai/settings).
 
 ## How credits are metered
 
@@ -45,11 +36,9 @@ function of how many rows it returns. There are three tiers:
 | **1** | Everything else — financials, filings, events, guidance, transcripts, insider trades, market data, regional filings, macro, and the rest |
 
 Each dataset page states its price in the header line. The same prices apply whether a
-call comes from your API key or an MCP client.
-
-The FocusAlpha app spends the same balance, priced by action instead of by call: asking
-a question costs 1 credit, updating a model (adding a quarter, a rebuild) costs 25, and
-building a new model after the included one costs 250. Reading is free.
+call comes from your API key, an MCP client, or the FocusAlpha app: the app's chat
+assistant bills every data lookup it makes on your behalf to the same balance at the
+same per-call price.
 
 The credit is charged when your request is accepted, before the handler runs. If the
 request then fails — a validation error, a missing resource, a server fault — the charge
@@ -107,9 +96,8 @@ payment through Stripe). There is one pack:
 Top-up credits are spent only after your plan's monthly credits are used up, and they
 **last 12 months**, so a pack bought mid-month is still there next month. They show up
 in your dashboard as a separate "purchased credits" line under the monthly bar. The
-pricing endpoint lists the pack as `credits_1000`; the earlier 500-, 2,000- and
-10,000-credit packs are no longer sold. Fund is unlimited under fair use, so a Fund
-seat has no need to top up.
+earlier 500-, 2,000- and 10,000-credit packs are no longer sold. Fund is unlimited
+under fair use, so a Fund seat has no need to top up.
 
 ## When you run out of credits
 
