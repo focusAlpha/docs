@@ -9,17 +9,18 @@ you can call the API. This page explains both.
 
 ## Plans
 
-| | Free trial | Professional | Fund |
-|---|---|---|---|
-| Credits | 500, one-time | 1,000 per month, per seat | 5,000 per month, per seat |
-| Credit renewal | Never — a trial grant | Monthly | Monthly |
-| Rate limit | 20 requests/min | 120 requests/min | 600 requests/min |
-| Max `top_k` on `/v1/retrieve` | 10 | 25 | 50 |
-| How to get it | Sign up at [app.focusalpha.ai](https://app.focusalpha.ai) | Self-serve upgrade in [settings](https://app.focusalpha.ai/settings) | Sales-led — [talk to sales](https://focusalpha.ai/contact) |
+| | Free trial | Explorer | Pro | Fund |
+|---|---|---|---|---|
+| Credits | 500, one-time | 400 per month | 5,000 per month | Unlimited, fair use |
+| Credit renewal | Never — a trial grant | Monthly | Monthly | Not applicable |
+| Rate limit | 20 requests/min | 60 requests/min | 120 requests/min | 600 requests/min |
+| Max `top_k` on `/v1/retrieve` | 10 | 20 | 25 | 50 |
+| How to get it | Sign up at [app.focusalpha.ai](https://app.focusalpha.ai) | Self-serve in [settings](https://app.focusalpha.ai/settings) | Self-serve upgrade in [settings](https://app.focusalpha.ai/settings) | Set up by our team — [talk to sales](https://focusalpha.ai/contact) |
 
 The Free plan's 500 credits never expire, but they also never renew — they are a trial
-allowance for evaluating the API. Professional and Fund balances reset to their full
-grant at the start of each billing period; unused credits do not roll over.
+allowance for evaluating the API. Explorer and Pro balances reset to their full
+grant at the start of each billing period; unused credits do not roll over. Fund is
+unlimited under fair use.
 
 For current pricing, see your [account settings](https://app.focusalpha.ai/settings).
 
@@ -77,28 +78,26 @@ Two account endpoints are also free to call:
 
 Every dataset — including screening, ETF data, live news and events, guidance, regional
 filings and the WebSocket event streams — is open to every plan. The one exception is
-[private companies](/companies/private-companies), which is Fund only: on Free and Professional it
+[private companies](/companies/private-companies), which is Fund only: on every other plan it
 returns `402` before any credit is spent. Otherwise credits and rate limits
 are the only difference between plans, so the Free plan's 500 credits are a way to try
 any dataset before you upgrade.
 
 ## Buying more credits
 
-Every plan — Free, Explore, Professional and Fund — can buy credit packs from
+Free, Explorer and Pro accounts can top up from
 [Settings → Plan → Buy credits](https://app.focusalpha.ai/settings) (a one-time card
-payment through Stripe):
+payment through Stripe). There is one pack:
 
 | Pack | Price |
 |---|---|
-| 500 credits | $100 |
-| 2,000 credits | $360 |
-| 10,000 credits | $1,500 |
+| 1,000 credits | $20 |
 
-Purchased credits **never expire** and are spent only after your monthly allowance is
-used up, so a pack bought mid-month is still there next month. They show up in your
-dashboard as a separate "purchased credits" line under the monthly bar. On the Fund
-plan each seat's 5,000 monthly credits renew on the seat's own cycle; a seat that runs
-dry before renewal buys a pack like any other account.
+Top-up credits are spent only after your plan's monthly credits are used up, and they
+**last 12 months**, so a pack bought mid-month is still there next month. They show up
+in your dashboard as a separate "purchased credits" line under the monthly bar. The
+earlier 500-, 2,000- and 10,000-credit packs are no longer sold. Fund is unlimited
+under fair use, so a Fund seat has no need to top up.
 
 ## When you run out of credits
 
